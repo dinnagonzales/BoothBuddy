@@ -5,10 +5,10 @@ import type { CartLine } from '@/lib/types';
 type CartContextValue = {
   lines: CartLine[];
   editingSaleId: number | null;
-  editingSaleNumber: number | null;
+  invoiceNumber: number | null;
   setLines: (lines: CartLine[]) => void;
   setEditingSaleId: (saleId: number | null) => void;
-  setEditingSaleNumber: (saleNumber: number | null) => void;
+  setInvoiceNumber: (saleNumber: number | null) => void;
   addItem: (line: Omit<CartLine, 'quantity'>) => void;
   changeQuantity: (itemId: number, delta: number) => void;
   clearCart: () => void;
@@ -21,7 +21,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
-  const [editingSaleNumber, setEditingSaleNumber] = useState<number | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
 
   const value = useMemo<CartContextValue>(() => {
     const addItem = (line: Omit<CartLine, 'quantity'>) => {
@@ -59,21 +59,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return {
       lines,
       editingSaleId,
-      editingSaleNumber,
+      invoiceNumber,
       setLines,
       setEditingSaleId,
-      setEditingSaleNumber,
+      setInvoiceNumber,
       addItem,
       changeQuantity,
       clearCart: () => {
         setLines([]);
         setEditingSaleId(null);
-        setEditingSaleNumber(null);
+        setInvoiceNumber(null);
       },
       itemCount,
       totalCents,
     };
-  }, [lines, editingSaleId, editingSaleNumber]);
+  }, [lines, editingSaleId, invoiceNumber]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

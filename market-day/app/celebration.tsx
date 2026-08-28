@@ -10,7 +10,7 @@ import { formatMoney } from '@/lib/money';
 export default function CelebrationScreen() {
   const router = useRouter();
   const db = useSQLiteContext();
-  const { setLines, setEditingSaleId, setEditingSaleNumber } = useCart();
+  const { setLines, setEditingSaleId, setInvoiceNumber } = useCart();
   const params = useLocalSearchParams<{
     saleId: string;
     itemCount: string;
@@ -33,8 +33,11 @@ export default function CelebrationScreen() {
       ]);
       setLines(lines);
       setEditingSaleId(saleId);
-      setEditingSaleNumber(sale?.saleNumber ?? null);
-      router.replace('/sell');
+      setInvoiceNumber(sale?.saleNumber ?? null);
+      router.replace({
+        pathname: '/sell',
+        params: { invoiceNumber: String(sale?.saleNumber ?? '') },
+      });
     })();
   };
 

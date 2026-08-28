@@ -35,7 +35,9 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
       ) : (
         <View style={styles.headerSide} />
       )}
-      <Text style={styles.headerTitle}>{title}</Text>
+      <Text style={styles.headerTitle} numberOfLines={1}>
+        {title}
+      </Text>
       <View style={[styles.headerSide, styles.headerSideEnd]}>{right ?? null}</View>
     </View>
   );
@@ -95,8 +97,10 @@ const styles = StyleSheet.create({
     color: colors.purple,
   },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     fontFamily: 'Nunito_700Bold',
-    fontSize: 16,
+    fontSize: 15,
     color: colors.ink,
   },
   sectionLabel: {

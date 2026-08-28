@@ -16,7 +16,7 @@ const BILLS = [100, 500, 1000, 2000, 10000];
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId } = useCart();
+  const { lines, totalCents, clearCart, editingSaleId, invoiceNumber } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(totalCents);
 
@@ -64,7 +64,12 @@ export default function PaymentScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="How'd they pay?" onBack={() => router.back()} />
+      <ScreenHeader
+        title={
+          invoiceNumber != null ? `Payment: Invoice #${invoiceNumber}` : "How'd they pay?"
+        }
+        onBack={() => router.back()}
+      />
 
       <View className="items-center my-3">
         <Text className="text-[13px] font-extrabold uppercase text-muted">Total</Text>

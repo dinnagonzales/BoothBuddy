@@ -178,6 +178,13 @@ export function cartTotal(lines: CartLine[]): number {
   return lines.reduce((sum, line) => sum + line.priceCents * line.quantity, 0);
 }
 
+export async function getNextSaleNumber(db: SQLiteDatabase): Promise<number> {
+  const row = await db.getFirstAsync<{ n: number }>(
+    'SELECT COALESCE(MAX(sale_number), 0) + 1 AS n FROM sales',
+  );
+  return row?.n ?? 1;
+}
+
 export async function createSale(
   db: SQLiteDatabase,
   params: {
@@ -188,10 +195,7 @@ export async function createSale(
   },
 ): Promise<Sale> {
   const totalCents = cartTotal(params.lines);
-  const nextRow = await db.getFirstAsync<{ n: number }>(
-    'SELECT COALESCE(MAX(sale_number), 0) + 1 AS n FROM sales',
-  );
-  const nextNumber = nextRow?.n ?? 1;
+  const nextNumber = await getNextSaleNumber(db);
 
   const result = await db.runAsync(
     `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents)
