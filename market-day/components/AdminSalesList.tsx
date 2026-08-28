@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
 import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
@@ -7,9 +7,10 @@ import type { SaleSummary } from '@/lib/types';
 
 type AdminSalesListProps = {
   sales: SaleSummary[];
+  onSalePress?: (saleNumber: number) => void;
 };
 
-export function AdminSalesList({ sales }: AdminSalesListProps) {
+export function AdminSalesList({ sales, onSalePress }: AdminSalesListProps) {
   if (sales.length === 0) {
     return (
       <View style={styles.emptyCard}>
@@ -21,7 +22,11 @@ export function AdminSalesList({ sales }: AdminSalesListProps) {
   return (
     <View style={styles.wrap}>
       {sales.map((sale) => (
-        <View key={sale.saleNumber} style={styles.saleRow}>
+        <Pressable
+          key={sale.saleNumber}
+          accessibilityRole="button"
+          onPress={() => onSalePress?.(sale.saleNumber)}
+          style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
           <View>
             <Text style={styles.saleNumber}>#{sale.saleNumber}</Text>
             <Text style={styles.saleTime}>{formatSaleTime(sale.createdAt)}</Text>
@@ -30,7 +35,7 @@ export function AdminSalesList({ sales }: AdminSalesListProps) {
             <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>
             <Text style={styles.saleMethod}>{paymentMethodLabel(sale.paymentMethod)}</Text>
           </View>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -61,6 +66,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
+  },
+  saleRowPressed: {
+    opacity: 0.85,
   },
   saleNumber: {
     fontFamily: 'Nunito_800ExtraBold',

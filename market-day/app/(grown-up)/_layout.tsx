@@ -1,6 +1,6 @@
-import { Slot, useFocusEffect, useRouter } from 'expo-router';
+import { Slot, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { GrownUpNav } from '@/components/GrownUpNav';
@@ -13,12 +13,6 @@ export default function GrownUpLayout() {
   const db = useSQLiteContext();
   const router = useRouter();
   const [unlocked, setUnlocked] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      setUnlocked(false);
-    }, []),
-  );
 
   if (!unlocked) {
     return (

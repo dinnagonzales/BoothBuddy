@@ -27,6 +27,7 @@ export default function SettingsScreen() {
   const [canUndo, setCanUndo] = useState(false);
   const [stats, setStats] = useState({ totalCents: 0, itemCount: 0, cashCents: 0, venmoCents: 0 });
   const [sales, setSales] = useState<SaleSummary[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const refreshDashboard = useCallback(async () => {
     const day = await getActiveMarketDay(db);
@@ -123,11 +124,43 @@ export default function SettingsScreen() {
           venmoCents={stats.venmoCents}
         />
 
-        <SectionLabel>Sales</SectionLabel>
-        <AdminSalesList sales={sales} />
+        {activeDay.needsReexport ? (
+          <View style={styles.reexportBanner}>
+            <Text style={styles.reexportTitle}>Re-export recommended</Text>
+            <Text style={styles.reexportBody}>
+              A sale was edited after export. Export again so your CSV matches the app.
+            </Text>
+          </View>
+        ) : null}
 
-        <SectionLabel>Today&apos;s Menu</SectionLabel>
-        <TodaysMenu db={db} />
+        <View style={styles.menuCard}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: menuOpen }}
+            onPress={() => setMenuOpen((open) => !open)}
+            style={({ pressed }) => [styles.menuCardHeader, pressed && styles.menuCardHeaderPressed]}>
+            <Text style={styles.menuCardTitle}>Today&apos;s Menu</Text>
+            <Text style={styles.menuCardChevron}>{menuOpen ? '▾' : '▸'}</Text>
+          </Pressable>
+          {menuOpen ? (
+            <View style={styles.menuCardBody}>
+              <TodaysMenu db={db} embedded />
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.salesSection}>
+          <SectionLabel>Sales</SectionLabel>
+          <AdminSalesList
+            sales={sales}
+            onSalePress={(saleNumber) =>
+              router.push({
+                pathname: '/(grown-up)/sale/[saleNumber]',
+                params: { saleNumber: String(saleNumber) },
+              })
+            }
+          />
+        </View>
       </ScrollView>
 
       <View style={styles.endDock}>
@@ -149,6 +182,63 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 12,
+  },
+  reexportBanner: {
+    backgroundColor: '#FFF4D6',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#F5DFA0',
+  },
+  reexportTitle: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 13,
+    color: colors.ink,
+    marginBottom: 4,
+  },
+  reexportBody: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: colors.inkSoft,
+    lineHeight: 17,
+  },
+  menuCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  menuCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  menuCardHeaderPressed: {
+    opacity: 0.85,
+  },
+  menuCardTitle: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 14,
+    color: colors.ink,
+  },
+  menuCardChevron: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 16,
+    color: colors.purpleDark,
+    lineHeight: 18,
+  },
+  menuCardBody: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0EBFA',
+  },
+  salesSection: {
+    marginTop: 10,
   },
   emptyWrap: {
     flex: 1,

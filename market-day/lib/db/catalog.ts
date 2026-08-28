@@ -6,22 +6,30 @@ import {
   canUndoCloseMarketDay,
   closeActiveMarketDay,
   createItem,
+  createSale,
   exportMarketDay,
   getActiveMarketDay,
   getAllItems,
   getCheckoutItems,
+  getMarketDaySales,
+  getMarketDayStats,
   getMenuForAdmin,
   getHomeItems,
   getRemovedMenuItems,
   getRunningTabItems,
+  getSaleByNumber,
+  getSaleLineItems,
   markAvailable,
   markSoldOut,
+  marketDayNeedsReexport,
   addToMenu as addItemToMenu,
   removeFromMenu,
+  removeSaleByNumber,
   startMarketDay,
   undoCloseMostRecentMarketDay,
   unarchiveItem,
   updateItem,
+  updateSalePaymentMethod,
 } from '@/lib/db/queries';
 
 export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
@@ -118,6 +126,37 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async exportMarketDay(id: number) {
       await exportMarketDay(db, id);
+    },
+    async recordSale(params) {
+      const sale = await createSale(db, params);
+      return { saleNumber: sale.saleNumber };
+    },
+    async getMarketDayStats(marketDayId) {
+      return getMarketDayStats(db, marketDayId);
+    },
+    async listSalesForMarketDay(marketDayId) {
+      return getMarketDaySales(db, marketDayId);
+    },
+    async getSale(saleNumber) {
+      const sale = await getSaleByNumber(db, saleNumber);
+      if (!sale) return null;
+      const lines = await getSaleLineItems(db, sale.id);
+      return {
+        saleNumber: sale.saleNumber,
+        totalCents: sale.totalCents,
+        paymentMethod: sale.paymentMethod,
+        createdAt: sale.createdAt,
+        lines,
+      };
+    },
+    async removeSale(saleNumber) {
+      await removeSaleByNumber(db, saleNumber);
+    },
+    async updateSalePaymentMethod(saleNumber, paymentMethod) {
+      await updateSalePaymentMethod(db, saleNumber, paymentMethod);
+    },
+    async marketDayNeedsReexport(marketDayId) {
+      return marketDayNeedsReexport(db, marketDayId);
     },
   };
 }

@@ -10,9 +10,10 @@ import { formatMoney } from '@/lib/money';
 
 type TodaysMenuProps = {
   db: SQLiteDatabase;
+  embedded?: boolean;
 };
 
-export function TodaysMenu({ db }: TodaysMenuProps) {
+export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [removedItems, setRemovedItems] = useState<RemovedMenuItem[]>([]);
 
@@ -109,14 +110,20 @@ export function TodaysMenu({ db }: TodaysMenuProps) {
   };
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, embedded && styles.wrapEmbedded]}>
       {menuItems.length === 0 ? (
-        <View style={styles.emptyCard}>
+        <View style={[styles.emptyCard, embedded && styles.emptyCardEmbedded]}>
           <Text style={styles.emptyText}>No items on today&apos;s menu yet.</Text>
         </View>
       ) : (
         menuItems.map((item) => (
-          <View key={item.id} style={[styles.itemRow, item.soldOut && styles.itemRowSoldOut]}>
+          <View
+            key={item.id}
+            style={[
+              styles.itemRow,
+              embedded && styles.itemRowEmbedded,
+              item.soldOut && styles.itemRowSoldOut,
+            ]}>
             <Text style={styles.emoji}>{item.emoji}</Text>
             <View style={styles.meta}>
               <Text style={styles.name}>{item.name}</Text>
@@ -143,7 +150,11 @@ export function TodaysMenu({ db }: TodaysMenuProps) {
       <Pressable
         accessibilityRole="button"
         onPress={openAddPicker}
-        style={({ pressed }) => [styles.addMenuButton, pressed && styles.addMenuButtonPressed]}>
+        style={({ pressed }) => [
+          styles.addMenuButton,
+          embedded && styles.addMenuButtonEmbedded,
+          pressed && styles.addMenuButtonPressed,
+        ]}>
         <Text style={styles.addMenuLabel}>➕ Add item to today&apos;s menu</Text>
       </Pressable>
     </View>
@@ -167,10 +178,17 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
+  wrapEmbedded: {
+    marginBottom: 0,
+    paddingTop: 10,
+  },
   emptyCard: {
     backgroundColor: colors.white,
     borderRadius: 16,
     padding: 14,
+  },
+  emptyCardEmbedded: {
+    backgroundColor: '#F3EFFA',
   },
   emptyText: {
     fontFamily: 'Nunito_600SemiBold',
@@ -186,6 +204,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 10,
+  },
+  itemRowEmbedded: {
+    backgroundColor: '#F3EFFA',
   },
   itemRowSoldOut: {
     opacity: 0.55,
@@ -268,6 +289,9 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     alignItems: 'center',
     marginTop: 4,
+  },
+  addMenuButtonEmbedded: {
+    backgroundColor: '#F3EFFA',
   },
   addMenuButtonPressed: {
     opacity: 0.85,

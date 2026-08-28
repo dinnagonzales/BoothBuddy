@@ -310,6 +310,7 @@ export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay 
     started_at: string;
     closed_at: string | null;
     exported_at: string | null;
+    needs_reexport: number;
   }>(
     `SELECT * FROM market_days WHERE closed_at IS NULL ORDER BY started_at DESC LIMIT 1`,
   );
@@ -322,6 +323,7 @@ export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay 
     startedAt: row.started_at,
     closedAt: row.closed_at,
     exportedAt: row.exported_at,
+    needsReexport: row.needs_reexport === 1,
   };
 }
 
@@ -338,6 +340,7 @@ export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<
     started_at: string;
     closed_at: string | null;
     exported_at: string | null;
+    needs_reexport: number;
   }>('SELECT * FROM market_days WHERE id = ?', result.lastInsertRowId);
 
   if (!row) {
@@ -352,6 +355,7 @@ export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<
     startedAt: row.started_at,
     closedAt: row.closed_at,
     exportedAt: row.exported_at,
+    needsReexport: row.needs_reexport === 1,
   };
 }
 
@@ -385,7 +389,7 @@ export async function canUndoCloseMarketDay(db: SQLiteDatabase): Promise<boolean
 
 export async function exportMarketDay(db: SQLiteDatabase, marketDayId: number): Promise<void> {
   await db.runAsync(
-    `UPDATE market_days SET exported_at = datetime('now') WHERE id = ?`,
+    `UPDATE market_days SET exported_at = datetime('now'), needs_reexport = 0 WHERE id = ?`,
     marketDayId,
   );
 }
@@ -400,6 +404,7 @@ export async function getDashboardMarketDay(db: SQLiteDatabase): Promise<MarketD
     started_at: string;
     closed_at: string | null;
     exported_at: string | null;
+    needs_reexport: number;
   }>(
     `SELECT * FROM market_days
      ORDER BY COALESCE(closed_at, started_at) DESC
@@ -414,6 +419,7 @@ export async function getDashboardMarketDay(db: SQLiteDatabase): Promise<MarketD
     startedAt: row.started_at,
     closedAt: row.closed_at,
     exportedAt: row.exported_at,
+    needsReexport: row.needs_reexport === 1,
   };
 }
 
@@ -528,6 +534,82 @@ export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Prom
 export async function deleteSale(db: SQLiteDatabase, saleId: number): Promise<void> {
   await db.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
   await db.runAsync('DELETE FROM sales WHERE id = ?', saleId);
+}
+
+async function flagMarketDayReexportIfExported(
+  db: SQLiteDatabase,
+  marketDayId: number | null,
+): Promise<void> {
+  if (marketDayId == null) return;
+  await db.runAsync(
+    `UPDATE market_days SET needs_reexport = 1 WHERE id = ? AND exported_at IS NOT NULL`,
+    marketDayId,
+  );
+}
+
+export async function getSaleByNumber(
+  db: SQLiteDatabase,
+  saleNumber: number,
+): Promise<Sale | null> {
+  const row = await db.getFirstAsync<{
+    id: number;
+    sale_number: number;
+    market_day_id: number | null;
+    total_cents: number;
+    payment_method: PaymentMethod;
+    cash_received_cents: number | null;
+    created_at: string;
+  }>('SELECT * FROM sales WHERE sale_number = ?', saleNumber);
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    saleNumber: row.sale_number,
+    marketDayId: row.market_day_id,
+    totalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    cashReceivedCents: row.cash_received_cents,
+    createdAt: row.created_at,
+  };
+}
+
+export async function removeSaleByNumber(db: SQLiteDatabase, saleNumber: number): Promise<void> {
+  const sale = await getSaleByNumber(db, saleNumber);
+  if (!sale) return;
+  await deleteSale(db, sale.id);
+  await flagMarketDayReexportIfExported(db, sale.marketDayId);
+}
+
+export async function updateSalePaymentMethod(
+  db: SQLiteDatabase,
+  saleNumber: number,
+  paymentMethod: PaymentMethod,
+): Promise<void> {
+  const sale = await getSaleByNumber(db, saleNumber);
+  if (!sale) return;
+
+  const cashReceivedCents =
+    paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
+
+  await db.runAsync(
+    `UPDATE sales SET payment_method = ?, cash_received_cents = ? WHERE id = ?`,
+    paymentMethod,
+    cashReceivedCents,
+    sale.id,
+  );
+  await flagMarketDayReexportIfExported(db, sale.marketDayId);
+}
+
+export async function marketDayNeedsReexport(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<boolean> {
+  const row = await db.getFirstAsync<{ needs_reexport: number }>(
+    'SELECT needs_reexport FROM market_days WHERE id = ?',
+    marketDayId,
+  );
+  return row?.needs_reexport === 1;
 }
 
 export async function getMarketDaySaleCount(

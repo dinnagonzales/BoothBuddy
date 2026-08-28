@@ -19,7 +19,8 @@ const SCHEMA = `
     name TEXT NOT NULL,
     started_at TEXT NOT NULL DEFAULT (datetime('now')),
     closed_at TEXT,
-    exported_at TEXT
+    exported_at TEXT,
+    needs_reexport INTEGER NOT NULL DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS menu_items (
@@ -59,6 +60,14 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   const hasArchived = columns.some((column) => column.name === 'archived');
   if (hasRetired && !hasArchived) {
     await db.execAsync('ALTER TABLE items RENAME COLUMN retired TO archived');
+  }
+
+  const marketDayColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(market_days)');
+  const hasNeedsReexport = marketDayColumns.some((column) => column.name === 'needs_reexport');
+  if (!hasNeedsReexport) {
+    await db.execAsync(
+      'ALTER TABLE market_days ADD COLUMN needs_reexport INTEGER NOT NULL DEFAULT 0',
+    );
   }
 
   await ensureActiveMarketDayMenu(db);

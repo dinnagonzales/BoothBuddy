@@ -47,6 +47,14 @@ export type MarketDayStats = {
   venmoCents: number;
 };
 
+export type SaleDetail = {
+  saleNumber: number;
+  totalCents: number;
+  paymentMethod: PaymentMethod;
+  createdAt: string;
+  lines: CartLine[];
+};
+
 export type Catalog = {
   createItem(draft: ItemDraft): Promise<{ id: number }>;
   updateItem(id: number, draft: ItemDraft): Promise<void>;
@@ -77,6 +85,10 @@ export type Catalog = {
   }): Promise<{ saleNumber: number }>;
   getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
   listSalesForMarketDay(marketDayId: number): Promise<SaleSummary[]>;
+  getSale(saleNumber: number): Promise<SaleDetail | null>;
+  removeSale(saleNumber: number): Promise<void>;
+  updateSalePaymentMethod(saleNumber: number, paymentMethod: PaymentMethod): Promise<void>;
+  marketDayNeedsReexport(marketDayId: number): Promise<boolean>;
 };
 
 type StoredItem = ItemDraft & { id: number; archived: boolean };
@@ -86,6 +98,7 @@ type StoredMarketDay = {
   name: string;
   closedAt: string | null;
   exportedAt: string | null;
+  needsReexport: boolean;
 };
 
 type StoredMenuEntry = {
@@ -345,6 +358,7 @@ export function createCatalog(): Catalog {
         name,
         closedAt: null,
         exportedAt: null,
+        needsReexport: false,
       };
       marketDays.push(marketDay);
       populateMenu(marketDay.id);
@@ -372,6 +386,7 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === id);
       if (marketDay) {
         marketDay.exportedAt = new Date().toISOString();
+        marketDay.needsReexport = false;
       }
     },
     async recordSale(params) {
@@ -416,6 +431,43 @@ export function createCatalog(): Catalog {
           paymentMethod: sale.paymentMethod,
           createdAt: sale.createdAt,
         }));
+    },
+    async removeSale(saleNumber) {
+      const index = sales.findIndex((sale) => sale.saleNumber === saleNumber);
+      if (index === -1) return;
+      const [removed] = sales.splice(index, 1);
+      const marketDay = marketDays.find((day) => day.id === removed.marketDayId);
+      if (marketDay?.exportedAt) {
+        marketDay.needsReexport = true;
+      }
+    },
+    async getSale(saleNumber) {
+      const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+      if (!sale) return null;
+      return {
+        saleNumber: sale.saleNumber,
+        totalCents: cartTotal(sale.lines),
+        paymentMethod: sale.paymentMethod,
+        createdAt: sale.createdAt,
+        lines: sale.lines.map((line) => ({ ...line })),
+      };
+    },
+    async updateSalePaymentMethod(saleNumber, paymentMethod) {
+      const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+      if (!sale) return;
+
+      sale.paymentMethod = paymentMethod;
+      sale.cashReceivedCents =
+        paymentMethod === 'cash' ? (sale.cashReceivedCents ?? cartTotal(sale.lines)) : null;
+
+      const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
+      if (marketDay?.exportedAt) {
+        marketDay.needsReexport = true;
+      }
+    },
+    async marketDayNeedsReexport(marketDayId) {
+      const marketDay = marketDays.find((day) => day.id === marketDayId);
+      return marketDay?.needsReexport ?? false;
     },
   };
 }

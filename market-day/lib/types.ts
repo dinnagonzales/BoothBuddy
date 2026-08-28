@@ -16,6 +16,7 @@ export type MarketDay = {
   startedAt: string;
   closedAt: string | null;
   exportedAt: string | null;
+  needsReexport: boolean;
 };
 
 export type CartLine = {
