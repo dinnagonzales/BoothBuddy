@@ -31,12 +31,14 @@ export default function AdminEditSaleScreen() {
   const saleNumber = Number(params.saleNumber ?? 0);
 
   const [sale, setSale] = useState<SaleDetail | null>(null);
+  const [draftPaymentMethod, setDraftPaymentMethod] = useState<PaymentMethod | null>(null);
   const [busy, setBusy] = useState(false);
 
   const loadSale = useCallback(async () => {
     const header = await getSaleByNumber(db, saleNumber);
     if (!header) {
       setSale(null);
+      setDraftPaymentMethod(null);
       return;
     }
     const lines = await getSaleLineItems(db, header.id);
@@ -47,6 +49,7 @@ export default function AdminEditSaleScreen() {
       createdAt: header.createdAt,
       lines,
     });
+    setDraftPaymentMethod(header.paymentMethod);
   }, [db, saleNumber]);
 
   useFocusEffect(
@@ -56,13 +59,22 @@ export default function AdminEditSaleScreen() {
   );
 
   const changePaymentMethod = (paymentMethod: PaymentMethod) => {
-    if (!sale || busy || sale.paymentMethod === paymentMethod) return;
+    if (!sale || busy || draftPaymentMethod === paymentMethod) return;
+    setDraftPaymentMethod(paymentMethod);
+  };
+
+  const hasChanges = sale != null && draftPaymentMethod != null && draftPaymentMethod !== sale.paymentMethod;
+
+  const saveChanges = () => {
+    if (!hasChanges || !draftPaymentMethod || busy) return;
 
     void (async () => {
       setBusy(true);
-      await updateSalePaymentMethod(db, saleNumber, paymentMethod);
-      await loadSale();
-      setBusy(false);
+      await updateSalePaymentMethod(db, saleNumber, draftPaymentMethod);
+      router.replace({
+        pathname: '/(grown-up)/settings',
+        params: { saleSaved: String(saleNumber) },
+      });
     })();
   };
 
@@ -120,7 +132,7 @@ export default function AdminEditSaleScreen() {
         <Card
           className={cn(
             'p-4 mb-2 border-[3px]',
-            sale.paymentMethod === 'cash' ? 'border-success' : 'border-transparent',
+            draftPaymentMethod === 'cash' ? 'border-success' : 'border-transparent',
           )}>
           <Pressable
             accessibilityRole="button"
@@ -131,9 +143,9 @@ export default function AdminEditSaleScreen() {
             <View
               className={cn(
                 'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
-                sale.paymentMethod === 'cash' ? 'bg-success' : 'bg-surface',
+                draftPaymentMethod === 'cash' ? 'bg-success' : 'bg-surface',
               )}>
-              {sale.paymentMethod === 'cash' ? (
+              {draftPaymentMethod === 'cash' ? (
                 <Text className="text-white font-bold">✓</Text>
               ) : null}
             </View>
@@ -143,7 +155,7 @@ export default function AdminEditSaleScreen() {
         <Card
           className={cn(
             'p-4 mb-2 border-[3px]',
-            sale.paymentMethod === 'venmo_zelle' ? 'border-success' : 'border-transparent',
+            draftPaymentMethod === 'venmo_zelle' ? 'border-success' : 'border-transparent',
           )}>
           <Pressable
             accessibilityRole="button"
@@ -156,16 +168,31 @@ export default function AdminEditSaleScreen() {
             <View
               className={cn(
                 'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
-                sale.paymentMethod === 'venmo_zelle'
+                draftPaymentMethod === 'venmo_zelle'
                   ? 'border-success bg-success'
                   : 'border-border bg-surface',
               )}>
-              {sale.paymentMethod === 'venmo_zelle' ? (
+              {draftPaymentMethod === 'venmo_zelle' ? (
                 <Text className="text-white font-bold">✓</Text>
               ) : null}
             </View>
           </Pressable>
         </Card>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !hasChanges || busy }}
+          disabled={!hasChanges || busy}
+          onPress={saveChanges}
+          style={({ pressed }) => [
+            styles.saveButtonOuter,
+            (!hasChanges || busy) && styles.saveButtonOuterDisabled,
+            pressed && hasChanges && !busy && styles.saveButtonOuterPressed,
+          ]}>
+          <View style={styles.saveButtonInner}>
+            <Text style={styles.saveButtonLabel}>{busy ? 'Saving…' : 'Save changes'}</Text>
+          </View>
+        </Pressable>
 
         <Pressable
           accessibilityRole="button"
@@ -252,8 +279,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.ink,
   },
-  removeButton: {
+  saveButtonOuter: {
     marginTop: 16,
+    borderRadius: 18,
+    backgroundColor: colors.purpleDark,
+    paddingBottom: 4,
+  },
+  saveButtonOuterDisabled: {
+    opacity: 0.45,
+  },
+  saveButtonOuterPressed: {
+    paddingBottom: 1,
+    marginTop: 19,
+  },
+  saveButtonInner: {
+    backgroundColor: colors.purple,
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  saveButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: colors.white,
+  },
+  removeButton: {
+    marginTop: 10,
     borderRadius: 16,
     borderWidth: 2,
     borderColor: '#FFD3D3',

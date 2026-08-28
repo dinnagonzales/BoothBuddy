@@ -7,10 +7,11 @@ import type { SaleSummary } from '@/lib/types';
 
 type AdminSalesListProps = {
   sales: SaleSummary[];
+  savedSaleNumber?: number | null;
   onSalePress?: (saleNumber: number) => void;
 };
 
-export function AdminSalesList({ sales, onSalePress }: AdminSalesListProps) {
+export function AdminSalesList({ sales, savedSaleNumber, onSalePress }: AdminSalesListProps) {
   if (sales.length === 0) {
     return (
       <View style={styles.emptyCard}>
@@ -22,20 +23,26 @@ export function AdminSalesList({ sales, onSalePress }: AdminSalesListProps) {
   return (
     <View style={styles.wrap}>
       {sales.map((sale) => (
-        <Pressable
-          key={sale.saleNumber}
-          accessibilityRole="button"
-          onPress={() => onSalePress?.(sale.saleNumber)}
-          style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
-          <View>
-            <Text style={styles.saleNumber}>#{sale.saleNumber}</Text>
-            <Text style={styles.saleTime}>{formatSaleTime(sale.createdAt)}</Text>
-          </View>
-          <View style={styles.saleAmountWrap}>
-            <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>
-            <Text style={styles.saleMethod}>{paymentMethodLabel(sale.paymentMethod)}</Text>
-          </View>
-        </Pressable>
+        <View key={sale.saleNumber} style={styles.saleBlock}>
+          {savedSaleNumber === sale.saleNumber ? (
+            <View style={styles.savedBanner}>
+              <Text style={styles.savedBannerText}>Saved ✓</Text>
+            </View>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onSalePress?.(sale.saleNumber)}
+            style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
+            <View>
+              <Text style={styles.saleNumber}>#{sale.saleNumber}</Text>
+              <Text style={styles.saleTime}>{formatSaleTime(sale.createdAt)}</Text>
+            </View>
+            <View style={styles.saleAmountWrap}>
+              <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>
+              <Text style={styles.saleMethod}>{paymentMethodLabel(sale.paymentMethod)}</Text>
+            </View>
+          </Pressable>
+        </View>
       ))}
     </View>
   );
@@ -45,6 +52,23 @@ const styles = StyleSheet.create({
   wrap: {
     gap: 8,
     marginBottom: 10,
+  },
+  saleBlock: {
+    gap: 6,
+  },
+  savedBanner: {
+    backgroundColor: '#E8F9EF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#B8EBCE',
+    alignItems: 'center',
+  },
+  savedBannerText: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 12,
+    color: colors.greenDark,
   },
   emptyCard: {
     backgroundColor: colors.white,

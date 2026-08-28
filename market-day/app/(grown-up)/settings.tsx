@@ -1,6 +1,6 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
@@ -24,11 +24,13 @@ import type { MarketDay, SaleSummary } from '@/lib/types';
 export default function SettingsScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
+  const params = useLocalSearchParams<{ saleSaved?: string }>();
   const [activeDay, setActiveDay] = useState<MarketDay | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   const [stats, setStats] = useState({ totalCents: 0, itemCount: 0, cashCents: 0, venmoCents: 0 });
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [savedSaleNumber, setSavedSaleNumber] = useState<number | null>(null);
 
   const refreshDashboard = useCallback(async () => {
     const day = await getActiveMarketDay(db);
@@ -48,6 +50,19 @@ export default function SettingsScreen() {
       void refreshDashboard();
     }, [refreshDashboard]),
   );
+
+  useEffect(() => {
+    if (!params.saleSaved) return;
+
+    const saleNumber = Number(params.saleSaved);
+    if (Number.isNaN(saleNumber) || saleNumber <= 0) return;
+
+    setSavedSaleNumber(saleNumber);
+    router.setParams({ saleSaved: undefined });
+
+    const timeout = setTimeout(() => setSavedSaleNumber(null), 5000);
+    return () => clearTimeout(timeout);
+  }, [params.saleSaved, router]);
 
   const handleStartMarketDay = () => {
     void (async () => {
@@ -153,6 +168,7 @@ export default function SettingsScreen() {
           <SectionLabel>Sales</SectionLabel>
           <AdminSalesList
             sales={sales}
+            savedSaleNumber={savedSaleNumber}
             onSalePress={(saleNumber) =>
               router.push({
                 pathname: '/(grown-up)/sale/[saleNumber]',
