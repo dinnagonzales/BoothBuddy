@@ -20,13 +20,14 @@ export type AdminItem = {
   emoji: string;
   costCents: number;
   priceCents: number;
-  retired: boolean;
+  archived: boolean;
 };
 
 export type Catalog = {
   createItem(draft: ItemDraft): Promise<{ id: number }>;
   updateItem(id: number, draft: ItemDraft): Promise<void>;
-  retire(id: number): Promise<void>;
+  archive(id: number): Promise<void>;
+  unarchive(id: number): Promise<void>;
   listForSeller(): Promise<SellerItem[]>;
   listForAdmin(): Promise<AdminItem[]>;
   getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
@@ -37,7 +38,7 @@ export type Catalog = {
   exportMarketDay(id: number): Promise<void>;
 };
 
-type StoredItem = ItemDraft & { id: number; retired: boolean };
+type StoredItem = ItemDraft & { id: number; archived: boolean };
 
 type StoredMarketDay = {
   id: number;
@@ -54,13 +55,17 @@ export function createCatalog(): Catalog {
 
   return {
     async createItem(draft: ItemDraft) {
-      const item = { id: nextItemId++, retired: false, ...draft };
+      const item = { id: nextItemId++, archived: false, ...draft };
       items.push(item);
       return item;
     },
-    async retire(id: number) {
+    async archive(id: number) {
       const item = items.find((entry) => entry.id === id);
-      if (item) item.retired = true;
+      if (item) item.archived = true;
+    },
+    async unarchive(id: number) {
+      const item = items.find((entry) => entry.id === id);
+      if (item) item.archived = false;
     },
     async updateItem(id: number, draft: ItemDraft) {
       const item = items.find((entry) => entry.id === id);
@@ -72,7 +77,7 @@ export function createCatalog(): Catalog {
     },
     async listForSeller(): Promise<SellerItem[]> {
       return items
-        .filter((item) => !item.retired)
+        .filter((item) => !item.archived)
         .map(({ id, name, emoji, priceCents }) => ({
           id,
           name,
@@ -81,13 +86,13 @@ export function createCatalog(): Catalog {
         }));
     },
     async listForAdmin(): Promise<AdminItem[]> {
-      return items.map(({ id, name, emoji, costCents, priceCents, retired }) => ({
+      return items.map(({ id, name, emoji, costCents, priceCents, archived }) => ({
         id,
         name,
         emoji,
         costCents,
         priceCents,
-        retired,
+        archived,
       }));
     },
     async getActiveMarketDay() {

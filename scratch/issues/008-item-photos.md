@@ -15,7 +15,7 @@ Include required iOS permission strings in app config.
 - [ ] Admin can add or replace photo on an **Item**
 - [ ] Admin can remove photo (falls back to emoji)
 - [ ] Photo shows on **Home** and checkout; cost still hidden from **Seller**
-- [ ] Retired **Items** with photos behave like retired emoji **Items**
+- [ ] Archived **Items** with photos behave like archived emoji **Items**
 - [ ] iOS photo/camera permission prompts work on device
 
 ## Blocked by

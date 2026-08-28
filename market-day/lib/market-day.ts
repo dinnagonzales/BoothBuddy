@@ -1,3 +1,11 @@
+export function formatMarketDayDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 export function suggestMarketDayName(now = new Date()): string {
   const formatted = now.toLocaleDateString('en-US', {
     month: 'short',

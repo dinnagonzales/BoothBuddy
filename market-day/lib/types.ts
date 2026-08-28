@@ -7,7 +7,7 @@ export type Item = {
   photoUri: string | null;
   costCents: number;
   priceCents: number;
-  retired: boolean;
+  archived: boolean;
 };
 
 export type MarketDay = {

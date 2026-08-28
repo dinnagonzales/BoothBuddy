@@ -29,7 +29,7 @@ test('creating an Item makes it available to the seller without cost', async () 
   expect(sellerItems[0]).not.toHaveProperty('costCents');
 });
 
-test('a retired Item is not available to the seller', async () => {
+test('an archived Item is not available to the seller', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
@@ -38,7 +38,7 @@ test('a retired Item is not available to the seller', async () => {
     priceCents: 400,
   });
 
-  await catalog.retire(item.id);
+  await catalog.archive(item.id);
 
   expect(await catalog.listForSeller()).toEqual([]);
 });

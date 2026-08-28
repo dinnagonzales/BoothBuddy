@@ -14,7 +14,7 @@ Store the code in secure device storage (hashed). Do not seed demo Items or a de
 
 - [x] First launch shows setup wizard (parental code → add first Item)
 - [x] Gear icon is blocked by parental gate on every subsequent open
-- [x] At least one non-retired Item is required before setup completes
+- [x] At least one non-archived Item is required before setup completes
 - [x] **Home** shows **Items** menu; **Sell something!** disabled with kid-friendly message when no **Active Market Day**
 - [x] Kid never sees cost fields during setup or on **Home**
 

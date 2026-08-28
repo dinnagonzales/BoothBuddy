@@ -2,7 +2,7 @@
 
 **Type:** AFK  
 **Status:** open  
-**Blocked by:** 002, 011
+**Blocked by:** 002
 
 ## What to build
 
@@ -21,4 +21,3 @@ Totals and **Sale numbers** are admin-only — not on the **Seller**'s **Home** 
 ## Blocked by
 
 - [002 — Market Day lifecycle](./002-market-day-lifecycle.md)
-- [011 — Seller checkout flow](./011-seller-checkout-flow.md)

@@ -47,7 +47,7 @@ test('setup is incomplete with an Item but no parental code', async () => {
   expect(await isSetupComplete(gate, catalog)).toBe(false);
 });
 
-test('setup is incomplete when the only Item is retired', async () => {
+test('setup is incomplete when the only Item is archived', async () => {
   const gate = createParentalGate(createMemorySecretStore());
   const catalog = createCatalog();
 
@@ -58,7 +58,7 @@ test('setup is incomplete when the only Item is retired', async () => {
     costCents: 100,
     priceCents: 400,
   });
-  await catalog.retire(item.id);
+  await catalog.archive(item.id);
 
   expect(await isSetupComplete(gate, catalog)).toBe(false);
 });

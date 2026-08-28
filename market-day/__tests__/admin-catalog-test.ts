@@ -17,7 +17,7 @@ test('admin can add a new Item with emoji, name, cost, and price', async () => {
       emoji: '🐉',
       costCents: 100,
       priceCents: 400,
-      retired: false,
+      archived: false,
     },
   ]);
 });
@@ -45,7 +45,7 @@ test('admin can edit an existing Item', async () => {
       emoji: '🔥',
       costCents: 200,
       priceCents: 500,
-      retired: false,
+      archived: false,
     },
   ]);
 });
@@ -78,7 +78,7 @@ test('editing an Item updates what the seller sees', async () => {
   expect(sellerItems[0]).not.toHaveProperty('costCents');
 });
 
-test('a retired Item stays visible to the admin', async () => {
+test('an archived Item stays visible to the admin', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
@@ -87,7 +87,7 @@ test('a retired Item stays visible to the admin', async () => {
     priceCents: 400,
   });
 
-  await catalog.retire(item.id);
+  await catalog.archive(item.id);
 
   expect(await catalog.listForAdmin()).toEqual([
     {
@@ -96,12 +96,12 @@ test('a retired Item stays visible to the admin', async () => {
       emoji: '🐉',
       costCents: 100,
       priceCents: 400,
-      retired: true,
+      archived: true,
     },
   ]);
 });
 
-test('retired Items cannot be added to new Sales', async () => {
+test('archived Items cannot be added to new Sales', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
@@ -110,7 +110,39 @@ test('retired Items cannot be added to new Sales', async () => {
     priceCents: 400,
   });
 
-  await catalog.retire(item.id);
+  await catalog.archive(item.id);
 
   expect(await catalog.listForSeller()).toEqual([]);
+});
+
+test('admin can unarchive an Item so it returns to the seller', async () => {
+  const catalog = createCatalog();
+  const item = await catalog.createItem({
+    name: 'Dragon',
+    emoji: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.archive(item.id);
+  await catalog.unarchive(item.id);
+
+  expect(await catalog.listForAdmin()).toEqual([
+    {
+      id: item.id,
+      name: 'Dragon',
+      emoji: '🐉',
+      costCents: 100,
+      priceCents: 400,
+      archived: false,
+    },
+  ]);
+  expect(await catalog.listForSeller()).toEqual([
+    {
+      id: item.id,
+      name: 'Dragon',
+      emoji: '🐉',
+      priceCents: 400,
+    },
+  ]);
 });

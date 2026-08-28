@@ -2,7 +2,7 @@
 
 **Type:** AFK  
 **Status:** open  
-**Blocked by:** 001, 003, 011
+**Blocked by:** 001, 003
 
 ## What to build
 
@@ -22,4 +22,3 @@ The **Seller** cannot add to **Running Tab** — only the **Admin**.
 
 - [001 — First-run setup](./001-first-run-setup.md)
 - [003 — Admin Item catalog](./003-admin-item-catalog.md)
-- [011 — Seller checkout flow](./011-seller-checkout-flow.md)

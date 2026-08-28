@@ -42,7 +42,7 @@ constants/     theme colors from mocks
 ## Next build steps
 
 - Parental code gate (`expo-secure-store`)
-- Item CRUD + retire
+- Item CRUD + archive
 - Market Day close / undo close / export CSV (`expo-sharing`)
 - Admin edit sales
 - Running Tab sales from settings

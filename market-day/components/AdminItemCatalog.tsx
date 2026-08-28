@@ -76,9 +76,17 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
     })();
   };
 
-  const retireItem = (id: number) => {
+  const archiveItem = (id: number) => {
     void (async () => {
-      await createSqliteCatalog(db).retire(id);
+      await createSqliteCatalog(db).archive(id);
+      closeForm();
+      await refreshItems();
+    })();
+  };
+
+  const unarchiveItem = (id: number) => {
+    void (async () => {
+      await createSqliteCatalog(db).unarchive(id);
       closeForm();
       await refreshItems();
     })();
@@ -95,10 +103,10 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
       ) : (
         items.map((item) => (
           <Pressable key={item.id} onPress={() => openEditForm(item)}>
-            <Card className={`p-3.5 flex-row items-center justify-between ${item.retired ? 'opacity-60' : ''}`}>
+            <Card className={`p-3.5 flex-row items-center justify-between ${item.archived ? 'opacity-60' : ''}`}>
               <Text className="font-extrabold text-[14px] text-foreground flex-1">
                 {item.emoji} {item.name}
-                {item.retired ? ' (retired)' : ''}
+                {item.archived ? ' (archived)' : ''}
               </Text>
               <Text className="text-[13px] text-muted font-semibold">
                 cost {formatMoney(item.costCents)} · {formatMoney(item.priceCents)}
@@ -130,9 +138,14 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
           <Button size="lg" isDisabled={!canSave} onPress={saveItem}>
             <Button.Label className="font-bold">Save Item</Button.Label>
           </Button>
-          {formMode.type === 'edit' && !formMode.item.retired ? (
-            <Button size="lg" variant="secondary" onPress={() => retireItem(formMode.item.id)}>
-              <Button.Label className="font-bold">Retire Item</Button.Label>
+          {formMode.type === 'edit' && !formMode.item.archived ? (
+            <Button size="lg" variant="secondary" onPress={() => archiveItem(formMode.item.id)}>
+              <Button.Label className="font-bold">Archive Item</Button.Label>
+            </Button>
+          ) : null}
+          {formMode.type === 'edit' && formMode.item.archived ? (
+            <Button size="lg" variant="secondary" onPress={() => unarchiveItem(formMode.item.id)}>
+              <Button.Label className="font-bold">UnArchive Item</Button.Label>
             </Button>
           ) : null}
           <Button size="lg" variant="secondary" onPress={closeForm}>

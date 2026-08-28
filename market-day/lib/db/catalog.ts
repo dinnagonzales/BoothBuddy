@@ -9,6 +9,8 @@ import {
   getAllItems,
   startMarketDay,
   undoCloseMostRecentMarketDay,
+  archiveItem,
+  unarchiveItem,
   updateItem,
 } from '@/lib/db/queries';
 
@@ -24,8 +26,11 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
       );
       return { id: Number(result.lastInsertRowId) };
     },
-    async retire(id: number) {
-      await db.runAsync('UPDATE items SET retired = 1 WHERE id = ?', id);
+    async archive(id: number) {
+      await archiveItem(db, id);
+    },
+    async unarchive(id: number) {
+      await unarchiveItem(db, id);
     },
     async updateItem(id: number, draft: ItemDraft) {
       await updateItem(db, id, draft);
@@ -37,7 +42,7 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         emoji: string;
         price_cents: number;
       }>(
-        'SELECT id, name, emoji, price_cents FROM items WHERE retired = 0 ORDER BY name COLLATE NOCASE',
+        'SELECT id, name, emoji, price_cents FROM items WHERE archived = 0 ORDER BY name COLLATE NOCASE',
       );
       return rows.map((row) => ({
         id: row.id,
@@ -54,7 +59,7 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         emoji: item.emoji,
         costCents: item.costCents,
         priceCents: item.priceCents,
-        retired: item.retired,
+        archived: item.archived,
       }));
     },
     async getActiveMarketDay() {

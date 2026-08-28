@@ -8,7 +8,7 @@ const SCHEMA = `
     photo_uri TEXT,
     cost_cents INTEGER NOT NULL,
     price_cents INTEGER NOT NULL,
-    retired INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -43,4 +43,11 @@ const SCHEMA = `
 
 export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(SCHEMA);
+
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(items)');
+  const hasRetired = columns.some((column) => column.name === 'retired');
+  const hasArchived = columns.some((column) => column.name === 'archived');
+  if (hasRetired && !hasArchived) {
+    await db.execAsync('ALTER TABLE items RENAME COLUMN retired TO archived');
+  }
 }

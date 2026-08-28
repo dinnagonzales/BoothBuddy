@@ -8,9 +8,17 @@ import { Button } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import type { SellerItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
+import { getActiveMarketDay, getMarketDaySaleCount } from '@/lib/db/queries';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
+import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 import { isSetupComplete } from '@/lib/setup';
+
+type ActiveMarketSummary = {
+  name: string;
+  dateLabel: string;
+  saleCount: number;
+};
 
 export default function HomeScreen() {
   const db = useSQLiteContext();
@@ -18,6 +26,7 @@ export default function HomeScreen() {
   const [setupReady, setSetupReady] = useState<boolean | null>(null);
   const [items, setItems] = useState<SellerItem[]>([]);
   const [canSell, setCanSell] = useState(false);
+  const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -30,7 +39,18 @@ export default function HomeScreen() {
           setSetupReady(complete);
           if (complete) {
             setItems(await catalog.listForSeller());
-            setCanSell((await catalog.getActiveMarketDay()) !== null);
+            const marketDay = await getActiveMarketDay(db);
+            if (marketDay) {
+              setCanSell(true);
+              setActiveMarket({
+                name: marketDay.name,
+                dateLabel: formatMarketDayDate(marketDay.startedAt),
+                saleCount: await getMarketDaySaleCount(db, marketDay.id),
+              });
+            } else {
+              setCanSell(false);
+              setActiveMarket(null);
+            }
           }
         })
         .catch(() => {
@@ -68,6 +88,19 @@ export default function HomeScreen() {
           <Text style={styles.gearIcon}>⚙️</Text>
         </Pressable>
       </View>
+
+      {activeMarket ? (
+        <View style={styles.marketWidget}>
+          <Text style={styles.marketName}>{activeMarket.name}</Text>
+          <View style={styles.marketMetaRow}>
+            <Text style={styles.marketMeta}>{activeMarket.dateLabel}</Text>
+            <Text style={styles.marketMetaDot}>·</Text>
+            <Text style={styles.marketMeta}>
+              {activeMarket.saleCount} {activeMarket.saleCount === 1 ? 'sale' : 'sales'}
+            </Text>
+          </View>
+        </View>
+      ) : null}
 
       <SectionLabel>Items</SectionLabel>
 
@@ -121,6 +154,34 @@ const styles = StyleSheet.create({
   },
   gearIcon: {
     fontSize: 16,
+  },
+  marketWidget: {
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+  },
+  marketName: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: colors.ink,
+    marginBottom: 4,
+  },
+  marketMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  marketMeta: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    color: colors.inkSoft,
+  },
+  marketMetaDot: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    color: colors.inkSoft,
   },
   itemList: {
     gap: 8,

@@ -17,7 +17,7 @@ The seller's landing screen and return point after every Sale. Shows the **Items
 _Avoid_: Dashboard, today view
 
 **Item**:
-A sellable product the vendor offers. Has name, price, cost (admin-only), and icon — emoji by default, optional photo. An Item with past Sales can be **retired** (hidden from Home and checkout) but remains in history and exports.
+A sellable product the vendor offers. Has name, price, cost (admin-only), and icon — emoji by default, optional photo. An Item with past Sales can be **archived** (hidden from Home and checkout) but remains in history and exports. The admin can **UnArchive** an Item to restore it to the seller.
 _Avoid_: Product, SKU, listing
 
 **Items**:

@@ -10,7 +10,7 @@ type ItemRow = {
   photo_uri: string | null;
   cost_cents: number;
   price_cents: number;
-  retired: number;
+  archived: number;
 };
 
 function mapItem(row: ItemRow): Item {
@@ -21,20 +21,20 @@ function mapItem(row: ItemRow): Item {
     photoUri: row.photo_uri,
     costCents: row.cost_cents,
     priceCents: row.price_cents,
-    retired: row.retired === 1,
+    archived: row.archived === 1,
   };
 }
 
 export async function getActiveItems(db: SQLiteDatabase): Promise<Item[]> {
   const rows = await db.getAllAsync<ItemRow>(
-    'SELECT * FROM items WHERE retired = 0 ORDER BY name COLLATE NOCASE',
+    'SELECT * FROM items WHERE archived = 0 ORDER BY name COLLATE NOCASE',
   );
   return rows.map(mapItem);
 }
 
 export async function getAllItems(db: SQLiteDatabase): Promise<Item[]> {
   const rows = await db.getAllAsync<ItemRow>(
-    'SELECT * FROM items ORDER BY retired ASC, name COLLATE NOCASE',
+    'SELECT * FROM items ORDER BY archived ASC, name COLLATE NOCASE',
   );
   return rows.map(mapItem);
 }
@@ -52,6 +52,14 @@ export async function updateItem(
     draft.priceCents,
     id,
   );
+}
+
+export async function archiveItem(db: SQLiteDatabase, id: number): Promise<void> {
+  await db.runAsync('UPDATE items SET archived = 1 WHERE id = ?', id);
+}
+
+export async function unarchiveItem(db: SQLiteDatabase, id: number): Promise<void> {
+  await db.runAsync('UPDATE items SET archived = 0 WHERE id = ?', id);
 }
 
 export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
@@ -273,6 +281,17 @@ export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Prom
 export async function deleteSale(db: SQLiteDatabase, saleId: number): Promise<void> {
   await db.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
   await db.runAsync('DELETE FROM sales WHERE id = ?', saleId);
+}
+
+export async function getMarketDaySaleCount(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<number> {
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM sales WHERE market_day_id = ?',
+    marketDayId,
+  );
+  return row?.count ?? 0;
 }
 
 export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number) {

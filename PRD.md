@@ -71,7 +71,7 @@ Behind gear icon + parental gate (numeric code). Shows:
 - Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown, sale list with Sale numbers.
 - Running Tab summary.
 - Item management (name, cost, price, emoji icon, optional photo).
-- Retire Items (soft delete — hidden from seller, preserved in history).
+- Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.
 - **Admin edit** any Sale (line items, payment, cash received); changed line items re-snapshot current price/cost.
 - Export (see below).
 
@@ -79,7 +79,7 @@ Behind gear icon + parental gate (numeric code). Shows:
 
 ## Data model
 
-**Item:** id, name, icon (emoji default, photo optional), cost, price, retired (boolean)
+**Item:** id, name, icon (emoji default, photo optional), cost, price, archived (boolean)
 
 **Market Day:** id, name, startedAt, closedAt, exportedAt
 
