@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Store Release — Checklist</title>
+  <style>
+    :root { --text: #1a1a1a; --muted: #555; --accent: #2563eb; --warn: #b45309; --border: #ddd; --bg: #fafafa; }
+    * { box-sizing: border-box; }
+    body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; max-width: 42rem; margin: 2rem auto; padding: 0 1.5rem; color: var(--text); line-height: 1.55; background: var(--bg); }
+    h1 { font-size: 1.5rem; font-weight: 600; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+    h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; }
+    ol { padding-left: 1.25rem; }
+    li { margin: 0.45rem 0; font-size: 0.95rem; }
+    li.done { color: var(--muted); text-decoration: line-through; }
+    .phase { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 1rem 0; }
+    th, td { text-align: left; padding: 0.45rem 0.65rem; border-bottom: 1px solid var(--border); }
+    .warn { background: #fffbeb; border-left: 3px solid var(--warn); padding: 0.65rem 0.9rem; font-size: 0.9rem; margin: 1rem 0; }
+    footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--muted); }
+    a { color: var(--accent); }
+    @media print { body { background: white; font-size: 10pt; } }
+  </style>
+</head>
+<body>
+  <h1>App Store Release Checklist</h1>
+  <p class="subtitle">Simple kid-friendly app · Expo path · 3-week target</p>
+
+  <div class="warn">Start Apple Developer enrollment on Day 1. Everything else waits on that account.</div>
+
+  <h2>Phase A — Accounts (Days 1–2)</h2>
+  <ol>
+    <li>Enroll in Apple Developer Program ($99/yr) — legal name must match ID exactly</li>
+    <li>Create free Expo account at expo.dev</li>
+    <li>Install EAS CLI: <code>npm install -g eas-cli</code></li>
+  </ol>
+
+  <h2>Phase B — Build app (Days 1–10)</h2>
+  <ol>
+    <li><code>npx create-expo-app</code> — TypeScript template</li>
+    <li>Set unique <code>bundleIdentifier</code> in app.json (e.g. com.yourname.appname)</li>
+    <li>Build MVP: local SQLite + share-sheet PDF export + parental gate</li>
+    <li>No third-party analytics or ads (Kids Category rule)</li>
+    <li>Write privacy policy URL (even “we collect nothing” needs a page)</li>
+    <li><code>eas build:configure</code> then <code>eas build --platform ios --profile production</code></li>
+  </ol>
+
+  <h2>Phase C — App Store Connect (Days 8–12)</h2>
+  <ol>
+    <li>Create app record in App Store Connect (name, bundle ID, SKU)</li>
+    <li><code>eas submit --platform ios --latest</code></li>
+    <li>Test on TestFlight (build processing ~2h, beta review ~8h)</li>
+    <li>Upload screenshots (6.7" iPhone required; iPad if universal)</li>
+    <li>Fill App Privacy questionnaire (likely “Data Not Collected”)</li>
+    <li>Select Kids Category + age band (5 & under / 6–8 / 9–11)</li>
+    <li>Add review notes: demo flow, parental gate location, local-only data</li>
+  </ol>
+
+  <h2>Phase D — Submit & launch (Days 12–21)</h2>
+  <ol>
+    <li>Submit for App Store review (Tuesday/Wednesday morning ideal)</li>
+    <li>Wait: new app typically 2–5 days; Kids Category may add time</li>
+    <li>If rejected: fix → resubmit (each cycle restarts the clock)</li>
+    <li>On approval: release manually or set auto-release</li>
+  </ol>
+
+  <h2>Time budget</h2>
+  <table>
+    <tr><th>Task</th><th>Typical</th><th>Your buffer</th></tr>
+    <tr><td>Apple enrollment</td><td>1–2 days</td><td>+2 days if stuck</td></tr>
+    <tr><td>MVP build (part-time FE dev)</td><td>7–10 days</td><td>Cut scope if behind</td></tr>
+    <tr><td>First EAS iOS build</td><td>1–3 hours</td><td>+1 day credentials</td></tr>
+    <tr><td>Store listing + screenshots</td><td>1–2 days</td><td>—</td></tr>
+    <tr><td>App Store review (first submit)</td><td>2–5 days</td><td>+5 if rejected once</td></tr>
+  </table>
+
+  <footer>
+    <a href="../lessons/0002-app-store-release.html">Lesson 0002</a> ·
+    <a href="https://docs.expo.dev/submit/ios/">Expo Submit iOS docs</a> ·
+    <a href="https://developer.apple.com/app-store/review/guidelines/">Review Guidelines</a>
+  </footer>
+</body>
+</html>

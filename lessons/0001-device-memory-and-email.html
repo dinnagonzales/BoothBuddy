@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0001 — Device Memory &amp; Email</title>
+  <style>
+    :root {
+      --text: #111;
+      --muted: #444;
+      --accent: #1d4ed8;
+      --ok: #166534;
+      --err: #991b1b;
+      --border: #ccc;
+      --bg: #f8f7f4;
+      --card: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      max-width: 38rem;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      color: var(--text);
+      line-height: 1.6;
+      background: var(--bg);
+      font-size: 1.05rem;
+    }
+    .lesson-num { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    h1 { font-size: 1.65rem; font-weight: 600; line-height: 1.25; margin: 0.25rem 0 0.5rem; }
+    .mission-tag { font-size: 0.92rem; color: var(--muted); font-style: italic; margin-bottom: 2rem; padding-left: 1rem; border-left: 3px solid var(--accent); }
+    h2 { font-size: 1.15rem; margin: 2.25rem 0 0.75rem; font-weight: 600; }
+    p { margin: 0.75rem 0; }
+    a { color: var(--accent); }
+    .diagram {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    .diagram .step { display: block; }
+    .diagram .arrow { color: var(--muted); text-align: center; font-size: 0.85rem; }
+    .callout {
+      background: #eff6ff;
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1rem;
+      margin: 1.25rem 0;
+      font-size: 0.95rem;
+    }
+    .web-map {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 1rem 0;
+    }
+    .web-map th, .web-map td {
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .web-map th { background: var(--card); font-weight: 600; }
+    code { font-family: "SF Mono", Menlo, monospace; font-size: 0.82em; background: #eee; padding: 0.08em 0.3em; border-radius: 2px; }
+    .quiz { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border); }
+    .quiz h2 { margin-top: 0; }
+    .quiz-q { margin: 1.5rem 0; }
+    .quiz-q p { font-weight: 600; margin-bottom: 0.75rem; }
+    .quiz-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      margin: 0.4rem 0;
+      font-family: inherit;
+      font-size: 0.92rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      line-height: 1.35;
+    }
+    .quiz-btn:hover { border-color: var(--accent); }
+    .quiz-btn.correct { background: #dcfce7; border-color: var(--ok); color: var(--ok); }
+    .quiz-btn.wrong { background: #fee2e2; border-color: var(--err); color: var(--err); }
+    .quiz-btn:disabled { cursor: default; opacity: 0.85; }
+    .feedback { font-size: 0.9rem; margin-top: 0.5rem; min-height: 1.4em; }
+    .source { margin-top: 2.5rem; font-size: 0.9rem; color: var(--muted); }
+    .footer { margin-top: 2rem; font-size: 0.88rem; color: var(--muted); }
+    @media print { body { background: white; font-size: 11pt; } .quiz-btn { border: 1px solid #999; } }
+  </style>
+</head>
+<body>
+
+  <p class="lesson-num">Lesson 0001</p>
+  <h1>How device memory and email work for local-only apps</h1>
+  <p class="mission-tag">Tied to your mission: kid-friendly app, data stays on device, parents get daily/weekly/monthly sheets.</p>
+
+  <h2>Two meanings of “memory”</h2>
+  <p>In app conversations, <strong>memory</strong> usually means <em>storage</em> — where your app keeps data on the phone — not RAM. For a kid-friendly app with no cloud account, everything lives in the app’s <strong>sandbox</strong>: a private folder only your app can open.</p>
+  <p>As a web developer, think of the sandbox as a hard wall around <code>localStorage</code> and <code>IndexedDB</code> that no other website (or app) can read.</p>
+
+  <h2>Where you store what</h2>
+  <table class="web-map">
+    <tr><th>If it’s…</th><th>Store in…</th><th>Web analogue</th></tr>
+    <tr><td>Theme, last sheet sent date</td><td><code>AsyncStorage</code></td><td><code>localStorage</code></td></tr>
+    <tr><td>Daily entries, streaks, scores</td><td><code>expo-sqlite</code></td><td><code>IndexedDB</code></td></tr>
+    <tr><td>Generated PDF sheet (temp)</td><td>Cache directory</td><td>Blob URL in memory</td></tr>
+    <tr><td>PDF you keep for history</td><td>Document directory</td><td>File System Access API</td></tr>
+  </table>
+  <p>Data in SQLite/AsyncStorage <strong>stays on the device</strong> until the user deletes the app. You do not need a server for this.</p>
+
+  <h2>What “send a sheet by email” actually means</h2>
+  <p>Your app does <em>not</em> send email like a backend with SMTP. On iOS and Android, the flow is:</p>
+
+  <div class="diagram">
+    <span class="step">① Read local data (e.g. last 7 days from SQLite)</span>
+    <span class="arrow">↓</span>
+    <span class="step">② Render HTML summary of the sheet</span>
+    <span class="arrow">↓</span>
+    <span class="step">③ <code>Print.printToFileAsync</code> → PDF file on device</span>
+    <span class="arrow">↓</span>
+    <span class="step">④ <code>Sharing.shareAsync(pdfUri)</code> → native share sheet</span>
+    <span class="arrow">↓</span>
+    <span class="step">⑤ User (or parent) picks <strong>Mail</strong> → Mail app opens with PDF attached</span>
+    <span class="arrow">↓</span>
+    <span class="step">⑥ Parent taps Send in <em>their</em> Mail app</span>
+  </div>
+
+  <p>The email travels through the parent’s mail account (Gmail, iCloud, etc.). Your app never sees their password or runs a mail server. That is why this pattern fits <strong>local-only, kid-safe</strong> apps: you are exporting a file, not silently transmitting child data to your backend.</p>
+
+  <div class="callout">
+    <strong>Kids Category note:</strong> Apple expects a <strong>parental gate</strong> before actions that leave the app (email, external links, purchases). A simple math question or “press and hold for 3 seconds” before opening the share sheet is a common pattern. See <a href="https://developer.apple.com/kids/">Apple’s kids design guidance</a>.
+  </div>
+
+  <h2>Daily, weekly, monthly — what you can automate</h2>
+  <p>You can <strong>schedule local notifications</strong> (“Ready to send your weekly sheet?”). You cannot reliably <strong>silently email</strong> on a schedule without user action — iOS and Android block background email for privacy.</p>
+  <p>Practical pattern for kid apps:</p>
+  <ul>
+    <li><strong>Daily/weekly/monthly:</strong> notification fires → kid or parent opens app → parental gate → Share sheet → Mail.</li>
+    <li>Optional: remember last-sent date in AsyncStorage so you do not nag twice the same day.</li>
+  </ul>
+  <p>If you later want <em>automatic</em> email with zero taps, you need a server, parental consent, and COPPA-compliant data handling — a much heavier path. For your mission, the share-sheet approach is the right default.</p>
+
+  <h2>Mental model (one sentence)</h2>
+  <p><strong>Memory</strong> = your app’s private SQLite/files on the phone. <strong>Email</strong> = generate a PDF locally, then hand it to the OS share sheet so the parent’s Mail app sends it.</p>
+
+  <div class="quiz">
+    <h2>Check your understanding</h2>
+    <p style="font-size:0.92rem;color:var(--muted);">Tap an answer. Each option is the same length on purpose — no hints from formatting.</p>
+
+    <div class="quiz-q" id="q1">
+      <p>1. Where does daily progress live if you have no backend?</p>
+      <button class="quiz-btn" data-q="1" data-ok="false">On your server in a Postgres row for each kid user account today.</button>
+      <button class="quiz-btn" data-q="1" data-ok="true">Inside the app sandbox on the device in SQLite or files.</button>
+      <button class="quiz-btn" data-q="1" data-ok="false">In iCloud automatically synced for every app without extra code or consent.</button>
+      <p class="feedback" id="fb1"></p>
+    </div>
+
+    <div class="quiz-q" id="q2">
+      <p>2. How does a weekly sheet reach a parent’s phone?</p>
+      <button class="quiz-btn" data-q="2" data-ok="false">Your app opens SMTP and sends mail from your own domain server-side.</button>
+      <button class="quiz-btn" data-q="2" data-ok="true">PDF via share sheet; parent sends with their own Mail app account.</button>
+      <button class="quiz-btn" data-q="2" data-ok="false">Apple pushes the PDF to the parent phone without any user tap or gate.</button>
+      <p class="feedback" id="fb2"></p>
+    </div>
+
+    <div class="quiz-q" id="q3">
+      <p>3. What can you schedule without a server?</p>
+      <button class="quiz-btn" data-q="3" data-ok="false">Silent automatic email every Sunday at 6pm with no user interaction at all.</button>
+      <button class="quiz-btn" data-q="3" data-ok="true">Local notification reminding the user to open the app and share.</button>
+      <button class="quiz-btn" data-q="3" data-ok="false">Background upload of child data to your API on a cron schedule nightly.</button>
+      <p class="feedback" id="fb3"></p>
+    </div>
+  </div>
+
+  <p class="source">
+    <strong>Primary source to read next:</strong>
+    <a href="https://docs.expo.dev/versions/latest/sdk/sharing/">Expo Sharing documentation</a> — especially the <code>shareAsync</code> example paired with Print. Official, maintained, matches the React/Expo path from web.
+  </p>
+
+  <p class="footer">
+    Reference: <a href="../reference/local-data-and-sharing.html">Local Data &amp; Sharing cheat sheet</a><br>
+    Questions? Ask your agent — that is what the teacher is for.
+  </p>
+
+  <script>
+    const msgs = {
+      '1-true': 'Yes. SQLite or AsyncStorage in the app sandbox — no server required.',
+      '1-false': 'Not for a local-only app. No server means data stays on device.',
+      '2-true': 'Correct. Share sheet → Mail app. Your app never runs email infrastructure.',
+      '2-false': 'Mobile OSes expect the user (or parent) to confirm outbound sharing.',
+      '3-true': 'Right. Notifications remind; sharing still needs a user action (and often a parental gate).',
+      '3-false': 'That would need a server and raises COPPA/Kids Category issues.'
+    };
+    document.querySelectorAll('.quiz-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const q = btn.dataset.q;
+        const ok = btn.dataset.ok === 'true';
+        const group = document.querySelectorAll(`[data-q="${q}"]`);
+        group.forEach(b => {
+          b.disabled = true;
+          if (b.dataset.ok === 'true') b.classList.add('correct');
+          else if (b === btn) b.classList.add('wrong');
+        });
+        document.getElementById('fb' + q).textContent = msgs[q + '-' + btn.dataset.ok];
+      });
+    });
+  </script>
+</body>
+</html>

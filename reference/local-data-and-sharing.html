@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Data &amp; Sharing — Quick Reference</title>
+  <style>
+    :root { --text: #1a1a1a; --muted: #555; --accent: #2563eb; --border: #ddd; --bg: #fafafa; }
+    * { box-sizing: border-box; }
+    body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; max-width: 42rem; margin: 2rem auto; padding: 0 1.5rem; color: var(--text); line-height: 1.55; background: var(--bg); }
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+    h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1rem 0; }
+    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { font-weight: 600; background: #fff; }
+    code { font-family: "SF Mono", Menlo, monospace; font-size: 0.85em; background: #eee; padding: 0.1em 0.35em; border-radius: 3px; }
+    .flow { background: #fff; border: 1px solid var(--border); padding: 1rem 1.25rem; margin: 1rem 0; font-size: 0.92rem; }
+    .flow span { color: var(--accent); }
+    footer { margin-top: 3rem; font-size: 0.85rem; color: var(--muted); }
+    a { color: var(--accent); }
+    @media print { body { background: white; } }
+  </style>
+</head>
+<body>
+  <h1>Local Data &amp; Sharing</h1>
+  <p class="subtitle">Quick reference for on-device storage and sheet export (kid-friendly apps)</p>
+
+  <h2>Web → Mobile mapping</h2>
+  <table>
+    <tr><th>Web</th><th>Mobile (Expo)</th><th>Use for</th></tr>
+    <tr><td><code>localStorage</code></td><td><code>AsyncStorage</code></td><td>Settings, last-opened date</td></tr>
+    <tr><td><code>IndexedDB</code></td><td><code>expo-sqlite</code></td><td>Progress, streaks, history</td></tr>
+    <tr><td>Blob + download link</td><td><code>expo-print</code> → PDF file</td><td>Generated sheets</td></tr>
+    <tr><td><code>navigator.share()</code></td><td><code>expo-sharing</code></td><td>Email, Messages, Files</td></tr>
+  </table>
+
+  <h2>Where data lives</h2>
+  <table>
+    <tr><th>Location</th><th>Survives app restart?</th><th>User-visible?</th></tr>
+    <tr><td>SQLite / AsyncStorage (sandbox)</td><td>Yes</td><td>No — app only</td></tr>
+    <tr><td>Document directory (PDFs you keep)</td><td>Yes</td><td>Via Files app if you enable</td></tr>
+    <tr><td>Cache directory (temp PDF)</td><td>Until OS clears</td><td>No</td></tr>
+  </table>
+
+  <h2>Share flow (no server)</h2>
+  <div class="flow">
+    Local data → query by date range → HTML template → <span>printToFileAsync</span> → PDF in cache → <span>shareAsync</span> → user picks Mail → parent's Mail app sends email
+  </div>
+
+  <h2>Scheduled sheets</h2>
+  <table>
+    <tr><th>Approach</th><th>Auto?</th><th>Kid-safe?</th></tr>
+    <tr><td>Local notification + user taps Share</td><td>Reminds only</td><td>Yes — parental gate optional</td></tr>
+    <tr><td>Silent background email from app</td><td>Yes</td><td>No — iOS blocks; needs server + consent</td></tr>
+  </table>
+
+  <h2>Glossary</h2>
+  <p><strong>Sandbox</strong> — Private folder iOS/Android gives your app; other apps cannot read it.</p>
+  <p><strong>Share sheet</strong> — OS popup listing Mail, Messages, AirDrop, Save to Files.</p>
+  <p><strong>Parental gate</strong> — Simple challenge (math problem, hold button) before leaving kid-safe flows.</p>
+
+  <footer>
+    See also: <a href="../lessons/0001-device-memory-and-email.html">Lesson 0001</a> ·
+    <a href="https://docs.expo.dev/versions/latest/sdk/sharing/">Expo Sharing docs</a>
+  </footer>
+</body>
+</html>

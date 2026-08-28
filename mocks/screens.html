@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Day - Screen Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#FF6B9D; --pink-dark:#D6497A;
+    --blue:#4FC3F7; --blue-dark:#1E93C6;
+    --yellow:#FFD93D; --yellow-dark:#E0AC00;
+    --purple:#9B5DE5; --purple-dark:#7333BE;
+    --green:#4CD787; --green-dark:#1FA85C;
+    --cream:#FFFDF6;
+    --ink:#2B2340;
+    --ink-soft:#6E6480;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:#EDE9F5; font-family:'Nunito',sans-serif; color:var(--ink);
+    display:flex; flex-wrap:wrap; gap:28px; padding:32px; justify-content:center; align-items:flex-start;
+  }
+  .label{
+    width:100%; text-align:center; font-family:'Nunito'; font-weight:800; font-size:13px;
+    color:var(--ink-soft); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;
+  }
+  .phone{
+    width:280px; height:580px; background:var(--cream); border-radius:36px; padding:14px;
+    box-shadow:0 12px 0 rgba(43,35,64,0.08); display:flex; flex-direction:column; overflow:hidden;
+  }
+  .screen{ flex:1; display:flex; flex-direction:column; border-radius:24px; overflow:hidden; position:relative; }
+  h1,h2,h3{ font-family:'Fredoka',sans-serif; margin:0; font-weight:600; }
+  .topbar{ display:flex; justify-content:space-between; align-items:center; padding:6px 4px 14px; }
+  .gear{ width:34px; height:34px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .section-label{ font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); letter-spacing:0.5px; margin:0 0 8px; }
+  .sell-btn{
+    margin-top:12px; background:var(--purple); color:#fff; border:none; border-radius:20px;
+    padding:18px; font-family:'Fredoka'; font-size:18px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+
+  .item-list{ display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:2px; }
+  .item-row{ background:#fff; border-radius:16px; padding:10px 12px; display:flex; align-items:center; gap:10px; }
+  .item-row .ic{ font-size:22px; width:28px; text-align:center; }
+  .item-row .nm{ flex:1; font-weight:800; font-size:14px; }
+  .item-row .pr{ font-family:'Fredoka'; font-weight:600; font-size:14px; color:var(--purple-dark); margin-right:8px; }
+  .add-btn{ width:30px; height:30px; border-radius:50%; background:var(--purple); color:#fff; border:none; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  .cart-box{ background:#fff; border-radius:18px; padding:12px 14px; margin-top:10px; }
+  .cart-title{ font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); letter-spacing:0.5px; margin-bottom:6px; }
+  .cart-line{ display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding:3px 0; }
+  .cart-line .q{ color:var(--ink-soft); font-weight:700; margin-right:4px; }
+  .cart-total-row{ display:flex; justify-content:space-between; align-items:center; border-top:2px solid #F3E9FF; margin-top:8px; padding-top:8px; }
+  .cart-total-row .t{ font-family:'Fredoka'; font-size:15px; font-weight:600; }
+  .cart-total-row .v{ font-family:'Fredoka'; font-size:20px; font-weight:700; color:var(--pink-dark); }
+  .checkout-btn{ margin-top:10px; width:100%; background:var(--green); color:#fff; border:none; border-radius:16px; padding:14px; font-family:'Fredoka'; font-size:16px; font-weight:600; }
+
+  .pay-total{ text-align:center; margin:10px 0 16px; }
+  .pay-total .t{ font-size:13px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; }
+  .pay-total .v{ font-family:'Fredoka'; font-size:44px; font-weight:700; }
+  .pay-option{ background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:12px; border:3px solid transparent; }
+  .pay-option.selected{ border-color:var(--green); }
+  .pay-option .row{ display:flex; align-items:center; justify-content:space-between; }
+  .pay-option .lbl{ font-family:'Fredoka'; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .cash-controls{ margin-top:10px; display:flex; align-items:center; gap:8px; }
+  .step-btn{ width:36px; height:36px; border-radius:12px; border:2px solid #F0EAFB; background:#fff; font-family:'Fredoka'; font-size:20px; font-weight:600; color:var(--purple-dark); }
+  .cash-input{ flex:1; border:2px solid #F0EAFB; border-radius:12px; padding:8px 12px; font-family:'Fredoka'; font-size:18px; text-align:center; }
+  .quick-bills{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .bill-btn{ flex:1; min-width:44px; background:#F3E9FF; border:none; border-radius:10px; padding:8px 4px; font-family:'Fredoka'; font-size:13px; font-weight:600; color:var(--purple-dark); }
+  .change-row{ margin-top:8px; text-align:center; font-family:'Fredoka'; font-size:18px; font-weight:600; color:var(--green-dark); }
+  .checkbox{ width:26px; height:26px; border-radius:8px; border:2px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff; background:var(--green); }
+  .complete-btn{ margin-top:auto; background:var(--purple); color:#fff; border:none; border-radius:18px; padding:16px; font-family:'Fredoka'; font-size:17px; font-weight:600; }
+
+  .celebrate{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .celebrate .badge{ width:90px; height:90px; border-radius:50%; background:var(--yellow); display:flex; align-items:center; justify-content:center; font-size:44px; margin-bottom:14px; }
+  .celebrate h2{ font-size:24px; margin-bottom:4px; }
+  .fix-btn{ margin-top:16px; background:#fff; color:var(--purple-dark); border:2px solid var(--purple); border-radius:16px; padding:12px 24px; font-family:'Fredoka'; font-size:15px; font-weight:600; }
+
+  .settings-row{ background:#fff; border-radius:16px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .settings-row .nm{ font-weight:800; font-size:14px; }
+  .settings-row .cs{ font-size:13px; color:var(--ink-soft); }
+  .stats-box{ background:var(--pink); border-radius:18px; padding:14px; color:#fff; margin-bottom:14px; text-align:center; }
+  .stats-box .amt{ font-family:'Fredoka'; font-size:32px; font-weight:700; }
+  .stats-box .sub{ font-size:12px; font-weight:700; opacity:0.9; margin-top:4px; }
+  .export-btn{ background:var(--blue); color:#fff; border:none; border-radius:16px; padding:14px; font-family:'Fredoka'; font-size:15px; font-weight:600; width:100%; margin-top:8px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="label">1. Home (Items menu)</div>
+  <div class="screen" style="background:#F3E9FF; padding:16px;">
+    <div class="topbar">
+      <h1 style="font-size:20px;">🎪 Market Day</h1>
+      <div class="gear">⚙️</div>
+    </div>
+    <p class="section-label">Items</p>
+    <div class="item-list">
+      <div class="item-row"><span class="ic">🐉</span><span class="nm">Dragon</span><span class="pr">$4.00</span></div>
+      <div class="item-row"><span class="ic">🔑</span><span class="nm">Groot key</span><span class="pr">$2.00</span></div>
+      <div class="item-row"><span class="ic">⚪</span><span class="nm">Pokeball</span><span class="pr">$2.00</span></div>
+      <div class="item-row"><span class="ic">📱</span><span class="nm">Phone stand</span><span class="pr">$2.50</span></div>
+      <div class="item-row"><span class="ic">🔤</span><span class="nm">Letter - A</span><span class="pr">$1.50</span></div>
+    </div>
+    <button class="sell-btn">🛒 Sell something!</button>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="label">2. Pick Items + cart</div>
+  <div class="screen" style="background:#F3E9FF; padding:16px;">
+    <div class="topbar"><h2 style="font-size:16px;">What sold?</h2></div>
+    <div class="item-list">
+      <div class="item-row"><span class="ic">🐉</span><span class="nm">Dragon</span><span class="pr">$4.00</span><button class="add-btn">+</button></div>
+      <div class="item-row"><span class="ic">🔑</span><span class="nm">Groot key</span><span class="pr">$2.00</span><button class="add-btn">+</button></div>
+      <div class="item-row"><span class="ic">⚪</span><span class="nm">Pokeball</span><span class="pr">$2.00</span><button class="add-btn">+</button></div>
+      <div class="item-row"><span class="ic">📱</span><span class="nm">Phone stand</span><span class="pr">$2.50</span><button class="add-btn">+</button></div>
+      <div class="item-row"><span class="ic">🔤</span><span class="nm">Letter - A</span><span class="pr">$1.50</span><button class="add-btn">+</button></div>
+    </div>
+    <div class="cart-box">
+      <div class="cart-title">Cart</div>
+      <div class="cart-line"><span><span class="q">2x</span>Groot key</span><span>$4.00</span></div>
+      <div class="cart-line"><span><span class="q">1x</span>Pokeball</span><span>$2.00</span></div>
+      <div class="cart-total-row"><span class="t">Total</span><span class="v">$6.00</span></div>
+      <button class="checkout-btn">Checkout →</button>
+    </div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="label">3. Payment</div>
+  <div class="screen" style="background:#F3E9FF; padding:16px;">
+    <div class="topbar"><h2 style="font-size:16px;">How'd they pay?</h2></div>
+    <div class="pay-total">
+      <div class="t">Total</div>
+      <div class="v">$6.00</div>
+    </div>
+    <div class="pay-option selected">
+      <div class="row">
+        <span class="lbl">💵 Cash</span>
+        <div class="checkbox">✓</div>
+      </div>
+      <div class="cash-controls">
+        <button class="step-btn">−</button>
+        <input class="cash-input" type="text" value="$20.00">
+        <button class="step-btn">+</button>
+      </div>
+      <div class="quick-bills">
+        <button class="bill-btn">$1</button>
+        <button class="bill-btn">$5</button>
+        <button class="bill-btn">$10</button>
+        <button class="bill-btn">$20</button>
+        <button class="bill-btn">$100</button>
+      </div>
+      <div class="change-row">Change: $14.00</div>
+    </div>
+    <div class="pay-option">
+      <div class="row">
+        <span class="lbl">📱 Venmo / Zelle</span>
+        <div class="checkbox" style="background:#fff; border-color:#E4DDF5;"></div>
+      </div>
+    </div>
+    <button class="complete-btn">Complete sale ✓</button>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="label">4. Celebration</div>
+  <div class="screen" style="background:#F3E9FF; padding:16px;">
+    <div class="celebrate">
+      <div class="badge">✅</div>
+      <h2>Sold!</h2>
+      <p style="color:var(--ink-soft); font-weight:700;">2 items · $6.00</p>
+      <button class="fix-btn">Fix</button>
+      <p style="color:var(--ink-soft); font-size:13px; margin-top:16px;">tap anywhere else to keep going</p>
+    </div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="label">5. Grown-up settings</div>
+  <div class="screen" style="background:#F3E9FF; padding:16px;">
+    <div class="topbar"><h2 style="font-size:17px;">⚙️ Grown-up settings</h2></div>
+    <div class="stats-box">
+      <div class="amt">$34.00</div>
+      <div class="sub">5 items · $22 cash · $12 Venmo</div>
+    </div>
+    <p class="section-label">Items &amp; cost</p>
+    <div class="settings-row"><span class="nm">🐉 Dragon</span><span class="cs">cost $1.00 · $4.00</span></div>
+    <div class="settings-row"><span class="nm">🔑 Groot key</span><span class="cs">cost $0.50 · $2.00</span></div>
+    <div class="settings-row"><span class="nm">⚪ Pokeball</span><span class="cs">cost $0.50 · $2.00</span></div>
+    <button class="export-btn" style="margin-top:auto;">⬇ Export sales as CSV</button>
+  </div>
+</div>
+
+</body>
+</html>
