@@ -11,6 +11,7 @@ import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { StartMarketDayForm } from '@/components/StartMarketDayForm';
 import { TodaysMenu } from '@/components/TodaysMenu';
 import { colors } from '@/constants/theme';
+import { fonts, radii, spacing } from '@/constants/visual';
 import {
   closeActiveMarketDay,
   getActiveMarketDay,
@@ -201,7 +202,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.screen,
   },
   scrollContent: {
     paddingBottom: 12,
@@ -216,13 +217,13 @@ const styles = StyleSheet.create({
     borderColor: '#F5DFA0',
   },
   reexportTitle: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 13,
     color: colors.ink,
     marginBottom: 4,
   },
   reexportBody: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: fonts.body.semiBold,
     fontSize: 12,
     color: colors.inkSoft,
     lineHeight: 17,
@@ -236,12 +237,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   menuCardTitle: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 14,
     color: colors.ink,
   },
   menuCardChevron: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 16,
     color: colors.purpleDark,
     lineHeight: 18,
@@ -273,13 +274,13 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   emptyTitle: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 19,
     color: colors.ink,
     marginBottom: 6,
   },
   emptyBody: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 13,
     color: colors.inkSoft,
     textAlign: 'center',
@@ -294,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 2,
     borderColor: '#FFD3D3',
-    borderRadius: 16,
+    borderRadius: radii.settingsRow,
     paddingVertical: 13,
     alignItems: 'center',
   },
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   endButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 14,
     color: colors.redDark,
   },

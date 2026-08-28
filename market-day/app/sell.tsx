@@ -6,6 +6,7 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 import { ItemCard, Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
 import { Card } from '@/components/ui';
 import { colors } from '@/constants/theme';
+import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { getCheckoutItems, getNextSaleNumber, getRunningTabItems, getSale } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
@@ -131,7 +132,7 @@ export default function SellScreen() {
           <FlatList
             data={items}
             keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
+            contentContainerStyle={{ gap: spacing.itemListGap, paddingBottom: 8 }}
             style={{ flex: 1 }}
             renderItem={({ item }) => (
               <ItemCard
@@ -188,10 +189,10 @@ export default function SellScreen() {
               </Card>
             ) : null}
             <Card style={styles.cartCard}>
-              <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">Cart</Text>
+              <Text style={styles.cartTitle}>Cart</Text>
               {lines.map((line) => (
-                <View key={line.itemId} className="flex-row justify-between items-center py-1">
-                  <View className="flex-row items-center gap-2 flex-1">
+                <View key={line.itemId} style={styles.cartLine}>
+                  <View style={styles.cartLineLeft}>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Remove one ${line.name}`}
@@ -207,16 +208,16 @@ export default function SellScreen() {
                       onPress={() => changeQuantity(line.itemId, 1)}>
                       <Text style={styles.stepButtonLabel}>+</Text>
                     </Pressable>
-                    <Text className="font-bold text-foreground flex-shrink">{line.name}</Text>
+                    <Text style={styles.cartLineName}>{line.name}</Text>
                   </View>
-                  <Text className="font-bold text-foreground">
+                  <Text style={styles.cartLinePrice}>
                     {formatMoney(line.priceCents * line.quantity)}
                   </Text>
                 </View>
               ))}
-              <View className="flex-row justify-between items-center border-t-2 border-separator mt-2 pt-2">
-                <Text className="text-[15px] font-semibold text-foreground">Total</Text>
-                <Text className="text-xl font-bold text-danger">{formatMoney(totalCents)}</Text>
+              <View style={styles.cartTotalRow}>
+                <Text style={styles.cartTotalLabel}>Total</Text>
+                <Text style={styles.cartTotalValue}>{formatMoney(totalCents)}</Text>
               </View>
               <Pressable
                 accessibilityRole="button"
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 6,
-    borderRadius: 14,
+    borderRadius: radii.cart,
   },
   preorderRow: {
     flexDirection: 'row',
@@ -284,25 +285,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.purple,
   },
   preorderCheck: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 14,
     color: colors.white,
     lineHeight: 16,
   },
   preorderLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 14,
     color: colors.ink,
   },
   metaLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 11,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: colors.inkSoft,
   },
   metaInput: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 14,
     color: colors.ink,
     backgroundColor: '#FAF8FF',
@@ -316,9 +317,59 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   cartCard: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: radii.cart,
+  },
+  cartTitle: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+    marginBottom: 6,
+  },
+  cartLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 3,
+  },
+  cartLineLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  cartLineName: {
+    fontFamily: fonts.body.bold,
+    fontSize: 13,
+    color: colors.ink,
+    flexShrink: 1,
+  },
+  cartLinePrice: {
+    fontFamily: fonts.body.bold,
+    fontSize: 13,
+    color: colors.ink,
+  },
+  cartTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 2,
+    borderTopColor: '#F3E9FF',
+    marginTop: 8,
+    paddingTop: 8,
+  },
+  cartTotalLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  cartTotalValue: {
+    fontFamily: fonts.heading.bold,
+    fontSize: 20,
+    color: colors.pinkDark,
   },
   minusButton: {
     width: 32,
@@ -337,13 +388,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 20,
     color: colors.white,
     lineHeight: 22,
   },
   quantityLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 16,
     color: colors.ink,
     minWidth: 18,
@@ -351,8 +402,8 @@ const styles = StyleSheet.create({
   },
   checkoutButtonOuter: {
     marginTop: 10,
-    borderRadius: 14,
-    backgroundColor: colors.purpleDark,
+    borderRadius: radii.checkout,
+    backgroundColor: colors.greenDark,
     paddingBottom: 5,
   },
   checkoutButtonOuterPressed: {
@@ -363,15 +414,15 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   checkoutButtonInner: {
-    backgroundColor: colors.purple,
-    borderRadius: 14,
-    paddingVertical: 18,
+    backgroundColor: colors.green,
+    borderRadius: radii.checkout,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkoutButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 16,
     color: colors.white,
   },
 });

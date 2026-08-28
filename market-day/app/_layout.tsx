@@ -2,17 +2,9 @@ import 'react-native-gesture-handler';
 import '../global.css';
 
 import { useFonts } from 'expo-font';
-import {
-  Fredoka_500Medium,
-  Fredoka_600SemiBold,
-  Fredoka_700Bold,
-} from '@expo-google-fonts/fredoka';
-import {
-  Nunito_400Regular,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
-} from '@expo-google-fonts/nunito';
+
+import { APP_FONT_FACES } from '@/constants/app-fonts';
+import { colors } from '@/constants/theme';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SQLiteProvider } from 'expo-sqlite';
 import { Stack } from 'expo-router';
@@ -28,15 +20,7 @@ import { initDatabase } from '@/lib/db/schema';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    Fredoka_500Medium,
-    Fredoka_600SemiBold,
-    Fredoka_700Bold,
-    Nunito_400Regular,
-    Nunito_600SemiBold,
-    Nunito_700Bold,
-    Nunito_800ExtraBold,
-  });
+  const [fontsLoaded] = useFonts(APP_FONT_FACES);
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -46,8 +30,8 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EDE9F5' }}>
-        <ActivityIndicator size="large" color="#9B5DE5" />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.purple} />
       </View>
     );
   }
@@ -57,9 +41,9 @@ export default function RootLayout() {
       <HeroUINativeProvider>
         <Suspense
           fallback={
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3E9FF' }}>
-              <ActivityIndicator size="large" color="#9B5DE5" />
-              <Text style={{ color: '#6E6480', fontWeight: '700', marginTop: 12 }}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.screen }}>
+              <ActivityIndicator size="large" color={colors.purple} />
+              <Text style={{ color: colors.inkSoft, fontFamily: 'Nunito_700Bold', marginTop: 12 }}>
                 Loading Market Day…
               </Text>
             </View>
@@ -67,7 +51,7 @@ export default function RootLayout() {
           <SQLiteProvider databaseName="market-day-v1.db" onInit={initDatabase} useSuspense>
             <CartProvider>
               <GrownUpSessionProvider>
-              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F3E9FF' } }}>
+              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.screen } }}>
                 <Stack.Screen name="index" />
                 <Stack.Screen name="setup" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="sell" />

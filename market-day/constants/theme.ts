@@ -16,6 +16,7 @@ export const colors = {
   amberBorder: '#FFE0AD',
   cream: '#FFFDF6',
   background: '#EDE9F5',
+  screen: '#F3E9FF',
   ink: '#2B2340',
   inkSoft: '#6E6480',
   white: '#FFFFFF',

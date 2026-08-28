@@ -14,6 +14,7 @@ import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-nati
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
+import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { createSqliteCatalog } from '@/lib/db/catalog';
@@ -172,6 +173,34 @@ export default function HomeScreen() {
             </Pressable>
           ) : null}
 
+          <View style={styles.sellButtonWrap}>
+            {canSell ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/sell')}
+                style={({ pressed }) => [
+                  styles.sellButtonOuter,
+                  pressed ? styles.sellButtonOuterPressed : null,
+                ]}>
+                <View style={styles.sellButtonInner}>
+                  <Text style={styles.sellButtonLabel}>Make a Sale</Text>
+                </View>
+              </Pressable>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                onPress={openSettings}
+                style={({ pressed }) => [
+                  styles.sellButtonOuter,
+                  pressed ? styles.sellButtonOuterPressed : null,
+                ]}>
+                <View style={styles.sellButtonInner}>
+                  <Text style={styles.sellButtonLabel}>Start Market Day</Text>
+                </View>
+              </Pressable>
+            )}
+          </View>
+
           <Text style={styles.menuLabel}>🍭 Available Items</Text>
 
 
@@ -208,25 +237,6 @@ export default function HomeScreen() {
               </Pressable>
             )}
           />
-
-          <View style={styles.sellButtonWrap}>
-            {!canSell ? (
-              <Text style={styles.sellHint}>No active Market Day — start one in ⚙️ settings.</Text>
-            ) : null}
-            <Pressable
-              accessibilityRole="button"
-              disabled={!canSell}
-              onPress={() => router.push('/sell')}
-              style={({ pressed }) => [
-                styles.sellButtonOuter,
-                !canSell ? styles.sellButtonDisabled : null,
-                pressed && canSell ? styles.sellButtonOuterPressed : null,
-              ]}>
-              <View style={styles.sellButtonInner}>
-                <Text style={styles.sellButtonLabel}>Make a Sale</Text>
-              </View>
-            </Pressable>
-          </View>
         </View>
       </View>
 
@@ -258,7 +268,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 440,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.screen,
   },
   loading: {
     flex: 1,
@@ -274,8 +284,8 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 21,
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 20,
     color: colors.ink,
     textAlign: 'center',
   },
@@ -288,7 +298,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   quickSaleIcon: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 24,
     color: colors.white,
     lineHeight: 26,
@@ -320,7 +330,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroEyebrow: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 12,
     color: colors.white,
     opacity: 0.85,
@@ -329,29 +339,29 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   heroSubtitle: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 13,
     color: colors.white,
     opacity: 0.9,
     textAlign: 'center',
   },
   menuLabel: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 12,
-    letterSpacing: 0.6,
+    fontFamily: fonts.body.extraBold,
+    fontSize: 11,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: colors.inkSoft,
     marginBottom: 8,
   },
   menuHint: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: fonts.body.regular,
     fontSize: 12,
     color: colors.inkSoft,
     marginBottom: 10,
   },
   itemList: {
-    gap: 8,
-    paddingBottom: 120,
+    gap: spacing.itemListGap,
+    paddingBottom: 40,
   },
   itemListScroll: {
     flex: 1,
@@ -361,9 +371,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     backgroundColor: colors.white,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: radii.itemRow,
+    paddingHorizontal: spacing.itemRowPaddingH,
+    paddingVertical: spacing.itemRowPaddingV,
   },
   menuRowPressed: {
     opacity: 0.88,
@@ -377,7 +387,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   menuName: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 14,
     color: colors.ink,
   },
@@ -389,42 +399,32 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
   },
   soldOutLabel: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 11,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: colors.inkSoft,
   },
   menuPrice: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 14,
     color: colors.purpleDark,
   },
   menuPriceSoldOut: {
     color: colors.inkSoft,
   },
   emptyItems: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: fonts.body.semiBold,
     fontSize: 14,
     color: colors.inkSoft,
     textAlign: 'center',
     paddingVertical: 24,
   },
-  sellHint: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 13,
-    color: colors.inkSoft,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
   sellButtonWrap: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 40,
+    marginBottom: 18,
   },
   sellButtonOuter: {
-    borderRadius: 22,
+    borderRadius: radii.sellCta,
     backgroundColor: colors.greenDark,
     paddingBottom: 6,
   },
@@ -434,17 +434,14 @@ const styles = StyleSheet.create({
   },
   sellButtonInner: {
     backgroundColor: colors.green,
-    borderRadius: 22,
-    paddingVertical: 22,
+    borderRadius: radii.sellCta,
+    paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sellButtonDisabled: {
-    opacity: 0.45,
-  },
   sellButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 21,
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 18,
     color: colors.white,
   },
 });

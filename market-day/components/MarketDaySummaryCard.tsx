@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
+import { fonts, radii } from '@/constants/visual';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 
@@ -118,14 +119,14 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   name: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 20,
     color: colors.ink,
     textAlign: 'center',
     marginBottom: 2,
   },
   date: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 13,
     color: colors.inkSoft,
     textAlign: 'center',
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: radii.statsBox,
     paddingHorizontal: 14,
     paddingVertical: 14,
     minHeight: 108,
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   statLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 10,
     color: colors.white,
     textTransform: 'uppercase',
@@ -165,12 +166,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statValue: {
-    fontFamily: 'Fredoka_700Bold',
+    fontFamily: fonts.heading.bold,
     fontSize: 26,
     color: colors.white,
   },
   statSub: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 11,
     color: colors.white,
     opacity: 0.85,

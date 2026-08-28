@@ -6,6 +6,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { Button, Card, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
+import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { marketDayIdForSale } from '@/lib/market-day';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
@@ -125,14 +126,13 @@ export default function PaymentScreen() {
             onBack={() => router.back()}
           />
 
-          <View className="items-center my-3">
-            <Text className="text-[13px] font-extrabold uppercase text-muted">Total</Text>
-            <Text className="text-[44px] font-bold text-foreground">
-              {formatMoney(totalCents)}
-            </Text>
+          <View style={styles.totalBlock}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
           </View>
 
           <Card
+            style={styles.payOption}
             className={cn(
               'p-4 mb-3 border-[3px]',
               paymentMethod === 'cash' ? 'border-success' : 'border-transparent',
@@ -142,7 +142,7 @@ export default function PaymentScreen() {
               onPress={() => {
                 setPaymentMethod('cash');
               }}>
-              <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
+              <Text style={styles.payOptionLabel}>💵 Cash</Text>
               <View
                 className={cn(
                   'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
@@ -219,6 +219,7 @@ export default function PaymentScreen() {
           </Card>
 
           <Card
+            style={styles.payOption}
             className={cn(
               'p-4 mb-3 border-[3px]',
               paymentMethod === 'venmo_zelle' ? 'border-success' : 'border-transparent',
@@ -229,7 +230,7 @@ export default function PaymentScreen() {
                 setPaymentMethod('venmo_zelle');
                 setCashReceivedCents(0);
               }}>
-              <Text className="text-base font-semibold text-foreground">📱 Venmo / Zelle</Text>
+              <Text style={styles.payOptionLabel}>📱 Venmo / Zelle</Text>
               <View
                 className={cn(
                   'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
@@ -246,6 +247,7 @@ export default function PaymentScreen() {
 
           {preorderCheckout ? (
             <Card
+              style={styles.payOption}
               className={cn(
                 'p-4 mb-3 border-[3px]',
                 paymentMethod === 'pay_on_pickup' ? 'border-success' : 'border-transparent',
@@ -256,7 +258,7 @@ export default function PaymentScreen() {
                   setPaymentMethod('pay_on_pickup');
                   setCashReceivedCents(0);
                 }}>
-                <Text className="text-base font-semibold text-foreground">📋 Pay on pickup</Text>
+                <Text style={styles.payOptionLabel}>📋 Pay on pickup</Text>
                 <View
                   className={cn(
                     'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
@@ -274,10 +276,11 @@ export default function PaymentScreen() {
 
           <Button
             size="lg"
-            className="mt-auto mb-2 rounded-[18px]"
+            className="mt-auto mb-2"
+            style={styles.completeButton}
             isDisabled={!canComplete}
             onPress={completeSale}>
-            <Button.Label className="text-[17px] font-bold">
+            <Button.Label style={styles.completeButtonLabel}>
               {preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
             </Button.Label>
           </Button>
@@ -296,6 +299,39 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 440,
+  },
+  totalBlock: {
+    alignItems: 'center',
+    marginVertical: 10,
+    marginBottom: 16,
+  },
+  totalLabel: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 13,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+  },
+  totalValue: {
+    fontFamily: fonts.heading.bold,
+    fontSize: 44,
+    color: colors.ink,
+  },
+  payOption: {
+    borderRadius: radii.payOption,
+  },
+  payOptionLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  completeButton: {
+    borderRadius: radii.completeBtn,
+  },
+  completeButtonLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 17,
+    color: colors.white,
   },
   cashControlRow: {
     flexDirection: 'row',
@@ -321,13 +357,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 24,
     color: colors.white,
     lineHeight: 28,
   },
   cashAmount: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 32,
     minWidth: 100,
     textAlign: 'center',
@@ -341,7 +377,7 @@ const styles = StyleSheet.create({
   tapToAdd: {
     marginTop: 6,
     textAlign: 'center',
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 11,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -377,12 +413,12 @@ const styles = StyleSheet.create({
     borderColor: '#E4DDF5',
   },
   chipLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 14,
     color: colors.white,
   },
   clearChipLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 14,
     color: colors.purpleDark,
   },
@@ -395,12 +431,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dueText: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 16,
     color: colors.inkSoft,
   },
   changeText: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 16,
     color: colors.greenDark,
   },

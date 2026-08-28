@@ -1,10 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Button, Card } from '@/components/ui';
+import { colors } from '@/constants/theme';
+import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getSale, getSaleLineItems } from '@/lib/db/queries';
@@ -94,40 +96,35 @@ export default function CelebrationScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black/35 items-center justify-center p-6">
-      <Card className="w-full items-center p-6 rounded-3xl bg-background">
+    <View style={styles.overlay}>
+      <Card style={styles.card}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close"
-          className="absolute top-4 right-4 w-8 h-8 items-center justify-center"
+          style={styles.closeButton}
           hitSlop={8}
-          onPress={goHome}
-        >
-          <Text className="text-xl font-bold text-muted">✕</Text>
+          onPress={goHome}>
+          <Text style={styles.closeLabel}>✕</Text>
         </Pressable>
 
-        <View className="w-[90px] h-[90px] rounded-full bg-warning items-center justify-center mb-3.5">
-          <Text className="text-[44px]">✅</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeEmoji}>✅</Text>
         </View>
-        <Text className="text-2xl font-bold text-foreground mb-1">
-          {isPreorder ? 'Preorder saved!' : 'Sold!'}
-        </Text>
-        <Text className="text-muted font-bold">
+        <Text style={styles.title}>{isPreorder ? 'Preorder saved!' : 'Sold!'}</Text>
+        <Text style={styles.subtitle}>
           {isPreorder && invoiceNumber != null
             ? `Invoice #${invoiceNumber} • ${formatMoney(totalCents)}`
             : `${itemCount} ${itemLabel} • ${formatMoney(totalCents)}`}
         </Text>
-        <Text className="text-muted text-xs font-bold tracking-wide mt-4 uppercase">
-          Everything look right?
-        </Text>
-        <Button size="lg" variant="primary" className="mt-4 w-full rounded-2xl" onPress={goHome}>
-          <Button.Label className="font-bold">🏠 Go to Dashboard</Button.Label>
+        <Text style={styles.prompt}>Everything look right?</Text>
+        <Button size="lg" variant="primary" style={styles.dashboardButton} onPress={goHome}>
+          <Button.Label style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Button.Label>
         </Button>
-        <Pressable className="mt-4 items-center" onPress={editSale}>
-          <Text className="font-bold text-accent">
+        <Pressable style={styles.editButton} onPress={editSale}>
+          <Text style={styles.editLabel}>
             {isPreorder ? '✏️ Edit preorder' : '✏️ Edit this sale'}
           </Text>
-          <Text className="text-muted text-xs mt-1">
+          <Text style={styles.editHint}>
             {isPreorder ? 'name, notes, or payment' : 'wrong item or price?'}
           </Text>
         </Pressable>
@@ -159,3 +156,89 @@ export default function CelebrationScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  card: {
+    width: '100%',
+    alignItems: 'center',
+    padding: 24,
+    borderRadius: 24,
+    backgroundColor: colors.screen,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeLabel: {
+    fontFamily: fonts.heading.bold,
+    fontSize: 20,
+    color: colors.inkSoft,
+  },
+  badge: {
+    width: 90,
+    height: 90,
+    borderRadius: radii.celebrationBadge,
+    backgroundColor: colors.yellow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  badgeEmoji: {
+    fontSize: 44,
+  },
+  title: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 24,
+    color: colors.ink,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontFamily: fonts.body.bold,
+    color: colors.inkSoft,
+  },
+  prompt: {
+    fontFamily: fonts.body.bold,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+    marginTop: 16,
+  },
+  dashboardButton: {
+    marginTop: 16,
+    width: '100%',
+    borderRadius: radii.completeBtn,
+  },
+  dashboardButtonLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 16,
+    color: colors.white,
+  },
+  editButton: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  editLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 15,
+    color: colors.purpleDark,
+  },
+  editHint: {
+    fontFamily: fonts.body.bold,
+    fontSize: 12,
+    color: colors.inkSoft,
+    marginTop: 4,
+  },
+});

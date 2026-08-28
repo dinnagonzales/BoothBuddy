@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View, type ViewProps } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/theme';
+import { fonts, radii, spacing, touchTargets } from '@/constants/visual';
 
 type ScreenProps = ViewProps & {
   children: ReactNode;
@@ -81,11 +82,11 @@ export function ItemCard({ emoji, name, priceLabel, onAdd }: ItemCardProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.screen,
   },
   screenBody: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.screen,
   },
   header: {
     flexDirection: 'row',
@@ -101,19 +102,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   backLabel: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 14,
     color: colors.purple,
   },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 15,
     color: colors.ink,
   },
   sectionLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 11,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -125,9 +126,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     backgroundColor: colors.white,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: radii.itemRow,
+    paddingHorizontal: spacing.itemRowPaddingH,
+    paddingVertical: spacing.itemRowPaddingV,
   },
   itemEmoji: {
     width: 28,
@@ -136,18 +137,18 @@ const styles = StyleSheet.create({
   },
   itemName: {
     flex: 1,
-    fontFamily: 'Nunito_800ExtraBold',
+    fontFamily: fonts.body.extraBold,
     fontSize: 14,
     color: colors.ink,
   },
   itemPrice: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 14,
     color: colors.purpleDark,
     marginRight: 4,
   },
   addButtonOuter: {
-    borderRadius: 20,
+    borderRadius: touchTargets.addButton / 2,
     backgroundColor: colors.purpleDark,
     paddingBottom: 4,
   },
@@ -156,15 +157,15 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   addButtonInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: touchTargets.addButton,
+    height: touchTargets.addButton,
+    borderRadius: touchTargets.addButton / 2,
     backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 22,
     color: colors.white,
     lineHeight: 24,
