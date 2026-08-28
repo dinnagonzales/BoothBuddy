@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+@import 'heroui-native/styles';
+
+@layer theme {
+  :root {
+    @variant light {
+      --radius: 1rem;
+      --background: #f3e9ff;
+      --foreground: #2b2340;
+      --surface: #ffffff;
+      --surface-foreground: #2b2340;
+      --accent: #9b5de5;
+      --accent-foreground: #ffffff;
+      --success: #4cd787;
+      --success-foreground: #ffffff;
+      --warning: #ffd93d;
+      --warning-foreground: #2b2340;
+      --muted: #6e6480;
+      --border: #e4ddf5;
+      --separator: #f0eafb;
+      --default: #ffffff;
+      --default-foreground: #2b2340;
+      --danger: #d6497a;
+      --danger-foreground: #ffffff;
+      --field-background: #ffffff;
+      --field-border: #f0eafb;
+    }
+
+    @variant dark {
+      /* Match light tokens so Uniwind/HeroUI stay in sync (app is light-only). */
+      --radius: 1rem;
+      --background: #f3e9ff;
+      --foreground: #2b2340;
+      --surface: #ffffff;
+      --surface-foreground: #2b2340;
+      --accent: #9b5de5;
+      --accent-foreground: #ffffff;
+      --success: #4cd787;
+      --success-foreground: #ffffff;
+      --warning: #ffd93d;
+      --warning-foreground: #2b2340;
+      --muted: #6e6480;
+      --border: #e4ddf5;
+      --separator: #f0eafb;
+      --default: #ffffff;
+      --default-foreground: #2b2340;
+      --danger: #d6497a;
+      --danger-foreground: #ffffff;
+      --field-background: #ffffff;
+      --field-border: #f0eafb;
+    }
+  }
+}
