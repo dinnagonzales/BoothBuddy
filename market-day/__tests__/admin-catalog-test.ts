@@ -1,4 +1,5 @@
 import { createCatalog } from '@/lib/catalog';
+import { ItemHasSalesError } from '@/lib/market-day';
 
 test('admin can add a new Item with emoji, name, cost, and price', async () => {
   const catalog = createCatalog();
@@ -143,6 +144,60 @@ test('admin can unarchive an Item so it returns to the seller', async () => {
       name: 'Dragon',
       emoji: '🐉',
       priceCents: 400,
+    },
+  ]);
+});
+
+test('admin can delete an Item that has never been sold', async () => {
+  const catalog = createCatalog();
+  const item = await catalog.createItem({
+    name: 'Dragon',
+    emoji: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.deleteItem(item.id);
+
+  expect(await catalog.listForAdmin()).toEqual([]);
+  expect(await catalog.listForSeller()).toEqual([]);
+});
+
+test('admin cannot delete an Item that appears in past sales', async () => {
+  const catalog = createCatalog();
+  const item = await catalog.createItem({
+    name: 'Dragon',
+    emoji: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: item.id,
+        name: 'Dragon',
+        emoji: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 500,
+  });
+
+  await expect(catalog.deleteItem(item.id)).rejects.toThrow(ItemHasSalesError);
+  expect(await catalog.listForAdmin()).toEqual([
+    {
+      id: item.id,
+      name: 'Dragon',
+      emoji: '🐉',
+      costCents: 100,
+      priceCents: 400,
+      archived: false,
     },
   ]);
 });

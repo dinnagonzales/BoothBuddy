@@ -1,6 +1,10 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import { ActiveMarketDayExistsError, NothingToUndoCloseError } from '@/lib/market-day';
+import {
+  ActiveMarketDayExistsError,
+  ItemHasSalesError,
+  NothingToUndoCloseError,
+} from '@/lib/market-day';
 import type { CartLine, Item, MarketDay, PaymentMethod, Sale, SaleSummary } from '@/lib/types';
 
 type ItemRow = {
@@ -303,6 +307,19 @@ export async function unarchiveItem(db: SQLiteDatabase, id: number): Promise<voi
   await addItemToActiveMenu(db, id);
 }
 
+export async function deleteItem(db: SQLiteDatabase, id: number): Promise<void> {
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM line_items WHERE item_id = ?',
+    id,
+  );
+  if (row && row.count > 0) {
+    throw new ItemHasSalesError();
+  }
+
+  await db.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
+  await db.runAsync('DELETE FROM items WHERE id = ?', id);
+}
+
 export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
   const row = await db.getFirstAsync<{
     id: number;
@@ -441,6 +458,36 @@ export async function getNextSaleNumber(db: SQLiteDatabase): Promise<number> {
   return row?.n ?? 1;
 }
 
+function normalizeOptionalText(value: string | null | undefined): string | null {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function mapSaleRow(row: {
+  id: number;
+  sale_number: number;
+  market_day_id: number | null;
+  total_cents: number;
+  payment_method: PaymentMethod;
+  cash_received_cents: number | null;
+  name: string | null;
+  notes: string | null;
+  created_at: string;
+}): Sale {
+  return {
+    id: row.id,
+    saleNumber: row.sale_number,
+    marketDayId: row.market_day_id,
+    totalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    cashReceivedCents: row.cash_received_cents,
+    name: row.name,
+    notes: row.notes,
+    createdAt: row.created_at,
+  };
+}
+
 export async function createSale(
   db: SQLiteDatabase,
   params: {
@@ -448,19 +495,25 @@ export async function createSale(
     lines: CartLine[];
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
+    name?: string | null;
+    notes?: string | null;
   },
 ): Promise<Sale> {
   const totalCents = cartTotal(params.lines);
   const nextNumber = await getNextSaleNumber(db);
+  const name = normalizeOptionalText(params.name);
+  const notes = normalizeOptionalText(params.notes);
 
   const result = await db.runAsync(
-    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, name, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     nextNumber,
     params.marketDayId,
     totalCents,
     params.paymentMethod,
     params.cashReceivedCents,
+    name,
+    notes,
   );
 
   const saleId = result.lastInsertRowId;
@@ -484,6 +537,8 @@ export async function createSale(
     totalCents,
     paymentMethod: params.paymentMethod,
     cashReceivedCents: params.cashReceivedCents,
+    name,
+    notes,
     createdAt: new Date().toISOString(),
   };
 }
@@ -496,20 +551,14 @@ export async function getSale(db: SQLiteDatabase, saleId: number): Promise<Sale 
     total_cents: number;
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
+    name: string | null;
+    notes: string | null;
     created_at: string;
   }>('SELECT * FROM sales WHERE id = ?', saleId);
 
   if (!row) return null;
 
-  return {
-    id: row.id,
-    saleNumber: row.sale_number,
-    marketDayId: row.market_day_id,
-    totalCents: row.total_cents,
-    paymentMethod: row.payment_method,
-    cashReceivedCents: row.cash_received_cents,
-    createdAt: row.created_at,
-  };
+  return mapSaleRow(row);
 }
 
 export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Promise<CartLine[]> {
@@ -565,20 +614,14 @@ export async function getSaleByNumber(
     total_cents: number;
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
+    name: string | null;
+    notes: string | null;
     created_at: string;
   }>('SELECT * FROM sales WHERE sale_number = ?', saleNumber);
 
   if (!row) return null;
 
-  return {
-    id: row.id,
-    saleNumber: row.sale_number,
-    marketDayId: row.market_day_id,
-    totalCents: row.total_cents,
-    paymentMethod: row.payment_method,
-    cashReceivedCents: row.cash_received_cents,
-    createdAt: row.created_at,
-  };
+  return mapSaleRow(row);
 }
 
 export async function removeSaleByNumber(db: SQLiteDatabase, saleNumber: number): Promise<void> {
@@ -593,16 +636,33 @@ export async function updateSalePaymentMethod(
   saleNumber: number,
   paymentMethod: PaymentMethod,
 ): Promise<void> {
+  await updateSale(db, saleNumber, { paymentMethod });
+}
+
+export async function updateSale(
+  db: SQLiteDatabase,
+  saleNumber: number,
+  updates: {
+    paymentMethod?: PaymentMethod;
+    name?: string | null;
+    notes?: string | null;
+  },
+): Promise<void> {
   const sale = await getSaleByNumber(db, saleNumber);
   if (!sale) return;
 
+  const paymentMethod = updates.paymentMethod ?? sale.paymentMethod;
+  const name = updates.name !== undefined ? normalizeOptionalText(updates.name) : sale.name;
+  const notes = updates.notes !== undefined ? normalizeOptionalText(updates.notes) : sale.notes;
   const cashReceivedCents =
     paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
 
   await db.runAsync(
-    `UPDATE sales SET payment_method = ?, cash_received_cents = ? WHERE id = ?`,
+    `UPDATE sales SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ? WHERE id = ?`,
     paymentMethod,
     cashReceivedCents,
+    name,
+    notes,
     sale.id,
   );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
@@ -670,9 +730,10 @@ export async function getMarketDaySales(
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
+    name: string | null;
     created_at: string;
   }>(
-    `SELECT sale_number, total_cents, payment_method, created_at
+    `SELECT sale_number, total_cents, payment_method, name, created_at
      FROM sales
      WHERE market_day_id = ?
      ORDER BY sale_number ASC`,
@@ -683,6 +744,7 @@ export async function getMarketDaySales(
     saleNumber: row.sale_number,
     totalCents: row.total_cents,
     paymentMethod: row.payment_method,
+    name: row.name,
     createdAt: row.created_at,
   }));
 }

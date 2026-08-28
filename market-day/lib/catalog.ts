@@ -1,4 +1,8 @@
-import { ActiveMarketDayExistsError, NothingToUndoCloseError } from '@/lib/market-day';
+import {
+  ActiveMarketDayExistsError,
+  ItemHasSalesError,
+  NothingToUndoCloseError,
+} from '@/lib/market-day';
 import type { CartLine, PaymentMethod, SaleSummary } from '@/lib/types';
 
 export type ItemDraft = {
@@ -52,6 +56,8 @@ export type SaleDetail = {
   saleNumber: number;
   totalCents: number;
   paymentMethod: PaymentMethod;
+  name: string | null;
+  notes: string | null;
   createdAt: string;
   lines: CartLine[];
 };
@@ -61,6 +67,7 @@ export type Catalog = {
   updateItem(id: number, draft: ItemDraft): Promise<void>;
   archive(id: number): Promise<void>;
   unarchive(id: number): Promise<void>;
+  deleteItem(id: number): Promise<void>;
   listForSeller(): Promise<SellerItem[]>;
   listForCheckout(): Promise<SellerItem[]>;
   listForRunningTab(): Promise<SellerItem[]>;
@@ -83,12 +90,22 @@ export type Catalog = {
     lines: CartLine[];
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
+    name?: string | null;
+    notes?: string | null;
   }): Promise<{ saleNumber: number }>;
   getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
   listSalesForMarketDay(marketDayId: number): Promise<SaleSummary[]>;
   getSale(saleNumber: number): Promise<SaleDetail | null>;
   removeSale(saleNumber: number): Promise<void>;
   updateSalePaymentMethod(saleNumber: number, paymentMethod: PaymentMethod): Promise<void>;
+  updateSale(
+    saleNumber: number,
+    updates: {
+      paymentMethod?: PaymentMethod;
+      name?: string | null;
+      notes?: string | null;
+    },
+  ): Promise<void>;
   marketDayNeedsReexport(marketDayId: number): Promise<boolean>;
 };
 
@@ -115,8 +132,16 @@ type StoredSale = {
   lines: CartLine[];
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
+  name: string | null;
+  notes: string | null;
   createdAt: string;
 };
+
+function normalizeOptionalText(value: string | null | undefined): string | null {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 function cartTotal(lines: CartLine[]): number {
   return lines.reduce((sum, line) => sum + line.priceCents * line.quantity, 0);
@@ -220,6 +245,22 @@ export function createCatalog(): Catalog {
         if (entry) {
           entry.removed = false;
           entry.soldOut = false;
+        }
+      }
+    },
+    async deleteItem(id: number) {
+      const hasSales = sales.some((sale) => sale.lines.some((line) => line.itemId === id));
+      if (hasSales) {
+        throw new ItemHasSalesError();
+      }
+
+      const index = items.findIndex((entry) => entry.id === id);
+      if (index === -1) return;
+
+      items.splice(index, 1);
+      for (let i = menuEntries.length - 1; i >= 0; i -= 1) {
+        if (menuEntries[i].itemId === id) {
+          menuEntries.splice(i, 1);
         }
       }
     },
@@ -405,6 +446,8 @@ export function createCatalog(): Catalog {
         lines: params.lines,
         paymentMethod: params.paymentMethod,
         cashReceivedCents: params.cashReceivedCents,
+        name: normalizeOptionalText(params.name),
+        notes: normalizeOptionalText(params.notes),
         createdAt: new Date().toISOString(),
       });
       return { saleNumber };
@@ -439,6 +482,7 @@ export function createCatalog(): Catalog {
           saleNumber: sale.saleNumber,
           totalCents: cartTotal(sale.lines),
           paymentMethod: sale.paymentMethod,
+          name: sale.name,
           createdAt: sale.createdAt,
         }));
     },
@@ -458,6 +502,8 @@ export function createCatalog(): Catalog {
         saleNumber: sale.saleNumber,
         totalCents: cartTotal(sale.lines),
         paymentMethod: sale.paymentMethod,
+        name: sale.name,
+        notes: sale.notes,
         createdAt: sale.createdAt,
         lines: sale.lines.map((line) => ({ ...line })),
       };
@@ -469,6 +515,29 @@ export function createCatalog(): Catalog {
       sale.paymentMethod = paymentMethod;
       sale.cashReceivedCents =
         paymentMethod === 'cash' ? (sale.cashReceivedCents ?? cartTotal(sale.lines)) : null;
+
+      const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
+      if (marketDay?.exportedAt) {
+        marketDay.needsReexport = true;
+      }
+    },
+    async updateSale(saleNumber, updates) {
+      const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+      if (!sale) return;
+
+      if (updates.paymentMethod !== undefined) {
+        sale.paymentMethod = updates.paymentMethod;
+        sale.cashReceivedCents =
+          updates.paymentMethod === 'cash'
+            ? (sale.cashReceivedCents ?? cartTotal(sale.lines))
+            : null;
+      }
+      if (updates.name !== undefined) {
+        sale.name = normalizeOptionalText(updates.name);
+      }
+      if (updates.notes !== undefined) {
+        sale.notes = normalizeOptionalText(updates.notes);
+      }
 
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {

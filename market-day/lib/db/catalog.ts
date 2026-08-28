@@ -6,6 +6,7 @@ import {
   canUndoCloseMarketDay,
   closeActiveMarketDay,
   createItem,
+  deleteItem as deleteItemFromDb,
   createSale,
   exportMarketDay,
   getActiveMarketDay,
@@ -30,6 +31,7 @@ import {
   unarchiveItem,
   updateItem,
   updateSalePaymentMethod,
+  updateSale,
 } from '@/lib/db/queries';
 
 export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
@@ -42,6 +44,9 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async unarchive(id: number) {
       await unarchiveItem(db, id);
+    },
+    async deleteItem(id: number) {
+      await deleteItemFromDb(db, id);
     },
     async updateItem(id: number, draft: ItemDraft) {
       await updateItem(db, id, draft);
@@ -145,6 +150,8 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         saleNumber: sale.saleNumber,
         totalCents: sale.totalCents,
         paymentMethod: sale.paymentMethod,
+        name: sale.name,
+        notes: sale.notes,
         createdAt: sale.createdAt,
         lines,
       };
@@ -154,6 +161,9 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async updateSalePaymentMethod(saleNumber, paymentMethod) {
       await updateSalePaymentMethod(db, saleNumber, paymentMethod);
+    },
+    async updateSale(saleNumber, updates) {
+      await updateSale(db, saleNumber, updates);
     },
     async marketDayNeedsReexport(marketDayId) {
       return marketDayNeedsReexport(db, marketDayId);

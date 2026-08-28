@@ -47,6 +47,13 @@ export class NoActiveMarketDayError extends Error {
   }
 }
 
+export class ItemHasSalesError extends Error {
+  constructor() {
+    super('Item appears in past sales and cannot be deleted');
+    this.name = 'ItemHasSalesError';
+  }
+}
+
 export function marketDayIdForSale(active: { id: number } | null): number {
   if (!active) {
     throw new NoActiveMarketDayError();

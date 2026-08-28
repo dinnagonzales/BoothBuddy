@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { ExpandableCard, OutlineAddButton } from '@/components/ExpandableCard';
 import { colors } from '@/constants/theme';
 import type { AdminItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
+import { ItemHasSalesError } from '@/lib/market-day';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
 
 type AdminItemCatalogProps = {
@@ -102,6 +103,36 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
     })();
   };
 
+  const deleteItem = (item: AdminItem) => {
+    Alert.alert(
+      'Delete this item?',
+      `${item.emoji} ${item.name} will be removed from inventory permanently. This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete item',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              try {
+                await createSqliteCatalog(db).deleteItem(item.id);
+                closeForm();
+                await refreshItems();
+              } catch (error) {
+                if (error instanceof ItemHasSalesError) {
+                  Alert.alert(
+                    'Cannot delete this item',
+                    'It appears in past sales. Use Archive to hide it from the menu instead.',
+                  );
+                }
+              }
+            })();
+          },
+        },
+      ],
+    );
+  };
+
   const canSave = form.name.trim().length > 0 && parseMoneyInput(form.price) > 0;
 
   return (
@@ -138,6 +169,7 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
                   onSave={saveItem}
                   onArchive={() => archiveItem(item.id)}
                   onUnarchive={() => unarchiveItem(item.id)}
+                  onDelete={() => deleteItem(item)}
                   onCancel={closeForm}
                 />
               </ExpandableCard>
@@ -222,6 +254,7 @@ function ItemForm({
   onSave,
   onArchive,
   onUnarchive,
+  onDelete,
   onCancel,
 }: {
   mode: FormMode;
@@ -231,6 +264,7 @@ function ItemForm({
   onSave: () => void;
   onArchive?: () => void;
   onUnarchive?: () => void;
+  onDelete?: () => void;
   onCancel: () => void;
 }) {
   return (
@@ -293,6 +327,20 @@ function ItemForm({
             style={({ pressed }) => [styles.archiveButton, pressed && styles.archiveButtonPressed]}>
             <Text style={styles.archiveButtonLabel}>📦 UnArchive Item</Text>
           </Pressable>
+        ) : null}
+
+        {mode.type === 'edit' && onDelete ? (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onDelete}
+              style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}>
+              <Text style={styles.deleteButtonLabel}>🗑 Delete Item</Text>
+            </Pressable>
+            <Text style={styles.deleteHint}>
+              Only for mistakes — use Archive if this item has been sold before
+            </Text>
+          </>
         ) : null}
 
         <Pressable
@@ -513,6 +561,31 @@ const styles = StyleSheet.create({
     color: colors.amberDark,
   },
   archiveHint: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  deleteButton: {
+    width: '100%',
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: '#FFD3D3',
+    borderRadius: 16,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  deleteButtonPressed: {
+    opacity: 0.85,
+  },
+  deleteButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: colors.redDark,
+  },
+  deleteHint: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 11,
     color: colors.inkSoft,
