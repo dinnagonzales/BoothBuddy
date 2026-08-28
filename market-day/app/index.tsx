@@ -1,34 +1,63 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
 import { ItemCard, Screen, SectionLabel } from '@/components/Screen';
 import { Button } from '@/components/ui';
-import { getActiveItems, getActiveMarketDay } from '@/lib/db/queries';
+import type { SellerItem } from '@/lib/catalog';
+import { createSqliteCatalog } from '@/lib/db/catalog';
+import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMoney } from '@/lib/money';
-import type { Item } from '@/lib/types';
+import { isSetupComplete } from '@/lib/setup';
 
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const [items, setItems] = useState<Item[]>([]);
-  const [marketDayName, setMarketDayName] = useState<string | null>(null);
+  const [setupReady, setSetupReady] = useState<boolean | null>(null);
+  const [items, setItems] = useState<SellerItem[]>([]);
+  const [canSell, setCanSell] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      setItems(getActiveItems(db));
-      setMarketDayName(getActiveMarketDay(db)?.name ?? null);
+      let cancelled = false;
+      const catalog = createSqliteCatalog(db);
+
+      isSetupComplete(deviceParentalGate, catalog).then((complete) => {
+        if (cancelled) return;
+        setSetupReady(complete);
+        if (complete) {
+          setItems(catalog.listForSeller());
+          setCanSell(catalog.getActiveMarketDay() !== null);
+        }
+      });
+
+      return () => {
+        cancelled = true;
+      };
     }, [db]),
   );
 
-  const canSell = marketDayName !== null;
+  if (setupReady === null) {
+    return (
+      <Screen>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#9B5DE5" />
+        </View>
+      </Screen>
+    );
+  }
+
+  if (!setupReady) {
+    return <Redirect href="/setup" />;
+  }
 
   return (
     <Screen>
       <View className="flex-row items-center justify-between mb-3">
         <Text className="text-xl font-bold text-foreground">🎪 Market Day</Text>
         <Pressable
+          accessibilityLabel="Grown-up settings"
           className="w-[34px] h-[34px] rounded-full bg-surface items-center justify-center"
           onPress={() => router.push('/settings')}>
           <Text className="text-base">⚙️</Text>

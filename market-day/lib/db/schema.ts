@@ -41,32 +41,6 @@ const SCHEMA = `
   );
 `;
 
-const SEED_ITEMS: Array<[string, string, number, number]> = [
-  ['Dragon', '🐉', 100, 400],
-  ['Groot key', '🔑', 50, 200],
-  ['Pokeball', '⚪', 50, 200],
-  ['Phone stand', '📱', 75, 250],
-  ['Letter - A', '🔤', 40, 150],
-];
-
 export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(SCHEMA);
-
-  const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM items');
-  if ((row?.count ?? 0) > 0) return;
-
-  for (const [name, emoji, costCents, priceCents] of SEED_ITEMS) {
-    await db.runAsync(
-      'INSERT INTO items (name, emoji, cost_cents, price_cents) VALUES (?, ?, ?, ?)',
-      name,
-      emoji,
-      costCents,
-      priceCents,
-    );
-  }
-
-  await db.runAsync(
-    `INSERT INTO market_days (name) VALUES (?)`,
-    `Demo Market Day – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-  );
 }
