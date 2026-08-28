@@ -1,14 +1,15 @@
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ItemCard, Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
 import { Card } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
-import { getCheckoutItems, getNextSaleNumber, getSale } from '@/lib/db/queries';
+import { getCheckoutItems, getNextSaleNumber, getRunningTabItems, getSale } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
+import { preorderMetadataValid } from '@/lib/sale-edit';
 import type { Item } from '@/lib/types';
 
 export default function SellScreen() {
@@ -26,6 +27,13 @@ export default function SellScreen() {
     editingSaleId,
     invoiceNumber,
     setInvoiceNumber,
+    isQuickSale,
+    saleName,
+    saleNotes,
+    isPreorder,
+    setSaleName,
+    setSaleNotes,
+    setIsPreorder,
   } = useCart();
   const [items, setItems] = useState<Item[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -80,16 +88,18 @@ export default function SellScreen() {
       let cancelled = false;
       setLoaded(false);
 
-      void getCheckoutItems(db).then((nextItems) => {
+      void (async () => {
+        const loader = isQuickSale ? getRunningTabItems : getCheckoutItems;
+        const nextItems = await loader(db);
         if (cancelled) return;
         setItems(nextItems);
         setLoaded(true);
-      });
+      })();
 
       return () => {
         cancelled = true;
       };
-    }, [db]),
+    }, [db, isQuickSale]),
   );
 
   useFocusEffect(
@@ -101,7 +111,14 @@ export default function SellScreen() {
   );
 
   const screenTitle =
-    invoiceNumber != null ? `CART: Invoice #${invoiceNumber}` : 'What sold?';
+    invoiceNumber != null
+      ? `CART: Invoice #${invoiceNumber}`
+      : isQuickSale
+        ? 'Quick Sale'
+        : 'What sold?';
+
+  const preorderMetaValid = !isPreorder || preorderMetadataValid(saleName, saleNotes);
+  const canCheckout = itemCount > 0 && (!isQuickSale || !isPreorder || preorderMetaValid);
 
   return (
     <Screen>
@@ -135,6 +152,41 @@ export default function SellScreen() {
           />
 
           <View style={styles.cartContainer}>
+            {isQuickSale ? (
+              <Card style={styles.metaCard}>
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isPreorder }}
+                  onPress={() => setIsPreorder(!isPreorder)}
+                  style={styles.preorderRow}>
+                  <Text style={styles.preorderLabel}>Preorder</Text>
+                  <View style={[styles.preorderBox, isPreorder ? styles.preorderBoxChecked : null]}>
+                    {isPreorder ? <Text style={styles.preorderCheck}>✓</Text> : null}
+                  </View>
+                </Pressable>
+                <Text style={styles.metaLabel}>
+                  Name {isPreorder ? '(required)' : '(optional)'}
+                </Text>
+                <TextInput
+                  value={saleName}
+                  onChangeText={setSaleName}
+                  placeholder="Customer or tab name"
+                  placeholderTextColor={colors.inkSoft}
+                  style={styles.metaInput}
+                />
+                <Text style={styles.metaLabel}>
+                  Notes {isPreorder ? '(required)' : '(optional)'}
+                </Text>
+                <TextInput
+                  value={saleNotes}
+                  onChangeText={setSaleNotes}
+                  placeholder="Pickup time, special requests, etc."
+                  placeholderTextColor={colors.inkSoft}
+                  style={[styles.metaInput, styles.notesInput]}
+                  multiline
+                />
+              </Card>
+            ) : null}
             <Card style={styles.cartCard}>
               <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">Cart</Text>
               {lines.map((line) => (
@@ -168,15 +220,15 @@ export default function SellScreen() {
               </View>
               <Pressable
                 accessibilityRole="button"
-                disabled={itemCount === 0}
+                disabled={!canCheckout}
                 onPress={() => {
                   leavingForPayment.current = true;
                   router.push('/payment');
                 }}
                 style={({ pressed }) => [
                   styles.checkoutButtonOuter,
-                  itemCount === 0 ? styles.checkoutButtonDisabled : null,
-                  pressed && itemCount > 0 ? styles.checkoutButtonOuterPressed : null,
+                  !canCheckout ? styles.checkoutButtonDisabled : null,
+                  pressed && canCheckout ? styles.checkoutButtonOuterPressed : null,
                 ]}>
                 <View style={styles.checkoutButtonInner}>
                   <Text style={styles.checkoutButtonLabel}>Checkout →</Text>
@@ -203,10 +255,70 @@ const styles = StyleSheet.create({
   cartContainer: {
     marginTop: 24,
     marginBottom: 24,
+    gap: 12,
+  },
+  metaCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 6,
+    borderRadius: 14,
+  },
+  preorderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginBottom: 4,
+  },
+  preorderBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  preorderBoxChecked: {
+    backgroundColor: colors.purple,
+  },
+  preorderCheck: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: colors.white,
+    lineHeight: 16,
+  },
+  preorderLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 14,
+    color: colors.ink,
+  },
+  metaLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+  },
+  metaInput: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: colors.ink,
+    backgroundColor: '#FAF8FF',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 6,
+  },
+  notesInput: {
+    minHeight: 64,
+    textAlignVertical: 'top',
   },
   cartCard: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+    borderRadius: 14,
   },
   minusButton: {
     width: 32,
@@ -239,7 +351,7 @@ const styles = StyleSheet.create({
   },
   checkoutButtonOuter: {
     marginTop: 10,
-    borderRadius: 18,
+    borderRadius: 14,
     backgroundColor: colors.purpleDark,
     paddingBottom: 5,
   },
@@ -252,7 +364,7 @@ const styles = StyleSheet.create({
   },
   checkoutButtonInner: {
     backgroundColor: colors.purple,
-    borderRadius: 18,
+    borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',

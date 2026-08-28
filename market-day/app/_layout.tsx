@@ -22,6 +22,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Suspense, useEffect } from 'react';
 
 import { CartProvider } from '@/context/CartContext';
+import { GrownUpSessionProvider } from '@/context/GrownUpSessionContext';
 import { initDatabase } from '@/lib/db/schema';
 
 SplashScreen.preventAutoHideAsync();
@@ -65,6 +66,7 @@ export default function RootLayout() {
           }>
           <SQLiteProvider databaseName="market-day-v1.db" onInit={initDatabase} useSuspense>
             <CartProvider>
+              <GrownUpSessionProvider>
               <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F3E9FF' } }}>
                 <Stack.Screen name="index" />
                 <Stack.Screen name="setup" options={{ gestureEnabled: false }} />
@@ -73,12 +75,16 @@ export default function RootLayout() {
                 <Stack.Screen name="market-day" />
                 <Stack.Screen name="settings" />
                 <Stack.Screen name="inventory" />
+                <Stack.Screen name="preorders" />
                 <Stack.Screen name="sales" />
+                <Stack.Screen name="sale/[saleNumber]" />
+                <Stack.Screen name="past/[id]" />
                 <Stack.Screen
                   name="celebration"
                   options={{ presentation: 'transparentModal', animation: 'fade' }}
                 />
               </Stack>
+              </GrownUpSessionProvider>
             </CartProvider>
           </SQLiteProvider>
         </Suspense>

@@ -10,6 +10,8 @@ type CartContextValue = {
   invoiceNumber: number | null;
   saleName: string;
   saleNotes: string;
+  isQuickSale: boolean;
+  isPreorder: boolean;
   setLines: (lines: CartLine[]) => void;
   setEditingSaleId: (saleId: number | null) => void;
   setEditingPaymentMethod: (paymentMethod: PaymentMethod | null) => void;
@@ -17,6 +19,8 @@ type CartContextValue = {
   setInvoiceNumber: (saleNumber: number | null) => void;
   setSaleName: (name: string) => void;
   setSaleNotes: (notes: string) => void;
+  setIsQuickSale: (value: boolean) => void;
+  setIsPreorder: (value: boolean) => void;
   addItem: (line: Omit<CartLine, 'quantity'>) => void;
   changeQuantity: (itemId: number, delta: number) => void;
   clearCart: () => void;
@@ -34,6 +38,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   const [saleName, setSaleName] = useState('');
   const [saleNotes, setSaleNotes] = useState('');
+  const [isQuickSale, setIsQuickSale] = useState(false);
+  const [isPreorder, setIsPreorder] = useState(false);
 
   const value = useMemo<CartContextValue>(() => {
     const addItem = (line: Omit<CartLine, 'quantity'>) => {
@@ -76,6 +82,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       invoiceNumber,
       saleName,
       saleNotes,
+      isQuickSale,
+      isPreorder,
       setLines,
       setEditingSaleId,
       setEditingPaymentMethod,
@@ -83,6 +91,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setInvoiceNumber,
       setSaleName,
       setSaleNotes,
+      setIsQuickSale,
+      setIsPreorder,
       addItem,
       changeQuantity,
       clearCart: () => {
@@ -93,11 +103,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setInvoiceNumber(null);
         setSaleName('');
         setSaleNotes('');
+        setIsQuickSale(false);
+        setIsPreorder(false);
       },
       itemCount,
       totalCents,
     };
-  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes]);
+  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, isQuickSale, isPreorder]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

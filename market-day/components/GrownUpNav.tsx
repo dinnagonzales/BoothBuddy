@@ -3,10 +3,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
 
-type Tab = 'settings' | 'inventory' | 'sales';
+type Tab = 'settings' | 'inventory' | 'preorders' | 'sales';
 
 function activeTab(pathname: string): Tab {
   if (pathname.includes('inventory')) return 'inventory';
+  if (pathname.includes('preorders')) return 'preorders';
   if (pathname.includes('sales')) return 'sales';
   return 'settings';
 }
@@ -29,6 +30,12 @@ export function GrownUpNav() {
         label="Inventory"
         active={current === 'inventory'}
         onPress={() => router.replace('/inventory')}
+      />
+      <NavItem
+        icon="📋"
+        label="Preorders"
+        active={current === 'preorders'}
+        onPress={() => router.replace('/preorders')}
       />
       <NavItem
         icon="🧾"
@@ -70,7 +77,7 @@ const styles = StyleSheet.create({
   },
   navItem: {
     alignItems: 'center',
-    minWidth: 80,
+    minWidth: 64,
   },
   navIcon: {
     fontSize: 22,

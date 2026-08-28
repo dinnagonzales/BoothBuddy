@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { Platform } from 'react-native';
 
-import { exportMarketDay, getMarketDayById, getMarketDayExportRows } from '@/lib/db/queries';
+import { exportMarketDay, exportRunningTabSales, getMarketDayById, getMarketDayExportRows, getRunningTabExportRows } from '@/lib/db/queries';
 import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
 
 const CSV_HEADERS = [
@@ -80,6 +80,37 @@ export function marketDayExportFilename(marketDayName: string): string {
   return `${slug || 'market-day'}-sales.csv`;
 }
 
+export function runningTabExportFilename(startDate: string, endDate: string): string {
+  return `quick-sales-${startDate}-to-${endDate}.csv`;
+}
+
+async function shareCsvFile(csv: string, filename: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    return;
+  }
+
+  const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+  await FileSystem.writeAsStringAsync(fileUri, csv, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+
+  if (!(await Sharing.isAvailableAsync())) {
+    throw new Error('Sharing is not available on this device');
+  }
+
+  await Sharing.shareAsync(fileUri, {
+    mimeType: 'text/csv',
+    UTI: 'public.comma-separated-values-text',
+  });
+}
+
 export async function shareMarketDayCsv(
   db: SQLiteDatabase,
   marketDayId: number,
@@ -93,29 +124,24 @@ export async function shareMarketDayCsv(
   const csv = buildMarketDayCsv(rows);
   const filename = marketDayExportFilename(marketDay.name);
 
-  if (Platform.OS === 'web') {
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = filename;
-    anchor.click();
-    URL.revokeObjectURL(url);
-  } else {
-    const fileUri = `${FileSystem.cacheDirectory}${filename}`;
-    await FileSystem.writeAsStringAsync(fileUri, csv, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-
-    if (!(await Sharing.isAvailableAsync())) {
-      throw new Error('Sharing is not available on this device');
-    }
-
-    await Sharing.shareAsync(fileUri, {
-      mimeType: 'text/csv',
-      UTI: 'public.comma-separated-values-text',
-    });
-  }
+  await shareCsvFile(csv, filename);
 
   await exportMarketDay(db, marketDayId);
+}
+
+export async function shareRunningTabCsv(
+  db: SQLiteDatabase,
+  startDate: string,
+  endDate: string,
+): Promise<void> {
+  const rows = await getRunningTabExportRows(db, startDate, endDate);
+  if (rows.length === 0) {
+    throw new Error('No off-day sales to export in that date range');
+  }
+
+  const csv = buildMarketDayCsv(rows);
+  const filename = runningTabExportFilename(startDate, endDate);
+
+  await shareCsvFile(csv, filename);
+  await exportRunningTabSales(db, startDate, endDate);
 }

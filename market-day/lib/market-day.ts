@@ -13,8 +13,10 @@ export function formatSaleTime(iso: string): string {
   });
 }
 
-export function paymentMethodLabel(method: 'cash' | 'venmo_zelle'): string {
-  return method === 'cash' ? 'Cash' : 'Venmo/Zelle';
+export function paymentMethodLabel(method: 'cash' | 'venmo_zelle' | 'pay_on_pickup'): string {
+  if (method === 'cash') return 'Cash';
+  if (method === 'pay_on_pickup') return 'Pay on pickup';
+  return 'Venmo/Zelle';
 }
 
 export function suggestMarketDayName(now = new Date()): string {
@@ -38,6 +40,13 @@ export function marketDayStartedAtIso(date: Date): string {
   const local = startOfLocalDay(date);
   local.setHours(12, 0, 0, 0);
   return local.toISOString();
+}
+
+export function toExportDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export class ActiveMarketDayExistsError extends Error {

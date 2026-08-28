@@ -496,6 +496,7 @@ function mapSaleRow(row: {
   cash_received_cents: number | null;
   name: string | null;
   notes: string | null;
+  is_preorder: number;
   created_at: string;
 }): Sale {
   return {
@@ -507,6 +508,7 @@ function mapSaleRow(row: {
     cashReceivedCents: row.cash_received_cents,
     name: row.name,
     notes: row.notes,
+    isPreorder: row.is_preorder === 1,
     createdAt: row.created_at,
   };
 }
@@ -514,22 +516,28 @@ function mapSaleRow(row: {
 export async function createSale(
   db: SQLiteDatabase,
   params: {
-    marketDayId: number;
+    marketDayId: number | null;
     lines: CartLine[];
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
     name?: string | null;
     notes?: string | null;
+    isPreorder?: boolean;
   },
 ): Promise<Sale> {
   const totalCents = cartTotal(params.lines);
   const nextNumber = await getNextSaleNumber(db);
   const name = normalizeOptionalText(params.name);
   const notes = normalizeOptionalText(params.notes);
+  const isPreorder = params.isPreorder === true ? 1 : 0;
+
+  if (isPreorder === 1 && (!name || !notes)) {
+    throw new Error('Preorder requires name and notes');
+  }
 
   const result = await db.runAsync(
-    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, name, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, name, notes, is_preorder)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     nextNumber,
     params.marketDayId,
     totalCents,
@@ -537,6 +545,7 @@ export async function createSale(
     params.cashReceivedCents,
     name,
     notes,
+    isPreorder,
   );
 
   const saleId = result.lastInsertRowId;
@@ -562,6 +571,7 @@ export async function createSale(
     cashReceivedCents: params.cashReceivedCents,
     name,
     notes,
+    isPreorder: isPreorder === 1,
     createdAt: new Date().toISOString(),
   };
 }
@@ -576,6 +586,7 @@ export async function getSale(db: SQLiteDatabase, saleId: number): Promise<Sale 
     cash_received_cents: number | null;
     name: string | null;
     notes: string | null;
+    is_preorder: number;
     created_at: string;
   }>('SELECT * FROM sales WHERE id = ?', saleId);
 
@@ -639,6 +650,7 @@ export async function getSaleByNumber(
     cash_received_cents: number | null;
     name: string | null;
     notes: string | null;
+    is_preorder: number;
     created_at: string;
   }>('SELECT * FROM sales WHERE sale_number = ?', saleNumber);
 
@@ -650,8 +662,20 @@ export async function getSaleByNumber(
 export async function removeSaleByNumber(db: SQLiteDatabase, saleNumber: number): Promise<void> {
   const sale = await getSaleByNumber(db, saleNumber);
   if (!sale) return;
+
+  const exportedRow = await db.getFirstAsync<{ exported_at: string | null }>(
+    'SELECT exported_at FROM sales WHERE id = ?',
+    sale.id,
+  );
+
   await deleteSale(db, sale.id);
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
+  if (sale.marketDayId === null && exportedRow?.exported_at) {
+    await db.runAsync(
+      `INSERT INTO app_state (key, value) VALUES ('running_tab_needs_reexport', '1')
+       ON CONFLICT(key) DO UPDATE SET value = '1'`,
+    );
+  }
 }
 
 export async function updateSalePaymentMethod(
@@ -689,6 +713,63 @@ export async function updateSale(
     sale.id,
   );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
+  await flagRunningTabReexportIfExported(db, sale.marketDayId, sale.id);
+}
+
+export async function completePreorder(
+  db: SQLiteDatabase,
+  saleNumber: number,
+  params: {
+    paymentMethod: PaymentMethod;
+    name?: string | null;
+    notes?: string | null;
+  },
+): Promise<void> {
+  const sale = await getSaleByNumber(db, saleNumber);
+  if (!sale?.isPreorder) return;
+  if (params.paymentMethod === 'pay_on_pickup') return;
+
+  const name = params.name !== undefined ? normalizeOptionalText(params.name) : sale.name;
+  const notes = params.notes !== undefined ? normalizeOptionalText(params.notes) : sale.notes;
+  if (!name || !notes) return;
+  const cashReceivedCents =
+    params.paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
+
+  await db.runAsync(
+    `UPDATE sales
+     SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ?, is_preorder = 0
+     WHERE id = ?`,
+    params.paymentMethod,
+    cashReceivedCents,
+    name,
+    notes,
+    sale.id,
+  );
+  await flagMarketDayReexportIfExported(db, sale.marketDayId);
+  await flagRunningTabReexportIfExported(db, sale.marketDayId, sale.id);
+}
+
+export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[]> {
+  const rows = await db.getAllAsync<{
+    sale_number: number;
+    total_cents: number;
+    payment_method: PaymentMethod;
+    name: string | null;
+    created_at: string;
+  }>(
+    `SELECT sale_number, total_cents, payment_method, name, created_at
+     FROM sales
+     WHERE is_preorder = 1
+     ORDER BY created_at DESC, sale_number DESC`,
+  );
+
+  return rows.map((row) => ({
+    saleNumber: row.sale_number,
+    totalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    name: row.name,
+    createdAt: row.created_at,
+  }));
 }
 
 export async function marketDayNeedsReexport(
@@ -763,7 +844,8 @@ export async function getAllTimeStats(db: SQLiteDatabase) {
        ), 0) AS profit_cents,
        COALESCE(SUM(CASE WHEN s.payment_method = 'cash' THEN s.total_cents ELSE 0 END), 0) AS cash_cents,
        COALESCE(SUM(CASE WHEN s.payment_method = 'venmo_zelle' THEN s.total_cents ELSE 0 END), 0) AS venmo_cents
-     FROM sales s`,
+     FROM sales s
+     WHERE s.is_preorder = 0`,
   );
 
   return {
@@ -793,6 +875,7 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
        md.name AS market_day_name
      FROM sales s
      LEFT JOIN market_days md ON md.id = s.market_day_id
+     WHERE s.is_preorder = 0
      ORDER BY s.created_at DESC, s.sale_number DESC`,
   );
 
@@ -978,4 +1061,94 @@ export async function getMarketDayExportRows(
     cashReceivedCents: row.cash_received_cents,
     customerName: row.name,
   }));
+}
+
+async function flagRunningTabReexportIfExported(
+  db: SQLiteDatabase,
+  marketDayId: number | null,
+  saleId: number,
+): Promise<void> {
+  if (marketDayId != null) return;
+  const row = await db.getFirstAsync<{ exported_at: string | null }>(
+    'SELECT exported_at FROM sales WHERE id = ?',
+    saleId,
+  );
+  if (!row?.exported_at) return;
+  await db.runAsync(
+    `INSERT INTO app_state (key, value) VALUES ('running_tab_needs_reexport', '1')
+     ON CONFLICT(key) DO UPDATE SET value = '1'`,
+  );
+}
+
+export async function runningTabNeedsReexport(db: SQLiteDatabase): Promise<boolean> {
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM app_state WHERE key = 'running_tab_needs_reexport'`,
+  );
+  return row?.value === '1';
+}
+
+export async function getRunningTabExportRows(
+  db: SQLiteDatabase,
+  startDate: string,
+  endDate: string,
+): Promise<MarketDayExportRow[]> {
+  const rows = await db.getAllAsync<{
+    sale_number: number;
+    created_at: string;
+    total_cents: number;
+    payment_method: PaymentMethod;
+    cash_received_cents: number | null;
+    name: string | null;
+    item_name: string;
+    quantity: number;
+    price_cents: number;
+    cost_cents: number;
+  }>(
+    `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.name,
+            i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
+     FROM sales s
+     JOIN line_items li ON li.sale_id = s.id
+     JOIN items i ON i.id = li.item_id
+     WHERE s.market_day_id IS NULL
+       AND s.is_preorder = 0
+       AND s.exported_at IS NULL
+       AND date(s.created_at) >= date(?)
+       AND date(s.created_at) <= date(?)
+     ORDER BY s.sale_number ASC, li.id ASC`,
+    startDate,
+    endDate,
+  );
+
+  return rows.map((row) => ({
+    saleNumber: row.sale_number,
+    createdAt: row.created_at,
+    marketDayName: '',
+    itemName: row.item_name,
+    quantity: row.quantity,
+    priceCents: row.price_cents,
+    costCents: row.cost_cents,
+    saleTotalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    cashReceivedCents: row.cash_received_cents,
+    customerName: row.name,
+  }));
+}
+
+export async function exportRunningTabSales(
+  db: SQLiteDatabase,
+  startDate: string,
+  endDate: string,
+): Promise<void> {
+  await db.runAsync(
+    `UPDATE sales
+     SET exported_at = datetime('now')
+     WHERE market_day_id IS NULL
+       AND is_preorder = 0
+       AND exported_at IS NULL
+       AND date(created_at) >= date(?)
+       AND date(created_at) <= date(?)`,
+    startDate,
+    endDate,
+  );
+  await db.runAsync(`DELETE FROM app_state WHERE key = 'running_tab_needs_reexport'`);
 }

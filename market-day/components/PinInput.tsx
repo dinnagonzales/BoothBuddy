@@ -46,7 +46,7 @@ export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinIn
 
   return (
     <View style={styles.group}>
-      <Text style={styles.label}>{label}</Text>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <Pressable
         accessibilityRole="none"
         onPress={focusInput}
@@ -114,10 +114,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: 10,
+    justifyContent: 'center',
   },
   box: {
-    flex: 1,
-    aspectRatio: 1,
+    width: 52,
+    height: 52,
     backgroundColor: colors.white,
     borderRadius: 14,
     borderWidth: 2,

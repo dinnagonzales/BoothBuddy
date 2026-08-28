@@ -1,4 +1,4 @@
-export type PaymentMethod = 'cash' | 'venmo_zelle';
+export type PaymentMethod = 'cash' | 'venmo_zelle' | 'pay_on_pickup';
 
 export type Item = {
   id: number;
@@ -37,6 +37,7 @@ export type Sale = {
   cashReceivedCents: number | null;
   name: string | null;
   notes: string | null;
+  isPreorder: boolean;
   createdAt: string;
 };
 

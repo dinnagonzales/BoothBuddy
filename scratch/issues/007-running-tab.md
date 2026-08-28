@@ -1,4 +1,4 @@
-# 007 — Running Tab: log sale + date-range export
+# 007 — Running Tab: Quick Sale + date-range export
 
 **Type:** AFK  
 **Status:** open  
@@ -6,21 +6,23 @@
 
 ## What to build
 
-**Running Tab** is the admin-only bucket for misc **Sales** outside an **Active Market Day** (porch sales, one-offs). From the **Settings** tab, **Log a sale** launches the same checkout flow as the **Seller**, but **Sales** route to **Running Tab** (`marketDayId` null). Show a **Running Tab** summary section (total revenue, **Sale** count). **Export** uses a date-range picker; exported **Sales** are marked exported.
+**Running Tab** is the bucket for misc **Sales** outside an **Active Market Day** (porch sales, one-offs). **Sales** save with no **Market Day** (`marketDayId` null). There is no separate **Running Tab** section on **Settings** — off-day **Sales** appear in the **Sales** tab alongside **Market Day** **Sales** (all-time totals and list). **Export** for off-day **Sales** uses a date-range picker on the **Sales** tab; exported **Sales** are marked exported.
 
-Each **Sale** can carry optional **name** and **notes** (same fields as Market Day sales) for customer/tab labels and preorder context.
+### Quick Sale
 
-The **Seller** cannot add to **Running Tab** — only the **Admin**. Checkout for Running Tab uses the global non-archived catalog (not today’s Menu). **Inventory** tab is unchanged.
+A **+** button next to the ⚙️ gear on **Home** launches **Quick Sale** — off-day checkout routed to **Running Tab** (`marketDayId` null). Same cart flow as the **Seller** — pick **Items**, cart with **− / +**, payment, celebration — but with optional **Sale name** and **Sale notes** fields above the cart.
 
-Running Tab UI can live below the Market Day dashboard when a day is active, or on the Settings empty state when no day is active — either way it stays on **Settings**, not **Inventory**.
+Available whether or not an **Active Market Day** is running (porch sale during a fair still goes to **Running Tab**, not today's day). Checkout uses the global non-archived catalog (not today's **Menu**). **Inventory** tab is unchanged. After **Celebration**, dismiss returns to **Home** (same as the seller flow).
 
 ## Acceptance criteria
 
-- [ ] **Log a sale** on the Settings tab uses full checkout → **Running Tab**
-- [ ] **Running Tab** summary visible on the Settings tab
-- [ ] Date-range picker before export
+- [ ] **+** next to gear on **Home** → **Quick Sale** checkout → **Running Tab** (`marketDayId` null)
+- [ ] Admin checkout for **Running Tab** shows optional **Sale name** and **Sale notes** above the cart
+- [ ] Off-day **Sales** appear in the **Sales** tab (all-time stats and list; no **Market Day** name on row)
+- [ ] Date-range picker on **Sales** tab before off-day export
 - [ ] Export marks included **Sales** as exported
-- [ ] **Seller** cannot log **Running Tab** **Sales**
+- [ ] No **Running Tab** summary on **Settings**
+- [ ] Dismissing **Celebration** after **Quick Sale** returns to **Home**
 
 ## Blocked by
 

@@ -9,8 +9,10 @@ import {
   createItem,
   deleteItem as deleteItemFromDb,
   deleteMarketDay as deleteMarketDayFromDb,
+  completePreorder,
   createSale,
   exportMarketDay,
+  exportRunningTabSales,
   getActiveMarketDay,
   getAllItems,
   getAllTimeSales,
@@ -24,6 +26,8 @@ import {
   getHomeItems,
   getRemovedMenuItems,
   getRunningTabItems,
+  getPreorderSales,
+  getRunningTabExportRows,
   getSaleByNumber,
   getSaleLineItems,
   markAvailable,
@@ -32,6 +36,7 @@ import {
   addToMenu as addItemToMenu,
   removeFromMenu,
   removeSaleByNumber,
+  runningTabNeedsReexport,
   startMarketDay,
   undoCloseMostRecentMarketDay,
   unarchiveItem,
@@ -142,6 +147,10 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
       const sale = await createSale(db, params);
       return { saleNumber: sale.saleNumber };
     },
+    async recordQuickSale(params) {
+      const sale = await createSale(db, { ...params, marketDayId: null });
+      return { saleNumber: sale.saleNumber };
+    },
     async getMarketDayStats(marketDayId) {
       return getMarketDayStats(db, marketDayId);
     },
@@ -154,6 +163,9 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     async listAllTimeSales() {
       return getAllTimeSales(db);
     },
+    async listPreorderSales() {
+      return getPreorderSales(db);
+    },
     async getSale(saleNumber) {
       const sale = await getSaleByNumber(db, saleNumber);
       if (!sale) return null;
@@ -164,6 +176,7 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         paymentMethod: sale.paymentMethod,
         name: sale.name,
         notes: sale.notes,
+        isPreorder: sale.isPreorder,
         createdAt: sale.createdAt,
         lines,
       };
@@ -176,6 +189,9 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async updateSale(saleNumber, updates) {
       await updateSale(db, saleNumber, updates);
+    },
+    async completePreorder(saleNumber, params) {
+      await completePreorder(db, saleNumber, params);
     },
     async marketDayNeedsReexport(marketDayId) {
       return marketDayNeedsReexport(db, marketDayId);
@@ -191,6 +207,15 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async deleteMarketDay(id) {
       await deleteMarketDayFromDb(db, id);
+    },
+    async listRunningTabExportRows(startDate, endDate) {
+      return getRunningTabExportRows(db, startDate, endDate);
+    },
+    async exportRunningTabSales(startDate, endDate) {
+      await exportRunningTabSales(db, startDate, endDate);
+    },
+    async runningTabNeedsReexport() {
+      return runningTabNeedsReexport(db);
     },
   };
 }

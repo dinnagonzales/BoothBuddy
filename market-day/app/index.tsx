@@ -11,14 +11,17 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 
+import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
+import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { createSqliteCatalog } from '@/lib/db/catalog';
 import { getHomeItems, getActiveMarketDay } from '@/lib/db/queries';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
+import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
 import type { Item } from '@/lib/types';
 
@@ -49,11 +52,26 @@ function HeroCard({ children }: { children: ReactNode }) {
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addItem, setIsQuickSale } = useCart();
+  const { unlocked, unlock } = useGrownUpSession();
   const [setupReady, setSetupReady] = useState<boolean | null>(null);
   const [items, setItems] = useState<HomeItem[]>([]);
   const [canSell, setCanSell] = useState(false);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
+  const [passCodeOpen, setPassCodeOpen] = useState(false);
+
+  const openQuickSale = () => {
+    setIsQuickSale(true);
+    router.push('/sell');
+  };
+
+  const openSettings = () => {
+    if (unlocked) {
+      router.push('/settings');
+      return;
+    }
+    setPassCodeOpen(true);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -124,12 +142,18 @@ export default function HomeScreen() {
       <View style={styles.page}>
         <View style={styles.container}>
           <View style={styles.topBar}>
-            <Text style={styles.title}>🎪 Market Day</Text>
             <Pressable
               accessibilityLabel="Settings"
               style={styles.gearButton}
-              onPress={() => router.push('/settings')}>
+              onPress={openSettings}>
               <Text style={styles.gearIcon}>⚙️</Text>
+            </Pressable>
+            <Text style={styles.title}>🎪 Market Day</Text>
+            <Pressable
+              accessibilityLabel="Quick Sale"
+              style={styles.quickSaleButton}
+              onPress={openQuickSale}>
+              <Text style={styles.quickSaleIcon}>+</Text>
             </Pressable>
           </View>
 
@@ -207,6 +231,22 @@ export default function HomeScreen() {
           </View>
         </View>
       </View>
+
+      <PassCodeSheet
+        visible={passCodeOpen}
+        onClose={() => setPassCodeOpen(false)}
+        onSubmit={(code) => deviceParentalGate.verify(code)}
+        onSuccess={() => {
+          unlock();
+          setPassCodeOpen(false);
+          router.push('/settings');
+        }}
+        onForgotCode={async () => {
+          await resetAppForForgottenCode(db, deviceParentalGate);
+          setPassCodeOpen(false);
+          router.replace('/setup');
+        }}
+      />
     </Screen>
   );
 }
@@ -232,11 +272,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+    gap: 8,
   },
   title: {
+    flex: 1,
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 21,
     color: colors.ink,
+    textAlign: 'center',
+  },
+  quickSaleButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.green,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickSaleIcon: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 24,
+    color: colors.white,
+    lineHeight: 26,
   },
   gearButton: {
     width: 38,

@@ -1,11 +1,12 @@
 import { Slot, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { GrownUpNav } from '@/components/GrownUpNav';
-import { ParentalGatePrompt } from '@/components/ParentalGatePrompt';
-import { Screen, ScreenHeader } from '@/components/Screen';
+import { PassCodeSheet } from '@/components/PassCodeSheet';
+import { Screen } from '@/components/Screen';
+import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
@@ -13,29 +14,24 @@ import { resetAppForForgottenCode } from '@/lib/reset-app';
 export default function GrownUpLayout() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const [unlocked, setUnlocked] = useState(false);
+  const { unlocked, unlock, lock } = useGrownUpSession();
+
+  useEffect(() => () => lock(), [lock]);
 
   if (!unlocked) {
     return (
-      <Screen>
-        <View style={styles.page}>
-          <ScreenHeader title="🔒 Grown-up area" onBack={() => leaveGrownUpArea(router)} />
-          <ParentalGatePrompt
-            title="Enter Pass Code"
-            errorText="That code is not right."
-            submitLabel="Unlock"
-            onSubmit={async (code) => {
-              const ok = await deviceParentalGate.verify(code);
-              if (ok) setUnlocked(true);
-              return ok;
-            }}
-            onForgotCode={async () => {
-              await resetAppForForgottenCode(db, deviceParentalGate);
-              router.replace('/setup');
-            }}
-          />
-        </View>
-      </Screen>
+      <View style={styles.lockedPage}>
+        <PassCodeSheet
+          visible
+          onClose={() => leaveGrownUpArea(router)}
+          onSubmit={(code) => deviceParentalGate.verify(code)}
+          onSuccess={unlock}
+          onForgotCode={async () => {
+            await resetAppForForgottenCode(db, deviceParentalGate);
+            router.replace('/setup');
+          }}
+        />
+      </View>
     );
   }
 
@@ -52,6 +48,10 @@ export default function GrownUpLayout() {
 }
 
 const styles = StyleSheet.create({
+  lockedPage: {
+    flex: 1,
+    backgroundColor: '#EDE9F5',
+  },
   page: {
     flex: 1,
     width: '100%',

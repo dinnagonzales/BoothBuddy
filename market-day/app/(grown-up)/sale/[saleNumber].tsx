@@ -14,11 +14,26 @@ export default function AdminEditSaleScreen() {
   return (
     <SaleDetailScreen
       saleNumber={saleNumber}
-      onBack={() => router.back()}
+      preorderMode={params.returnTo === 'preorders'}
+      onBack={() => {
+        if (params.returnTo === 'preorders') {
+          router.replace('/preorders');
+          return;
+        }
+        router.back();
+      }}
       onSaved={(savedSaleNumber) => {
+        if (params.returnTo === 'preorders') {
+          router.replace({
+            pathname: '/preorders',
+            params: { saleSaved: String(savedSaleNumber) },
+          });
+          return;
+        }
+
         if (params.returnTo === 'past' && params.marketDayId) {
           router.replace({
-            pathname: '/(grown-up)/past/[id]',
+            pathname: '/past/[id]',
             params: {
               id: params.marketDayId,
               saleSaved: String(savedSaleNumber),
@@ -28,9 +43,12 @@ export default function AdminEditSaleScreen() {
         }
 
         router.replace({
-          pathname: '/(grown-up)/settings',
+          pathname: '/settings',
           params: { saleSaved: String(savedSaleNumber) },
         });
+      }}
+      onCompleted={() => {
+        router.replace('/sales');
       }}
     />
   );

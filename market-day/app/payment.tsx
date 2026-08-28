@@ -9,7 +9,7 @@ import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 import { marketDayIdForSale } from '@/lib/market-day';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
-import { paymentCanComplete } from '@/lib/sale-edit';
+import { paymentCanComplete, preorderMetadataValid } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/types';
 
@@ -29,10 +29,18 @@ const chipShadow = Platform.select({
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes } =
+  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, isQuickSale, isPreorder } =
     useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
+  const preorderCheckout = isQuickSale && isPreorder && editingSaleId == null;
+
+  useEffect(() => {
+    if (preorderCheckout) {
+      setPaymentMethod('pay_on_pickup');
+      setCashReceivedCents(0);
+    }
+  }, [preorderCheckout]);
 
   useEffect(() => {
     if (editingSaleId == null) return;
@@ -54,20 +62,26 @@ export default function PaymentScreen() {
     [cashReceivedCents, totalCents],
   );
   const cashCoversTotal = cashReceivedCents >= totalCents;
-  const canComplete = paymentCanComplete(paymentMethod, cashReceivedCents, totalCents);
+  const canComplete =
+    paymentCanComplete(paymentMethod, cashReceivedCents, totalCents) &&
+    (!preorderCheckout || preorderMetadataValid(saleName, saleNotes));
 
   const completeSale = () => {
     if (!canComplete) return;
 
     void (async () => {
-      const marketDay = await getActiveMarketDay(db);
       if (lines.length === 0) return;
 
-      let marketDayId: number;
-      try {
-        marketDayId = marketDayIdForSale(marketDay);
-      } catch {
-        return;
+      let marketDayId: number | null;
+      if (isQuickSale) {
+        marketDayId = null;
+      } else {
+        const marketDay = await getActiveMarketDay(db);
+        try {
+          marketDayId = marketDayIdForSale(marketDay);
+        } catch {
+          return;
+        }
       }
 
       const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -83,6 +97,7 @@ export default function PaymentScreen() {
         cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
         name: saleName,
         notes: saleNotes,
+        isPreorder: preorderCheckout,
       });
 
       clearCart();
@@ -92,6 +107,8 @@ export default function PaymentScreen() {
           saleId: String(sale.id),
           itemCount: String(itemCount),
           totalCents: String(sale.totalCents),
+          isPreorder: preorderCheckout ? '1' : '0',
+          invoiceNumber: String(sale.saleNumber),
         },
       });
     })();
@@ -122,7 +139,9 @@ export default function PaymentScreen() {
             )}>
             <Pressable
               className="flex-row justify-between items-center"
-              onPress={() => setPaymentMethod('cash')}>
+              onPress={() => {
+                setPaymentMethod('cash');
+              }}>
               <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
               <View
                 className={cn(
@@ -206,7 +225,10 @@ export default function PaymentScreen() {
             )}>
             <Pressable
               className="flex-row justify-between items-center"
-              onPress={() => setPaymentMethod('venmo_zelle')}>
+              onPress={() => {
+                setPaymentMethod('venmo_zelle');
+                setCashReceivedCents(0);
+              }}>
               <Text className="text-base font-semibold text-foreground">📱 Venmo / Zelle</Text>
               <View
                 className={cn(
@@ -222,12 +244,42 @@ export default function PaymentScreen() {
             </Pressable>
           </Card>
 
+          {preorderCheckout ? (
+            <Card
+              className={cn(
+                'p-4 mb-3 border-[3px]',
+                paymentMethod === 'pay_on_pickup' ? 'border-success' : 'border-transparent',
+              )}>
+              <Pressable
+                className="flex-row justify-between items-center"
+                onPress={() => {
+                  setPaymentMethod('pay_on_pickup');
+                  setCashReceivedCents(0);
+                }}>
+                <Text className="text-base font-semibold text-foreground">📋 Pay on pickup</Text>
+                <View
+                  className={cn(
+                    'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
+                    paymentMethod === 'pay_on_pickup'
+                      ? 'border-success bg-success'
+                      : 'border-border bg-surface',
+                  )}>
+                  {paymentMethod === 'pay_on_pickup' ? (
+                    <Text className="text-white font-bold">✓</Text>
+                  ) : null}
+                </View>
+              </Pressable>
+            </Card>
+          ) : null}
+
           <Button
             size="lg"
             className="mt-auto mb-2 rounded-[18px]"
             isDisabled={!canComplete}
             onPress={completeSale}>
-            <Button.Label className="text-[17px] font-bold">Complete sale ✓</Button.Label>
+            <Button.Label className="text-[17px] font-bold">
+              {preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
+            </Button.Label>
           </Button>
         </View>
       </View>

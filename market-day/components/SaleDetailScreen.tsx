@@ -6,13 +6,18 @@ import { ScreenHeader } from '@/components/Screen';
 import { Card, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import {
+  completePreorder,
   getSaleByNumber,
   getSaleLineItems,
   removeSaleByNumber,
   updateSale,
 } from '@/lib/db/queries';
 import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
-import { saleHasUnsavedChanges } from '@/lib/sale-edit';
+import {
+  paymentMethodCompletesPreorder,
+  preorderMetadataValid,
+  saleHasUnsavedChanges,
+} from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import type { CartLine, PaymentMethod } from '@/lib/types';
 
@@ -22,6 +27,7 @@ type SaleDetail = {
   paymentMethod: PaymentMethod;
   name: string | null;
   notes: string | null;
+  isPreorder: boolean;
   createdAt: string;
   lines: CartLine[];
 };
@@ -29,15 +35,19 @@ type SaleDetail = {
 type SaleDetailScreenProps = {
   saleNumber: number;
   readOnly?: boolean;
+  preorderMode?: boolean;
   onBack: () => void;
   onSaved?: (saleNumber: number) => void;
+  onCompleted?: (saleNumber: number) => void;
 };
 
 export function SaleDetailScreen({
   saleNumber,
   readOnly = false,
+  preorderMode = false,
   onBack,
   onSaved,
+  onCompleted,
 }: SaleDetailScreenProps) {
   const db = useSQLiteContext();
   const [sale, setSale] = useState<SaleDetail | null>(null);
@@ -62,10 +72,13 @@ export function SaleDetailScreen({
       paymentMethod: header.paymentMethod,
       name: header.name,
       notes: header.notes,
+      isPreorder: header.isPreorder,
       createdAt: header.createdAt,
       lines,
     });
-    setDraftPaymentMethod(header.paymentMethod);
+    setDraftPaymentMethod(
+      header.isPreorder && header.paymentMethod === 'pay_on_pickup' ? null : header.paymentMethod,
+    );
     setDraftName(header.name ?? '');
     setDraftNotes(header.notes ?? '');
   }, [db, saleNumber]);
@@ -79,16 +92,48 @@ export function SaleDetailScreen({
     setDraftPaymentMethod(paymentMethod);
   };
 
+  const hasMetadataChanges =
+    sale != null &&
+    !readOnly &&
+    (draftName.trim() !== (sale.name ?? '') || draftNotes.trim() !== (sale.notes ?? ''));
+
   const hasChanges =
     sale != null &&
+    !readOnly &&
+    !sale.isPreorder &&
     saleHasUnsavedChanges(sale, {
       paymentMethod: draftPaymentMethod,
       name: draftName,
       notes: draftNotes,
     }, readOnly);
 
+  const preorderMetaValid = preorderMetadataValid(draftName, draftNotes);
+
+  const canMarkComplete =
+    sale?.isPreorder === true &&
+    !readOnly &&
+    preorderMetaValid &&
+    draftPaymentMethod != null &&
+    paymentMethodCompletesPreorder(draftPaymentMethod);
+
   const saveChanges = () => {
-    if (readOnly || !hasChanges || !draftPaymentMethod || busy) return;
+    if (readOnly || busy) return;
+    if (sale?.isPreorder) {
+      if (!hasMetadataChanges || !preorderMetaValid) return;
+      void (async () => {
+        setBusy(true);
+        try {
+          await updateSale(db, saleNumber, { name: draftName, notes: draftNotes });
+          await loadSale();
+          onSaved?.(saleNumber);
+        } finally {
+          setBusy(false);
+        }
+      })();
+      return;
+    }
+
+    if (!hasChanges || !draftPaymentMethod) return;
 
     void (async () => {
       setBusy(true);
@@ -100,6 +145,24 @@ export function SaleDetailScreen({
         });
         await loadSale();
         onSaved?.(saleNumber);
+      } finally {
+        setBusy(false);
+      }
+    })();
+  };
+
+  const markComplete = () => {
+    if (!canMarkComplete || !draftPaymentMethod || busy) return;
+
+    void (async () => {
+      setBusy(true);
+      try {
+        await completePreorder(db, saleNumber, {
+          paymentMethod: draftPaymentMethod,
+          name: draftName,
+          notes: draftNotes,
+        });
+        onCompleted?.(saleNumber);
       } finally {
         setBusy(false);
       }
@@ -138,7 +201,12 @@ export function SaleDetailScreen({
     );
   }
 
-  const paymentMethod = readOnly ? sale.paymentMethod : draftPaymentMethod ?? sale.paymentMethod;
+  const paymentMethod = readOnly
+    ? sale.paymentMethod
+    : sale.isPreorder
+      ? draftPaymentMethod
+      : draftPaymentMethod ?? sale.paymentMethod;
+  const selectedPayment = sale.isPreorder && !readOnly ? draftPaymentMethod : paymentMethod;
 
   return (
     <View style={styles.screen}>
@@ -153,24 +221,35 @@ export function SaleDetailScreen({
 
         {!readOnly ? (
           <>
-            <Text style={styles.sectionLabel}>Name (optional)</Text>
+            <Text style={styles.sectionLabel}>
+              Name {sale.isPreorder ? '(required)' : '(optional)'}
+            </Text>
             <TextInput
               value={draftName}
               editable={!busy}
               onChangeText={setDraftName}
               placeholder="Customer or tab name"
               placeholderTextColor={colors.inkSoft}
-              style={styles.textInput}
+              style={[
+                styles.textInput,
+                sale.isPreorder && !draftName.trim() ? styles.textInputRequired : null,
+              ]}
             />
 
-            <Text style={styles.sectionLabel}>Notes (optional)</Text>
+            <Text style={styles.sectionLabel}>
+              Notes {sale.isPreorder ? '(required)' : '(optional)'}
+            </Text>
             <TextInput
               value={draftNotes}
               editable={!busy}
               onChangeText={setDraftNotes}
-              placeholder="Preorder, running tab, etc."
+              placeholder="Pickup time, special requests, etc."
               placeholderTextColor={colors.inkSoft}
-              style={[styles.textInput, styles.notesInput]}
+              style={[
+                styles.textInput,
+                styles.notesInput,
+                sale.isPreorder && !draftNotes.trim() ? styles.textInputRequired : null,
+              ]}
               multiline
             />
           </>
@@ -191,9 +270,105 @@ export function SaleDetailScreen({
         {readOnly ? (
           <View style={styles.readOnlyPayment}>
             <Text style={styles.readOnlyPaymentLabel}>
-              {paymentMethod === 'cash' ? '💵' : '📱'} {paymentMethodLabel(paymentMethod)}
+              {sale.paymentMethod === 'cash' ? '💵' : sale.paymentMethod === 'pay_on_pickup' ? '📋' : '📱'}{' '}
+              {paymentMethodLabel(sale.paymentMethod)}
             </Text>
           </View>
+        ) : sale.isPreorder ? (
+          <>
+            <Text style={styles.preorderPaymentHint}>
+              Record how the customer paid to mark this preorder complete.
+            </Text>
+            <Card
+              className={cn(
+                'p-4 mb-2 border-[3px]',
+                selectedPayment === 'cash' ? 'border-success' : 'border-transparent',
+              )}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={busy}
+                className="flex-row justify-between items-center"
+                onPress={() => changePaymentMethod('cash')}>
+                <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
+                <View
+                  className={cn(
+                    'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
+                    selectedPayment === 'cash' ? 'bg-success' : 'bg-surface',
+                  )}>
+                  {selectedPayment === 'cash' ? (
+                    <Text className="text-white font-bold">✓</Text>
+                  ) : null}
+                </View>
+              </Pressable>
+            </Card>
+
+            <Card
+              className={cn(
+                'p-4 mb-2 border-[3px]',
+                selectedPayment === 'venmo_zelle' ? 'border-success' : 'border-transparent',
+              )}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={busy}
+                className="flex-row justify-between items-center"
+                onPress={() => changePaymentMethod('venmo_zelle')}>
+                <Text className="text-base font-semibold text-foreground">
+                  📱 {paymentMethodLabel('venmo_zelle')}
+                </Text>
+                <View
+                  className={cn(
+                    'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
+                    selectedPayment === 'venmo_zelle'
+                      ? 'border-success bg-success'
+                      : 'border-border bg-surface',
+                  )}>
+                  {selectedPayment === 'venmo_zelle' ? (
+                    <Text className="text-white font-bold">✓</Text>
+                  ) : null}
+                </View>
+              </Pressable>
+            </Card>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !hasMetadataChanges || !preorderMetaValid || busy }}
+              disabled={!hasMetadataChanges || !preorderMetaValid || busy}
+              onPress={saveChanges}
+              style={({ pressed }) => [
+                styles.saveButtonOuter,
+                (!hasMetadataChanges || !preorderMetaValid || busy) && styles.saveButtonOuterDisabled,
+                pressed && hasMetadataChanges && preorderMetaValid && !busy && styles.saveButtonOuterPressed,
+              ]}>
+              <View style={styles.saveButtonInner}>
+                <Text style={styles.saveButtonLabel}>{busy ? 'Saving…' : 'Save name & notes'}</Text>
+              </View>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canMarkComplete || busy }}
+              disabled={!canMarkComplete || busy}
+              onPress={markComplete}
+              style={({ pressed }) => [
+                styles.completeButtonOuter,
+                (!canMarkComplete || busy) && styles.saveButtonOuterDisabled,
+                pressed && canMarkComplete && !busy && styles.completeButtonOuterPressed,
+              ]}>
+              <View style={styles.completeButtonInner}>
+                <Text style={styles.completeButtonLabel}>
+                  {busy ? 'Completing…' : 'Mark complete → Sales'}
+                </Text>
+              </View>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={busy}
+              onPress={confirmRemoveSale}
+              style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}>
+              <Text style={styles.removeButtonLabel}>Remove sale</Text>
+            </Pressable>
+          </>
         ) : (
           <>
             <Card
@@ -333,6 +508,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_700Bold',
     fontSize: 14,
     color: colors.ink,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  textInputRequired: {
+    borderColor: '#F5C2C2',
+    backgroundColor: '#FFF8F8',
   },
   notesInput: {
     minHeight: 88,
@@ -389,6 +570,34 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_800ExtraBold',
     fontSize: 14,
     color: colors.ink,
+  },
+  preorderPaymentHint: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: colors.inkSoft,
+    marginBottom: 10,
+    lineHeight: 17,
+  },
+  completeButtonOuter: {
+    marginTop: 10,
+    borderRadius: 18,
+    backgroundColor: colors.greenDark,
+    paddingBottom: 4,
+  },
+  completeButtonOuterPressed: {
+    paddingBottom: 1,
+    marginTop: 13,
+  },
+  completeButtonInner: {
+    backgroundColor: colors.green,
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  completeButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: colors.white,
   },
   saveButtonOuter: {
     marginTop: 16,

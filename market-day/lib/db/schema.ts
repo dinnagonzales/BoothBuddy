@@ -36,7 +36,8 @@ const SCHEMA = `
     sale_number INTEGER NOT NULL UNIQUE,
     market_day_id INTEGER REFERENCES market_days(id),
     total_cents INTEGER NOT NULL,
-    payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'venmo_zelle')),
+    payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'venmo_zelle', 'pay_on_pickup')),
+    is_preorder INTEGER NOT NULL DEFAULT 0,
     cash_received_cents INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     exported_at TEXT
@@ -49,6 +50,11 @@ const SCHEMA = `
     quantity INTEGER NOT NULL,
     price_cents INTEGER NOT NULL,
     cost_cents INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS app_state (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
   );
 `;
 
@@ -78,6 +84,45 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   const hasSaleNotes = salesColumns.some((column) => column.name === 'notes');
   if (!hasSaleNotes) {
     await db.execAsync('ALTER TABLE sales ADD COLUMN notes TEXT');
+  }
+
+  const salesTableSql = await db.getFirstAsync<{ sql: string | null }>(
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'sales'",
+  );
+  if (salesTableSql?.sql && !salesTableSql.sql.includes('pay_on_pickup')) {
+    await db.execAsync(`
+      PRAGMA foreign_keys=OFF;
+      CREATE TABLE sales_preorder_migration (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sale_number INTEGER NOT NULL UNIQUE,
+        market_day_id INTEGER REFERENCES market_days(id),
+        total_cents INTEGER NOT NULL,
+        payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'venmo_zelle', 'pay_on_pickup')),
+        cash_received_cents INTEGER,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        exported_at TEXT,
+        name TEXT,
+        notes TEXT,
+        is_preorder INTEGER NOT NULL DEFAULT 0
+      );
+      INSERT INTO sales_preorder_migration (
+        id, sale_number, market_day_id, total_cents, payment_method, cash_received_cents,
+        created_at, exported_at, name, notes, is_preorder
+      )
+      SELECT
+        id, sale_number, market_day_id, total_cents, payment_method, cash_received_cents,
+        created_at, exported_at, name, notes, 0
+      FROM sales;
+      DROP TABLE sales;
+      ALTER TABLE sales_preorder_migration RENAME TO sales;
+      PRAGMA foreign_keys=ON;
+    `);
+  } else {
+    const refreshedColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(sales)');
+    const hasIsPreorder = refreshedColumns.some((column) => column.name === 'is_preorder');
+    if (!hasIsPreorder) {
+      await db.execAsync('ALTER TABLE sales ADD COLUMN is_preorder INTEGER NOT NULL DEFAULT 0');
+    }
   }
 
   await ensureActiveMarketDayMenu(db);

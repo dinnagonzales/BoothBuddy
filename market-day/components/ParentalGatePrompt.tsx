@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { PinInput } from '@/components/PinInput';
 import { colors } from '@/constants/theme';
 import {
   getParentalCodeLengthError,
@@ -11,6 +12,8 @@ type ParentalGatePromptProps = {
   title: string;
   errorText: string;
   submitLabel: string;
+  autoSubmit?: boolean;
+  compact?: boolean;
   onSubmit: (code: string) => Promise<boolean>;
   onForgotCode?: () => Promise<void>;
 };
@@ -19,6 +22,8 @@ export function ParentalGatePrompt({
   title,
   errorText,
   submitLabel,
+  autoSubmit = false,
+  compact = false,
   onSubmit,
   onForgotCode,
 }: ParentalGatePromptProps) {
@@ -27,23 +32,39 @@ export function ParentalGatePrompt({
   const [busy, setBusy] = useState(false);
   const [showForgotConfirm, setShowForgotConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const lastSubmittedCode = useRef('');
 
-  const submit = async () => {
-    const lengthError = getParentalCodeLengthError(code);
-    if (lengthError) {
-      setErrorMessage(lengthError);
-      return;
-    }
-    setBusy(true);
-    const ok = await onSubmit(code);
-    setBusy(false);
-    if (!ok) {
-      setErrorMessage(errorText);
-      return;
-    }
-    setErrorMessage(null);
-    setCode('');
-  };
+  const submit = useCallback(
+    async (nextCode = code) => {
+      const lengthError = getParentalCodeLengthError(nextCode);
+      if (lengthError) {
+        setErrorMessage(lengthError);
+        return;
+      }
+      if (busy) return;
+
+      setBusy(true);
+      const ok = await onSubmit(nextCode);
+      setBusy(false);
+      if (!ok) {
+        setErrorMessage(errorText);
+        lastSubmittedCode.current = nextCode;
+        return;
+      }
+      setErrorMessage(null);
+      setCode('');
+      lastSubmittedCode.current = '';
+    },
+    [busy, code, errorText, onSubmit],
+  );
+
+  useEffect(() => {
+    if (!autoSubmit) return;
+    if (code.length !== PARENTAL_CODE_MAX_LENGTH) return;
+    if (busy) return;
+    if (code === lastSubmittedCode.current) return;
+    void submit(code);
+  }, [autoSubmit, busy, code, submit]);
 
   const confirmForgotCode = async () => {
     if (!onForgotCode) return;
@@ -81,34 +102,35 @@ export function ParentalGatePrompt({
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <TextInput
-        accessibilityLabel="Pass Code"
-        keyboardType="number-pad"
-        maxLength={PARENTAL_CODE_MAX_LENGTH}
-        secureTextEntry
+    <View style={[styles.container, compact && styles.containerCompact]}>
+      {title ? <Text style={styles.title}>{title}</Text> : null}
+      <PinInput
+        label={compact ? '' : 'Pass Code'}
         value={code}
-        onChangeText={(value) => {
-          setCode(value.replace(/[^\d]/g, '').slice(0, PARENTAL_CODE_MAX_LENGTH));
+        length={PARENTAL_CODE_MAX_LENGTH}
+        autoComplete="off"
+        autoFocus
+        onChange={(value) => {
+          setCode(value);
           setErrorMessage(null);
         }}
-        style={styles.input}
-        placeholderTextColor={colors.inkSoft}
       />
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: code.length !== PARENTAL_CODE_MAX_LENGTH || busy }}
-        disabled={code.length !== PARENTAL_CODE_MAX_LENGTH || busy}
-        onPress={submit}
-        style={({ pressed }) => [
-          styles.button,
-          (code.length !== PARENTAL_CODE_MAX_LENGTH || busy) && styles.buttonDisabled,
-          pressed && code.length === PARENTAL_CODE_MAX_LENGTH && !busy && styles.buttonPressed,
-        ]}>
-        <Text style={styles.buttonLabel}>{submitLabel}</Text>
-      </Pressable>
+      {busy ? <Text style={styles.status}>{submitLabel}…</Text> : null}
+      {!autoSubmit ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: code.length !== PARENTAL_CODE_MAX_LENGTH || busy }}
+          disabled={code.length !== PARENTAL_CODE_MAX_LENGTH || busy}
+          onPress={() => void submit()}
+          style={({ pressed }) => [
+            styles.button,
+            (code.length !== PARENTAL_CODE_MAX_LENGTH || busy) && styles.buttonDisabled,
+            pressed && code.length === PARENTAL_CODE_MAX_LENGTH && !busy && styles.buttonPressed,
+          ]}>
+          <Text style={styles.buttonLabel}>{submitLabel}</Text>
+        </Pressable>
+      ) : null}
       {onForgotCode ? (
         <Pressable accessibilityRole="button" onPress={() => setShowForgotConfirm(true)}>
           <Text style={styles.forgotLink}>Forgot Pass Code?</Text>
@@ -121,6 +143,9 @@ export function ParentalGatePrompt({
 const styles = StyleSheet.create({
   container: {
     gap: 12,
+  },
+  containerCompact: {
+    gap: 8,
   },
   title: {
     fontFamily: 'Nunito_700Bold',
@@ -135,20 +160,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  input: {
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 16,
-    color: colors.ink,
-    textAlign: 'center',
-  },
   error: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 13,
     color: colors.pinkDark,
+    textAlign: 'center',
+  },
+  status: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    color: colors.inkSoft,
     textAlign: 'center',
   },
   button: {

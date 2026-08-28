@@ -58,6 +58,7 @@ export type SaleDetail = {
   paymentMethod: PaymentMethod;
   name: string | null;
   notes: string | null;
+  isPreorder: boolean;
   createdAt: string;
   lines: CartLine[];
 };
@@ -93,10 +94,19 @@ export type Catalog = {
     name?: string | null;
     notes?: string | null;
   }): Promise<{ saleNumber: number }>;
+  recordQuickSale(params: {
+    lines: CartLine[];
+    paymentMethod: PaymentMethod;
+    cashReceivedCents: number | null;
+    name?: string | null;
+    notes?: string | null;
+    isPreorder?: boolean;
+  }): Promise<{ saleNumber: number }>;
   getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
   listSalesForMarketDay(marketDayId: number): Promise<SaleSummary[]>;
   getAllTimeStats(): Promise<MarketDayStats>;
   listAllTimeSales(): Promise<AllTimeSaleSummary[]>;
+  listPreorderSales(): Promise<SaleSummary[]>;
   getSale(saleNumber: number): Promise<SaleDetail | null>;
   removeSale(saleNumber: number): Promise<void>;
   updateSalePaymentMethod(saleNumber: number, paymentMethod: PaymentMethod): Promise<void>;
@@ -108,11 +118,36 @@ export type Catalog = {
       notes?: string | null;
     },
   ): Promise<void>;
+  completePreorder(
+    saleNumber: number,
+    params: {
+      paymentMethod: PaymentMethod;
+      name?: string | null;
+      notes?: string | null;
+    },
+  ): Promise<void>;
   marketDayNeedsReexport(marketDayId: number): Promise<boolean>;
   listClosedMarketDays(): Promise<ClosedMarketDaySummary[]>;
   getMarketDayById(id: number): Promise<MarketDay | null>;
   canReopenMarketDay(id: number): Promise<boolean>;
   deleteMarketDay(id: number): Promise<void>;
+  listRunningTabExportRows(startDate: string, endDate: string): Promise<RunningTabExportRow[]>;
+  exportRunningTabSales(startDate: string, endDate: string): Promise<void>;
+  runningTabNeedsReexport(): Promise<boolean>;
+};
+
+export type RunningTabExportRow = {
+  saleNumber: number;
+  createdAt: string;
+  marketDayName: string;
+  itemName: string;
+  quantity: number;
+  priceCents: number;
+  costCents: number;
+  saleTotalCents: number;
+  paymentMethod: PaymentMethod;
+  cashReceivedCents: number | null;
+  customerName: string | null;
 };
 
 type StoredItem = ItemDraft & { id: number; archived: boolean };
@@ -135,13 +170,15 @@ type StoredMenuEntry = {
 
 type StoredSale = {
   saleNumber: number;
-  marketDayId: number;
+  marketDayId: number | null;
   lines: CartLine[];
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
   name: string | null;
   notes: string | null;
+  isPreorder: boolean;
   createdAt: string;
+  exportedAt: string | null;
 };
 
 function normalizeOptionalText(value: string | null | undefined): string | null {
@@ -169,6 +206,7 @@ export function createCatalog(): Catalog {
   let nextItemId = 1;
   let nextMarketDayId = 1;
   let nextSaleNumber = 1;
+  let runningTabNeedsReexportFlag = false;
 
   function getActiveMarketDayRecord() {
     return marketDays.find((day) => day.closedAt === null) ?? null;
@@ -208,6 +246,79 @@ export function createCatalog(): Catalog {
           soldOut: entry.soldOut,
         };
       });
+  }
+
+  function recordSaleEntry(
+    marketDayId: number | null,
+    params: {
+      lines: CartLine[];
+      paymentMethod: PaymentMethod;
+      cashReceivedCents: number | null;
+      name?: string | null;
+      notes?: string | null;
+      isPreorder?: boolean;
+    },
+  ) {
+    const saleNumber = nextSaleNumber++;
+    const name = normalizeOptionalText(params.name);
+    const notes = normalizeOptionalText(params.notes);
+    if (params.isPreorder === true && (!name || !notes)) {
+      throw new Error('Preorder requires name and notes');
+    }
+    sales.push({
+      saleNumber,
+      marketDayId,
+      lines: params.lines,
+      paymentMethod: params.paymentMethod,
+      cashReceivedCents: params.cashReceivedCents,
+      name,
+      notes,
+      isPreorder: params.isPreorder === true,
+      createdAt: new Date().toISOString(),
+      exportedAt: null,
+    });
+    return Promise.resolve({ saleNumber });
+  }
+
+  function completedSales() {
+    return sales.filter((sale) => !sale.isPreorder);
+  }
+
+  function isDateInRange(iso: string, startDate: string, endDate: string): boolean {
+    const day = iso.slice(0, 10);
+    return day >= startDate && day <= endDate;
+  }
+
+  function runningTabSalesInRange(startDate: string, endDate: string, exported: boolean | null) {
+    return sales.filter((sale) => {
+      if (sale.marketDayId !== null || sale.isPreorder) return false;
+      if (exported === true && sale.exportedAt === null) return false;
+      if (exported === false && sale.exportedAt !== null) return false;
+      return isDateInRange(sale.createdAt, startDate, endDate);
+    });
+  }
+
+  function toRunningTabExportRows(saleList: StoredSale[]): RunningTabExportRow[] {
+    const rows: RunningTabExportRow[] = [];
+    for (const sale of saleList) {
+      const saleTotalCents = cartTotal(sale.lines);
+      for (const line of sale.lines) {
+        rows.push({
+          saleNumber: sale.saleNumber,
+          createdAt: sale.createdAt,
+          marketDayName: '',
+          itemName: line.name,
+          quantity: line.quantity,
+          priceCents: line.priceCents,
+          costCents: line.costCents,
+          saleTotalCents,
+          paymentMethod: sale.paymentMethod,
+          cashReceivedCents: sale.cashReceivedCents,
+          customerName: sale.name,
+        });
+      }
+    }
+    return rows.sort((a, b) => a.saleNumber - b.saleNumber);
   }
 
   return {
@@ -451,18 +562,10 @@ export function createCatalog(): Catalog {
       }
     },
     async recordSale(params) {
-      const saleNumber = nextSaleNumber++;
-      sales.push({
-        saleNumber,
-        marketDayId: params.marketDayId,
-        lines: params.lines,
-        paymentMethod: params.paymentMethod,
-        cashReceivedCents: params.cashReceivedCents,
-        name: normalizeOptionalText(params.name),
-        notes: normalizeOptionalText(params.notes),
-        createdAt: new Date().toISOString(),
-      });
-      return { saleNumber };
+      return recordSaleEntry(params.marketDayId, params);
+    },
+    async recordQuickSale(params) {
+      return recordSaleEntry(null, params);
     },
     async getMarketDayStats(marketDayId) {
       const daySales = sales.filter((sale) => sale.marketDayId === marketDayId);
@@ -505,7 +608,7 @@ export function createCatalog(): Catalog {
       let cashCents = 0;
       let venmoCents = 0;
 
-      for (const sale of sales) {
+      for (const sale of completedSales()) {
         const saleTotal = cartTotal(sale.lines);
         totalCents += saleTotal;
         itemCount += sale.lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -520,7 +623,7 @@ export function createCatalog(): Catalog {
       return { totalCents, itemCount, profitCents, cashCents, venmoCents };
     },
     async listAllTimeSales() {
-      return sales
+      return completedSales()
         .slice()
         .sort((a, b) => {
           const byDate = b.createdAt.localeCompare(a.createdAt);
@@ -535,6 +638,21 @@ export function createCatalog(): Catalog {
           marketDayName: marketDays.find((day) => day.id === sale.marketDayId)?.name ?? null,
         }));
     },
+    async listPreorderSales() {
+      return sales
+        .filter((sale) => sale.isPreorder)
+        .sort((a, b) => {
+          const byDate = b.createdAt.localeCompare(a.createdAt);
+          return byDate !== 0 ? byDate : b.saleNumber - a.saleNumber;
+        })
+        .map((sale) => ({
+          saleNumber: sale.saleNumber,
+          totalCents: cartTotal(sale.lines),
+          paymentMethod: sale.paymentMethod,
+          name: sale.name,
+          createdAt: sale.createdAt,
+        }));
+    },
     async removeSale(saleNumber) {
       const index = sales.findIndex((sale) => sale.saleNumber === saleNumber);
       if (index === -1) return;
@@ -542,6 +660,8 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === removed.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
+      } else if (removed.marketDayId === null && removed.exportedAt) {
+        runningTabNeedsReexportFlag = true;
       }
     },
     async getSale(saleNumber) {
@@ -553,6 +673,7 @@ export function createCatalog(): Catalog {
         paymentMethod: sale.paymentMethod,
         name: sale.name,
         notes: sale.notes,
+        isPreorder: sale.isPreorder,
         createdAt: sale.createdAt,
         lines: sale.lines.map((line) => ({ ...line })),
       };
@@ -568,6 +689,8 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
+      } else if (sale.marketDayId === null && sale.exportedAt) {
+        runningTabNeedsReexportFlag = true;
       }
     },
     async updateSale(saleNumber, updates) {
@@ -591,6 +714,34 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
+      } else if (sale.marketDayId === null && sale.exportedAt) {
+        runningTabNeedsReexportFlag = true;
+      }
+    },
+    async completePreorder(saleNumber, params) {
+      const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+      if (!sale?.isPreorder || params.paymentMethod === 'pay_on_pickup') return;
+
+      sale.paymentMethod = params.paymentMethod;
+      sale.cashReceivedCents =
+        params.paymentMethod === 'cash'
+          ? (sale.cashReceivedCents ?? cartTotal(sale.lines))
+          : null;
+      if (params.name !== undefined) {
+        sale.name = normalizeOptionalText(params.name);
+      }
+      if (params.notes !== undefined) {
+        sale.notes = normalizeOptionalText(params.notes);
+      }
+      if (!sale.name || !sale.notes) return;
+
+      sale.isPreorder = false;
+
+      const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
+      if (marketDay?.exportedAt) {
+        marketDay.needsReexport = true;
+      } else if (sale.marketDayId === null && sale.exportedAt) {
+        runningTabNeedsReexportFlag = true;
       }
     },
     async marketDayNeedsReexport(marketDayId) {
@@ -650,6 +801,19 @@ export function createCatalog(): Catalog {
       if (index !== -1) {
         marketDays.splice(index, 1);
       }
+    },
+    async listRunningTabExportRows(startDate, endDate) {
+      return toRunningTabExportRows(runningTabSalesInRange(startDate, endDate, false));
+    },
+    async exportRunningTabSales(startDate, endDate) {
+      const now = new Date().toISOString();
+      for (const sale of runningTabSalesInRange(startDate, endDate, false)) {
+        sale.exportedAt = now;
+      }
+      runningTabNeedsReexportFlag = false;
+    },
+    async runningTabNeedsReexport() {
+      return runningTabNeedsReexportFlag;
     },
   };
 }

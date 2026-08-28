@@ -31,7 +31,19 @@ export function paymentCanComplete(
   cashReceivedCents: number,
   totalCents: number,
 ): boolean {
-  return paymentMethod === 'venmo_zelle' || cashReceivedCents >= totalCents;
+  return (
+    paymentMethod === 'venmo_zelle' ||
+    paymentMethod === 'pay_on_pickup' ||
+    cashReceivedCents >= totalCents
+  );
+}
+
+export function paymentMethodCompletesPreorder(paymentMethod: PaymentMethod): boolean {
+  return paymentMethod === 'cash' || paymentMethod === 'venmo_zelle';
+}
+
+export function preorderMetadataValid(name: string, notes: string): boolean {
+  return name.trim().length > 0 && notes.trim().length > 0;
 }
 
 export function cashReceivedForEditedSale(
