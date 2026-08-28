@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { ActiveMarketDayExistsError, NothingToUndoCloseError } from '@/lib/market-day';
-import type { CartLine, Item, MarketDay, PaymentMethod, Sale } from '@/lib/types';
+import type { CartLine, Item, MarketDay, PaymentMethod, Sale, SaleSummary } from '@/lib/types';
 
 type ItemRow = {
   id: number;
@@ -564,4 +564,29 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
     cashCents: row?.cash_cents ?? 0,
     venmoCents: row?.venmo_cents ?? 0,
   };
+}
+
+export async function getMarketDaySales(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<SaleSummary[]> {
+  const rows = await db.getAllAsync<{
+    sale_number: number;
+    total_cents: number;
+    payment_method: PaymentMethod;
+    created_at: string;
+  }>(
+    `SELECT sale_number, total_cents, payment_method, created_at
+     FROM sales
+     WHERE market_day_id = ?
+     ORDER BY sale_number ASC`,
+    marketDayId,
+  );
+
+  return rows.map((row) => ({
+    saleNumber: row.sale_number,
+    totalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    createdAt: row.created_at,
+  }));
 }

@@ -148,6 +148,13 @@ export default function PaymentScreen() {
                 <Text style={styles.tapToAdd}>Tap to add</Text>
 
                 <View style={styles.chipRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Exact amount ${formatMoney(totalCents)}`}
+                    style={styles.exactChip}
+                    onPress={() => setCashReceivedCents(totalCents)}>
+                    <Text style={styles.chipLabel}>Exact amount</Text>
+                  </Pressable>
                   {BILLS.map((cents) => (
                     <Pressable
                       key={cents}
@@ -158,6 +165,13 @@ export default function PaymentScreen() {
                       <Text style={styles.chipLabel}>{formatMoney(cents)}</Text>
                     </Pressable>
                   ))}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear cash amount"
+                    style={styles.clearChip}
+                    onPress={() => setCashReceivedCents(0)}>
+                    <Text style={styles.clearChipLabel}>Clear</Text>
+                  </Pressable>
                 </View>
 
                 <View style={styles.statusBar}>
@@ -281,10 +295,30 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     ...chipShadow,
   },
+  exactChip: {
+    backgroundColor: colors.green,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    ...chipShadow,
+  },
+  clearChip: {
+    backgroundColor: colors.white,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 2,
+    borderColor: '#E4DDF5',
+  },
   chipLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: colors.white,
+  },
+  clearChipLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: colors.purpleDark,
   },
   statusBar: {
     marginTop: 14,

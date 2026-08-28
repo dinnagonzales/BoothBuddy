@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings + Inventory - redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#FF6B9D; --pink-dark:#D6497A;
+    --purple:#9B5DE5; --purple-dark:#7333BE;
+    --green:#4CD787; --green-dark:#1FA85C;
+    --red:#FF6B6B; --red-dark:#E14545;
+    --ink:#2B2340;
+    --ink-soft:#6E6480;
+    --bg:#EDE9F5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:#DCD5EF; font-family:'Nunito',sans-serif; color:var(--ink);
+    display:flex; flex-wrap:wrap; gap:28px; padding:32px; justify-content:center; align-items:flex-start;
+  }
+  .label{ width:100%; text-align:center; font-weight:800; font-size:13px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .phone{ width:320px; height:680px; background:var(--bg); border-radius:36px; padding:16px; box-shadow:0 12px 0 rgba(43,35,64,0.08); display:flex; flex-direction:column; }
+
+  .topbar{ display:flex; align-items:center; margin-bottom:16px; position:relative; }
+  .back{ color:var(--purple-dark); font-weight:800; font-size:13px; }
+  .topbar h1{ position:absolute; left:0; right:0; text-align:center; font-family:'Fredoka'; font-size:16px; font-weight:600; margin:0; }
+
+  .content{ flex:1; overflow-y:auto; }
+
+  .summary{ background:linear-gradient(135deg,var(--pink),var(--purple)); border-radius:22px; padding:18px 16px; color:#fff; margin-bottom:18px; text-align:center; }
+  .summary .nm{ font-family:'Fredoka'; font-size:15px; font-weight:600; margin-bottom:6px; }
+  .summary .amt{ font-family:'Fredoka'; font-size:32px; font-weight:700; }
+  .summary .sub{ font-size:12px; font-weight:700; opacity:0.9; margin-top:2px; }
+
+  .sec-label{ font-size:11px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.6px; margin:0 2px 8px; }
+
+  .sale-row{ background:#fff; border-radius:14px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .sale-row .nm{ font-weight:800; font-size:13px; }
+  .sale-row .tm{ font-size:11px; color:var(--ink-soft); font-weight:700; }
+  .sale-row .amt{ font-family:'Fredoka'; font-weight:600; font-size:14px; text-align:right; }
+  .sale-row .mth{ font-size:11px; color:var(--ink-soft); font-weight:700; text-align:right; }
+
+  .item-row{ background:#fff; border-radius:16px; padding:10px 12px; display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .item-row.sold-out{ opacity:0.55; }
+  .item-row .ic{ font-size:18px; }
+  .item-row .nm{ font-weight:800; font-size:13px; }
+  .item-row .pr{ font-size:11px; color:var(--ink-soft); font-weight:700; }
+  .item-row .meta{ flex:1; }
+
+  .toggle{ width:40px; height:22px; border-radius:12px; background:#E4DDF5; position:relative; flex-shrink:0; }
+  .toggle .knob{ width:18px; height:18px; border-radius:50%; background:#fff; position:absolute; top:2px; left:2px; box-shadow:0 1px 2px rgba(0,0,0,0.15); }
+  .toggle.on{ background:var(--red); }
+  .toggle.on .knob{ left:20px; }
+  .toggle-label{ font-size:9px; font-weight:800; text-align:center; color:var(--ink-soft); }
+
+  .trash{ width:26px; height:26px; border-radius:50%; background:#FFEDED; color:var(--red); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+  .undo-link{ font-size:10px; font-weight:800; color:var(--purple-dark); margin-top:2px; }
+
+  .end-btn{ width:100%; background:#fff; border:2px solid #FFD3D3; color:var(--red-dark); border-radius:16px; padding:13px; font-family:'Fredoka'; font-size:14px; font-weight:600; }
+  .end-dock{ padding-top:10px; }
+
+  .add-menu-btn{ width:100%; background:#fff; border:2px dashed #C9B8F0; color:var(--purple-dark); border-radius:16px; padding:13px; font-family:'Fredoka'; font-size:14px; font-weight:600; margin-bottom:16px; }
+
+  .cost-row{ background:#fff; border-radius:16px; padding:12px 14px; display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .cost-row .ic{ font-size:18px; }
+  .cost-row .nm{ font-weight:800; font-size:13px; }
+  .cost-row .figs{ font-size:11px; color:var(--ink-soft); font-weight:700; }
+  .cost-row .sp{ flex:1; }
+  .pencil{ width:26px; height:26px; border-radius:50%; background:#F3EFFA; color:var(--purple-dark); display:flex; align-items:center; justify-content:center; font-size:11px; }
+
+  .add-btn{ width:100%; background:var(--purple); color:#fff; border:none; border-radius:18px; padding:16px; font-family:'Fredoka'; font-size:16px; font-weight:600; box-shadow:0 4px 0 var(--purple-dark); margin-top:8px; }
+
+  .empty-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 12px; }
+  .empty-badge{ width:64px; height:64px; border-radius:50%; background:#F3EFFA; display:flex; align-items:center; justify-content:center; font-size:30px; margin-bottom:14px; }
+  .empty-wrap h2{ font-family:'Fredoka'; font-size:19px; font-weight:600; margin:0 0 6px; }
+  .empty-wrap p{ font-size:13px; color:var(--ink-soft); font-weight:700; margin:0 0 20px; }
+  .start-btn{ width:100%; background:var(--purple); color:#fff; border:none; border-radius:18px; padding:16px; font-family:'Fredoka'; font-size:16px; font-weight:600; box-shadow:0 4px 0 var(--purple-dark); }
+
+  .navbar{ display:flex; justify-content:space-around; padding-top:10px; margin-top:10px; border-top:1px solid #E4DDF5; }
+  .navitem{ text-align:center; font-size:11px; font-weight:800; color:var(--ink-soft); }
+  .navitem.active{ color:var(--purple-dark); }
+  .navicon{ font-size:22px; display:block; margin-bottom:2px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="label">1. Settings tab</div>
+  <div class="topbar"><span class="back">← Back</span><h1>⚙️ Settings</h1></div>
+
+  <div class="content">
+    <div class="summary">
+      <div class="nm">Demo Market Day</div>
+      <div class="amt">$25.00</div>
+      <div class="sub">Aug 28, 2026 · 1 sale</div>
+    </div>
+
+    <div class="sec-label">Sales</div>
+    <div class="sale-row">
+      <div><div class="nm">#1</div><div class="tm">8:32 PM</div></div>
+      <div><div class="amt">$25.00</div><div class="mth">Cash</div></div>
+    </div>
+
+    <div class="sec-label">Today's Menu</div>
+    <div class="item-row sold-out">
+      <span class="ic">📦</span>
+      <div class="meta"><div class="nm">Juice</div><div class="pr">$25.00</div></div>
+      <div>
+        <div class="toggle on"><span class="knob"></span></div>
+        <div class="toggle-label">Sold out</div>
+      </div>
+      <span class="trash">🗑</span>
+    </div>
+    <button class="add-menu-btn">➕ Add item to today's menu</button>
+  </div>
+
+  <div class="end-dock">
+    <button class="end-btn">🔴 End Market Day</button>
+  </div>
+
+  <div class="navbar">
+    <div class="navitem active"><span class="navicon">⚙️</span>Settings</div>
+    <div class="navitem"><span class="navicon">📦</span>Inventory</div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="label">2. Inventory tab (moved here)</div>
+  <div class="topbar"><span class="back">← Back</span><h1>📦 Inventory</h1></div>
+
+  <div class="content">
+    <div class="sec-label">Items & cost</div>
+    <div class="cost-row">
+      <span class="ic">📦</span>
+      <div class="sp"><div class="nm">Juice</div><div class="figs">cost $9.00 · sells $25.00</div></div>
+      <span class="pencil">✏️</span>
+    </div>
+    <div class="cost-row">
+      <span class="ic">🐉</span>
+      <div class="sp"><div class="nm">Dragon</div><div class="figs">cost $2.00 · sells $4.00</div></div>
+      <span class="pencil">✏️</span>
+    </div>
+
+    <button class="add-btn">➕ Add Item</button>
+  </div>
+
+  <div class="navbar">
+    <div class="navitem"><span class="navicon">⚙️</span>Settings</div>
+    <div class="navitem active"><span class="navicon">📦</span>Inventory</div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="label">3. Settings - no market day today</div>
+  <div class="topbar"><span class="back">← Back</span><h1>⚙️ Settings</h1></div>
+
+  <div class="empty-wrap">
+    <div class="empty-badge">🎪</div>
+    <h2>No market day yet</h2>
+    <p>Start one to begin tracking today's sales.</p>
+    <button class="start-btn">▶️ Start Market Day</button>
+  </div>
+
+  <div class="navbar">
+    <div class="navitem active"><span class="navicon">⚙️</span>Settings</div>
+    <div class="navitem"><span class="navicon">📦</span>Inventory</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,10 +1,11 @@
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ItemCard, Screen, ScreenHeader } from '@/components/Screen';
-import { Button, Card } from '@/components/ui';
+import { ItemCard, Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
+import { Card } from '@/components/ui';
+import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 import { getCheckoutItems, getNextSaleNumber, getSale } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
@@ -104,87 +105,101 @@ export default function SellScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title={screenTitle} onBack={() => router.back()} />
+      <View style={styles.page}>
+        <View style={styles.container}>
+          <ScreenHeader title={screenTitle} onBack={() => router.back()} />
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
-        style={{ flex: 1 }}
-        renderItem={({ item }) => (
-          <ItemCard
-            emoji={item.emoji}
-            name={item.name}
-            priceLabel={formatMoney(item.priceCents)}
-            onAdd={() =>
-              addItem({
-                itemId: item.id,
-                name: item.name,
-                emoji: item.emoji,
-                priceCents: item.priceCents,
-                costCents: item.costCents,
-              })
-            }
+          <SectionLabel>🍭 Menu · tap + to add</SectionLabel>
+
+          <FlatList
+            data={items}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
+            style={{ flex: 1 }}
+            renderItem={({ item }) => (
+              <ItemCard
+                emoji={item.emoji}
+                name={item.name}
+                priceLabel={formatMoney(item.priceCents)}
+                onAdd={() =>
+                  addItem({
+                    itemId: item.id,
+                    name: item.name,
+                    emoji: item.emoji,
+                    priceCents: item.priceCents,
+                    costCents: item.costCents,
+                  })
+                }
+              />
+            )}
           />
-        )}
-      />
 
-      <View style={styles.cartContainer}>
-        <Card style={styles.cartCard}>
-          <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">Cart</Text>
-          {lines.length === 0 ? (
-            <Text className="text-muted font-semibold py-2">Tap + to add items</Text>
-          ) : (
-            lines.map((line) => (
-              <View key={line.itemId} className="flex-row justify-between items-center py-1">
-                <View className="flex-row items-center gap-1.5 flex-1">
-                  <Button
-                    size="sm"
-                    isIconOnly
-                    variant="secondary"
-                    className="w-7 h-7 rounded-full"
-                    onPress={() => changeQuantity(line.itemId, -1)}>
-                    <Button.Label>−</Button.Label>
-                  </Button>
-                  <Text className="font-extrabold text-muted min-w-[24px]">{line.quantity}×</Text>
-                  <Button
-                    size="sm"
-                    isIconOnly
-                    variant="secondary"
-                    className="w-7 h-7 rounded-full"
-                    onPress={() => changeQuantity(line.itemId, 1)}>
-                    <Button.Label>+</Button.Label>
-                  </Button>
-                  <Text className="font-bold text-foreground flex-shrink">{line.name}</Text>
+          <View style={styles.cartContainer}>
+            <Card style={styles.cartCard}>
+              <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">Cart</Text>
+              {lines.map((line) => (
+                <View key={line.itemId} className="flex-row justify-between items-center py-1">
+                  <View className="flex-row items-center gap-2 flex-1">
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove one ${line.name}`}
+                      style={styles.minusButton}
+                      onPress={() => changeQuantity(line.itemId, -1)}>
+                      <Text style={styles.stepButtonLabel}>−</Text>
+                    </Pressable>
+                    <Text style={styles.quantityLabel}>{line.quantity}</Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add one ${line.name}`}
+                      style={styles.plusButton}
+                      onPress={() => changeQuantity(line.itemId, 1)}>
+                      <Text style={styles.stepButtonLabel}>+</Text>
+                    </Pressable>
+                    <Text className="font-bold text-foreground flex-shrink">{line.name}</Text>
+                  </View>
+                  <Text className="font-bold text-foreground">
+                    {formatMoney(line.priceCents * line.quantity)}
+                  </Text>
                 </View>
-                <Text className="font-bold text-foreground">
-                  {formatMoney(line.priceCents * line.quantity)}
-                </Text>
+              ))}
+              <View className="flex-row justify-between items-center border-t-2 border-separator mt-2 pt-2">
+                <Text className="text-[15px] font-semibold text-foreground">Total</Text>
+                <Text className="text-xl font-bold text-danger">{formatMoney(totalCents)}</Text>
               </View>
-            ))
-          )}
-          <View className="flex-row justify-between items-center border-t-2 border-separator mt-2 pt-2">
-            <Text className="text-[15px] font-semibold text-foreground">Total</Text>
-            <Text className="text-xl font-bold text-danger">{formatMoney(totalCents)}</Text>
+              <Pressable
+                accessibilityRole="button"
+                disabled={itemCount === 0}
+                onPress={() => {
+                  leavingForPayment.current = true;
+                  router.push('/payment');
+                }}
+                style={({ pressed }) => [
+                  styles.checkoutButtonOuter,
+                  itemCount === 0 ? styles.checkoutButtonDisabled : null,
+                  pressed && itemCount > 0 ? styles.checkoutButtonOuterPressed : null,
+                ]}>
+                <View style={styles.checkoutButtonInner}>
+                  <Text style={styles.checkoutButtonLabel}>Checkout →</Text>
+                </View>
+              </Pressable>
+            </Card>
           </View>
-          <Button
-            size="lg"
-            variant="primary"
-            className="mt-2.5 bg-success"
-            isDisabled={itemCount === 0}
-            onPress={() => {
-              leavingForPayment.current = true;
-              router.push('/payment');
-            }}>
-            <Button.Label className="font-bold">Checkout →</Button.Label>
-          </Button>
-        </Card>
+        </View>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 440,
+  },
   cartContainer: {
     marginTop: 24,
     marginBottom: 24,
@@ -192,5 +207,59 @@ const styles = StyleSheet.create({
   cartCard: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+  },
+  minusButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.pinkDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plusButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.green,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 20,
+    color: colors.white,
+    lineHeight: 22,
+  },
+  quantityLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: colors.ink,
+    minWidth: 18,
+    textAlign: 'center',
+  },
+  checkoutButtonOuter: {
+    marginTop: 10,
+    borderRadius: 18,
+    backgroundColor: colors.purpleDark,
+    paddingBottom: 5,
+  },
+  checkoutButtonOuterPressed: {
+    paddingBottom: 1,
+    marginTop: 4,
+  },
+  checkoutButtonDisabled: {
+    opacity: 0.45,
+  },
+  checkoutButtonInner: {
+    backgroundColor: colors.purple,
+    borderRadius: 18,
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkoutButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: colors.white,
   },
 });

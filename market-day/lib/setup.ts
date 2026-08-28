@@ -1,9 +1,9 @@
 export async function isSetupComplete(
   gate: { isConfigured(): Promise<boolean> },
-  catalog: { listForSeller(): Promise<unknown[]> },
+  catalog: { hasActiveItems(): Promise<boolean> },
 ): Promise<boolean> {
   if (!(await gate.isConfigured())) return false;
-  return (await catalog.listForSeller()).length > 0;
+  return catalog.hasActiveItems();
 }
 
 export async function beginFreshSetupIfNoCode(
@@ -19,9 +19,9 @@ export type SetupStep = 'code' | 'item';
 
 export async function getSetupStep(
   gate: { isConfigured(): Promise<boolean> },
-  catalog: { listForSeller(): Promise<unknown[]> },
+  catalog: { hasActiveItems(): Promise<boolean> },
 ): Promise<SetupStep | 'complete'> {
   if (!(await gate.isConfigured())) return 'code';
-  if ((await catalog.listForSeller()).length === 0) return 'item';
+  if (!(await catalog.hasActiveItems())) return 'item';
   return 'complete';
 }

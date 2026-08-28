@@ -36,3 +36,10 @@ export type Sale = {
   cashReceivedCents: number | null;
   createdAt: string;
 };
+
+export type SaleSummary = {
+  saleNumber: number;
+  totalCents: number;
+  paymentMethod: PaymentMethod;
+  createdAt: string;
+};

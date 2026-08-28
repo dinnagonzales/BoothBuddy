@@ -52,7 +52,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 3. **Payment** — total; **Cash** or **Venmo/Zelle** (mutually exclusive).
    - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each replaces amount), **− / +** steppers ($1 increments), numeric input, **Change** displayed.
    - **Venmo/Zelle:** checkbox only; assumed paid in full.
-4. **Celebration** — "Sold!" + item count + total; **Fix** reopens cart; tap elsewhere → **Home**.
+4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
 ### Log a Running Tab sale (admin)
 
@@ -120,7 +120,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 
 | Question | Decision |
 |----------|----------|
-| Undo/edit sales? | **Fix** on celebration; **admin edit** anytime in grown-up settings |
+| Undo/edit sales? | **Edit this sale** on celebration; **admin edit** anytime in grown-up settings |
 | Cash received? | Record + show **change**; quick bills + $1 steppers |
 | Session reset? | **Market Day** = explicit session; **Running Tab** for misc |
 | Emoji vs photo? | **Emoji default, photo optional** |

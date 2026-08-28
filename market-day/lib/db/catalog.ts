@@ -77,6 +77,10 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         archived: item.archived,
       }));
     },
+    async hasActiveItems(): Promise<boolean> {
+      const items = await getAllItems(db);
+      return items.some((item) => !item.archived);
+    },
     async listMenuForAdmin(): Promise<MenuItem[]> {
       return getMenuForAdmin(db);
     },

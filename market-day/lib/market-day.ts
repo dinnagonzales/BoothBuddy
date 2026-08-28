@@ -6,6 +6,17 @@ export function formatMarketDayDate(iso: string): string {
   });
 }
 
+export function formatSaleTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+export function paymentMethodLabel(method: 'cash' | 'venmo_zelle'): string {
+  return method === 'cash' ? 'Cash' : 'Venmo/Zelle';
+}
+
 export function suggestMarketDayName(now = new Date()): string {
   const formatted = now.toLocaleDateString('en-US', {
     month: 'short',

@@ -79,6 +79,26 @@ test('seller cannot sell after setup when there is no Active Market Day', async 
   expect(await catalog.getActiveMarketDay()).toBeNull();
 });
 
+test('setup stays complete when today\'s Menu is empty but Items exist in the catalog', async () => {
+  const gate = createParentalGate(createMemorySecretStore());
+  const catalog = createCatalog();
+
+  await gate.setCode('1234');
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    emoji: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.removeFromMenu(dragon.id);
+
+  expect(await catalog.listForSeller()).toEqual([]);
+  expect(await isSetupComplete(gate, catalog)).toBe(true);
+  expect(await getSetupStep(gate, catalog)).toBe('complete');
+});
+
 test('missing code always starts at the code setup step', async () => {
   const gate = createParentalGate(createMemorySecretStore());
   const catalog = createCatalog();

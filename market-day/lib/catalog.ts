@@ -1,4 +1,5 @@
 import { ActiveMarketDayExistsError, NothingToUndoCloseError } from '@/lib/market-day';
+import type { CartLine, PaymentMethod, SaleSummary } from '@/lib/types';
 
 export type ItemDraft = {
   name: string;
@@ -39,6 +40,13 @@ export type AdminItem = {
   archived: boolean;
 };
 
+export type MarketDayStats = {
+  totalCents: number;
+  itemCount: number;
+  cashCents: number;
+  venmoCents: number;
+};
+
 export type Catalog = {
   createItem(draft: ItemDraft): Promise<{ id: number }>;
   updateItem(id: number, draft: ItemDraft): Promise<void>;
@@ -48,6 +56,7 @@ export type Catalog = {
   listForCheckout(): Promise<SellerItem[]>;
   listForRunningTab(): Promise<SellerItem[]>;
   listForAdmin(): Promise<AdminItem[]>;
+  hasActiveItems(): Promise<boolean>;
   listMenuForAdmin(): Promise<MenuItem[]>;
   listRemovedFromMenu(): Promise<RemovedMenuItem[]>;
   removeFromMenu(itemId: number): Promise<void>;
@@ -60,6 +69,14 @@ export type Catalog = {
   undoCloseMostRecentMarketDay(): Promise<void>;
   canUndoClose(): Promise<boolean>;
   exportMarketDay(id: number): Promise<void>;
+  recordSale(params: {
+    marketDayId: number;
+    lines: CartLine[];
+    paymentMethod: PaymentMethod;
+    cashReceivedCents: number | null;
+  }): Promise<{ saleNumber: number }>;
+  getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
+  listSalesForMarketDay(marketDayId: number): Promise<SaleSummary[]>;
 };
 
 type StoredItem = ItemDraft & { id: number; archived: boolean };
@@ -78,12 +95,27 @@ type StoredMenuEntry = {
   removed: boolean;
 };
 
+type StoredSale = {
+  saleNumber: number;
+  marketDayId: number;
+  lines: CartLine[];
+  paymentMethod: PaymentMethod;
+  cashReceivedCents: number | null;
+  createdAt: string;
+};
+
+function cartTotal(lines: CartLine[]): number {
+  return lines.reduce((sum, line) => sum + line.priceCents * line.quantity, 0);
+}
+
 export function createCatalog(): Catalog {
   const items: StoredItem[] = [];
   const marketDays: StoredMarketDay[] = [];
   const menuEntries: StoredMenuEntry[] = [];
+  const sales: StoredSale[] = [];
   let nextItemId = 1;
   let nextMarketDayId = 1;
+  let nextSaleNumber = 1;
 
   function getActiveMarketDayRecord() {
     return marketDays.find((day) => day.closedAt === null) ?? null;
@@ -230,6 +262,9 @@ export function createCatalog(): Catalog {
         archived,
       }));
     },
+    async hasActiveItems(): Promise<boolean> {
+      return items.some((item) => !item.archived);
+    },
     async listMenuForAdmin(): Promise<MenuItem[]> {
       const active = getActiveMarketDayRecord();
       if (!active) return [];
@@ -338,6 +373,49 @@ export function createCatalog(): Catalog {
       if (marketDay) {
         marketDay.exportedAt = new Date().toISOString();
       }
+    },
+    async recordSale(params) {
+      const saleNumber = nextSaleNumber++;
+      sales.push({
+        saleNumber,
+        marketDayId: params.marketDayId,
+        lines: params.lines,
+        paymentMethod: params.paymentMethod,
+        cashReceivedCents: params.cashReceivedCents,
+        createdAt: new Date().toISOString(),
+      });
+      return { saleNumber };
+    },
+    async getMarketDayStats(marketDayId) {
+      const daySales = sales.filter((sale) => sale.marketDayId === marketDayId);
+      let totalCents = 0;
+      let itemCount = 0;
+      let cashCents = 0;
+      let venmoCents = 0;
+
+      for (const sale of daySales) {
+        const saleTotal = cartTotal(sale.lines);
+        totalCents += saleTotal;
+        itemCount += sale.lines.reduce((sum, line) => sum + line.quantity, 0);
+        if (sale.paymentMethod === 'cash') {
+          cashCents += saleTotal;
+        } else {
+          venmoCents += saleTotal;
+        }
+      }
+
+      return { totalCents, itemCount, cashCents, venmoCents };
+    },
+    async listSalesForMarketDay(marketDayId) {
+      return sales
+        .filter((sale) => sale.marketDayId === marketDayId)
+        .sort((a, b) => a.saleNumber - b.saleNumber)
+        .map((sale) => ({
+          saleNumber: sale.saleNumber,
+          totalCents: cartTotal(sale.lines),
+          paymentMethod: sale.paymentMethod,
+          createdAt: sale.createdAt,
+        }));
     },
   };
 }

@@ -61,8 +61,17 @@ export function ItemCard({ emoji, name, priceLabel, onAdd }: ItemCardProps) {
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemPrice}>{priceLabel}</Text>
       {onAdd ? (
-        <Pressable accessibilityRole="button" onPress={onAdd} style={styles.addButton}>
-          <Text style={styles.addButtonLabel}>+</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Add ${name}`}
+          onPress={onAdd}
+          style={({ pressed }) => [
+            styles.addButtonOuter,
+            pressed ? styles.addButtonOuterPressed : null,
+          ]}>
+          <View style={styles.addButtonInner}>
+            <Text style={styles.addButtonLabel}>+</Text>
+          </View>
         </Pressable>
       ) : null}
     </View>
@@ -137,18 +146,27 @@ const styles = StyleSheet.create({
     color: colors.purpleDark,
     marginRight: 4,
   },
-  addButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  addButtonOuter: {
+    borderRadius: 20,
+    backgroundColor: colors.purpleDark,
+    paddingBottom: 4,
+  },
+  addButtonOuterPressed: {
+    paddingBottom: 1,
+    marginTop: 3,
+  },
+  addButtonInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 18,
+    fontSize: 22,
     color: colors.white,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 });

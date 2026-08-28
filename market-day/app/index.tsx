@@ -15,7 +15,7 @@ import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 import { createSqliteCatalog } from '@/lib/db/catalog';
-import { getHomeItems, getActiveMarketDay, getMarketDayStats } from '@/lib/db/queries';
+import { getHomeItems, getActiveMarketDay } from '@/lib/db/queries';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
@@ -27,8 +27,6 @@ type HomeItem = Item & { soldOut?: boolean };
 type ActiveMarketSummary = {
   name: string;
   dateLabel: string;
-  totalCents: number;
-  itemCount: number;
 };
 
 function HeroCard({ children }: { children: ReactNode }) {
@@ -70,13 +68,10 @@ export default function HomeScreen() {
             setItems(await getHomeItems(db));
             const marketDay = await getActiveMarketDay(db);
             if (marketDay) {
-              const stats = await getMarketDayStats(db, marketDay.id);
               setCanSell(true);
               setActiveMarket({
                 name: marketDay.name,
                 dateLabel: formatMarketDayDate(marketDay.startedAt),
-                totalCents: stats.totalCents,
-                itemCount: stats.itemCount,
               });
             } else {
               setCanSell(false);
@@ -143,13 +138,7 @@ export default function HomeScreen() {
               <Text style={styles.heroEyebrow}>
                 {activeMarket.name.toUpperCase()} · {activeMarket.dateLabel.toUpperCase()}
               </Text>
-              <Text style={styles.heroTotal}>{formatMoney(activeMarket.totalCents)}</Text>
-              <Text style={styles.heroSubtitle}>
-                {activeMarket.itemCount} {activeMarket.itemCount === 1 ? 'item' : 'items'} sold today
-              </Text>
-              {activeMarket.totalCents === 0 ? (
-                <Text style={styles.heroEmpty}>Nothing sold yet — let&apos;s fix that! 🎉</Text>
-              ) : null}
+              <Text style={styles.heroSubtitle}>Tap an item or sell something below</Text>
             </HeroCard>
           ) : null}
 
@@ -273,27 +262,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-  heroTotal: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 46,
-    color: colors.white,
-    textAlign: 'center',
-    marginBottom: 6,
-  },
   heroSubtitle: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 13,
     color: colors.white,
     opacity: 0.9,
     textAlign: 'center',
-  },
-  heroEmpty: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 13,
-    color: colors.white,
-    opacity: 0.85,
-    textAlign: 'center',
-    marginTop: 6,
   },
   menuLabel: {
     fontFamily: 'Nunito_700Bold',

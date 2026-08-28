@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { Card, Button, Input } from '@/components/ui';
+import { colors } from '@/constants/theme';
 import type { AdminItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
@@ -95,29 +96,39 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
   const canSave = form.name.trim().length > 0 && parseMoneyInput(form.price) > 0;
 
   return (
-    <View className="gap-2">
-      {items.length === 0 ? (
-        <Card className="p-4">
-          <Text className="text-muted font-semibold text-center">No Items yet.</Text>
-        </Card>
+    <View style={styles.wrap}>
+      {items.length === 0 && !formMode ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No items yet.</Text>
+        </View>
       ) : (
         items.map((item) => (
-          <Pressable key={item.id} onPress={() => openEditForm(item)}>
-            <Card className={`p-3.5 flex-row items-center justify-between ${item.archived ? 'opacity-60' : ''}`}>
-              <Text className="font-extrabold text-[14px] text-foreground flex-1">
-                {item.emoji} {item.name}
+          <View
+            key={item.id}
+            style={[styles.costRow, item.archived && styles.costRowArchived]}>
+            <Text style={styles.emoji}>{item.emoji}</Text>
+            <View style={styles.meta}>
+              <Text style={styles.name}>
+                {item.name}
                 {item.archived ? ' (archived)' : ''}
               </Text>
-              <Text className="text-[13px] text-muted font-semibold">
-                cost {formatMoney(item.costCents)} · {formatMoney(item.priceCents)}
+              <Text style={styles.figs}>
+                cost {formatMoney(item.costCents)} · sells {formatMoney(item.priceCents)}
               </Text>
-            </Card>
-          </Pressable>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Edit ${item.name}`}
+              onPress={() => openEditForm(item)}
+              style={({ pressed }) => [styles.pencil, pressed && styles.pencilPressed]}>
+              <Text style={styles.pencilIcon}>✏️</Text>
+            </Pressable>
+          </View>
         ))
       )}
 
       {formMode ? (
-        <Card className="p-4 gap-3">
+        <Card className="p-4 gap-3 mt-2">
           <Text className="text-[11px] font-extrabold uppercase text-muted">
             {formMode.type === 'add' ? 'Add Item' : 'Edit Item'}
           </Text>
@@ -153,9 +164,14 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
           </Button>
         </Card>
       ) : (
-        <Button size="lg" variant="secondary" onPress={openAddForm}>
-          <Button.Label className="font-bold">Add Item</Button.Label>
-        </Button>
+        <Pressable
+          accessibilityRole="button"
+          onPress={openAddForm}
+          style={({ pressed }) => [styles.addButtonOuter, pressed && styles.addButtonOuterPressed]}>
+          <View style={styles.addButtonInner}>
+            <Text style={styles.addButtonLabel}>➕ Add Item</Text>
+          </View>
+        </Pressable>
       )}
     </View>
   );
@@ -179,3 +195,86 @@ function Field({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  wrap: {
+    gap: 8,
+  },
+  emptyCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 14,
+  },
+  emptyText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 14,
+    color: colors.inkSoft,
+    textAlign: 'center',
+  },
+  costRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  costRowArchived: {
+    opacity: 0.6,
+  },
+  emoji: {
+    fontSize: 18,
+    width: 24,
+    textAlign: 'center',
+  },
+  meta: {
+    flex: 1,
+  },
+  name: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 13,
+    color: colors.ink,
+  },
+  figs: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    color: colors.inkSoft,
+    marginTop: 2,
+  },
+  pencil: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#F3EFFA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pencilPressed: {
+    opacity: 0.8,
+  },
+  pencilIcon: {
+    fontSize: 11,
+  },
+  addButtonOuter: {
+    marginTop: 8,
+    borderRadius: 18,
+    backgroundColor: colors.purpleDark,
+    paddingBottom: 4,
+  },
+  addButtonOuterPressed: {
+    paddingBottom: 1,
+    marginTop: 3,
+  },
+  addButtonInner: {
+    backgroundColor: colors.purple,
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  addButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: colors.white,
+  },
+});
