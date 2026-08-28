@@ -4,13 +4,13 @@ import { Pressable, Text, View } from 'react-native';
 
 import { Button, Card } from '@/components/ui';
 import { useCart } from '@/context/CartContext';
-import { getSaleLineItems } from '@/lib/db/queries';
+import { getSale, getSaleLineItems } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
 
 export default function CelebrationScreen() {
   const router = useRouter();
   const db = useSQLiteContext();
-  const { setLines, setEditingSaleId } = useCart();
+  const { setLines, setEditingSaleId, setEditingSaleNumber } = useCart();
   const params = useLocalSearchParams<{
     saleId: string;
     itemCount: string;
@@ -27,9 +27,13 @@ export default function CelebrationScreen() {
 
   const fixSale = () => {
     void (async () => {
-      const lines = await getSaleLineItems(db, saleId);
+      const [lines, sale] = await Promise.all([
+        getSaleLineItems(db, saleId),
+        getSale(db, saleId),
+      ]);
       setLines(lines);
       setEditingSaleId(saleId);
+      setEditingSaleNumber(sale?.saleNumber ?? null);
       router.replace('/sell');
     })();
   };

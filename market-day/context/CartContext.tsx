@@ -5,8 +5,10 @@ import type { CartLine } from '@/lib/types';
 type CartContextValue = {
   lines: CartLine[];
   editingSaleId: number | null;
+  editingSaleNumber: number | null;
   setLines: (lines: CartLine[]) => void;
   setEditingSaleId: (saleId: number | null) => void;
+  setEditingSaleNumber: (saleNumber: number | null) => void;
   addItem: (line: Omit<CartLine, 'quantity'>) => void;
   changeQuantity: (itemId: number, delta: number) => void;
   clearCart: () => void;
@@ -19,6 +21,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
+  const [editingSaleNumber, setEditingSaleNumber] = useState<number | null>(null);
 
   const value = useMemo<CartContextValue>(() => {
     const addItem = (line: Omit<CartLine, 'quantity'>) => {
@@ -56,18 +59,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return {
       lines,
       editingSaleId,
+      editingSaleNumber,
       setLines,
       setEditingSaleId,
+      setEditingSaleNumber,
       addItem,
       changeQuantity,
       clearCart: () => {
         setLines([]);
         setEditingSaleId(null);
+        setEditingSaleNumber(null);
       },
       itemCount,
       totalCents,
     };
-  }, [lines, editingSaleId]);
+  }, [lines, editingSaleId, editingSaleNumber]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

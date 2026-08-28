@@ -1,30 +1,57 @@
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useState, type ReactNode } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 
-import { ItemCard, Screen, SectionLabel } from '@/components/Screen';
-import { Button } from '@/components/ui';
+import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
-import type { SellerItem } from '@/lib/catalog';
+import { useCart } from '@/context/CartContext';
 import { createSqliteCatalog } from '@/lib/db/catalog';
-import { getActiveMarketDay, getMarketDaySaleCount } from '@/lib/db/queries';
+import { getActiveItems, getActiveMarketDay, getMarketDayStats } from '@/lib/db/queries';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 import { isSetupComplete } from '@/lib/setup';
+import type { Item } from '@/lib/types';
 
 type ActiveMarketSummary = {
   name: string;
   dateLabel: string;
-  saleCount: number;
+  totalCents: number;
+  itemCount: number;
 };
+
+function HeroCard({ children }: { children: ReactNode }) {
+  return (
+    <View style={styles.heroCard}>
+      <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+        <Defs>
+          <SvgGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <Stop offset="0%" stopColor={colors.pink} />
+            <Stop offset="100%" stopColor={colors.purple} />
+          </SvgGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#heroGradient)" />
+      </Svg>
+      <View style={styles.heroContent}>{children}</View>
+    </View>
+  );
+}
 
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
+  const { addItem } = useCart();
   const [setupReady, setSetupReady] = useState<boolean | null>(null);
-  const [items, setItems] = useState<SellerItem[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [canSell, setCanSell] = useState(false);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
 
@@ -38,14 +65,16 @@ export default function HomeScreen() {
           if (cancelled) return;
           setSetupReady(complete);
           if (complete) {
-            setItems(await catalog.listForSeller());
+            setItems(await getActiveItems(db));
             const marketDay = await getActiveMarketDay(db);
             if (marketDay) {
+              const stats = await getMarketDayStats(db, marketDay.id);
               setCanSell(true);
               setActiveMarket({
                 name: marketDay.name,
                 dateLabel: formatMarketDayDate(marketDay.startedAt),
-                saleCount: await getMarketDaySaleCount(db, marketDay.id),
+                totalCents: stats.totalCents,
+                itemCount: stats.itemCount,
               });
             } else {
               setCanSell(false);
@@ -63,11 +92,27 @@ export default function HomeScreen() {
     }, [db]),
   );
 
+  const openSellWithItem = (item: Item) => {
+    if (!canSell) return;
+    addItem({
+      itemId: item.id,
+      name: item.name,
+      emoji: item.emoji,
+      priceCents: item.priceCents,
+      costCents: item.costCents,
+    });
+    router.push('/sell');
+  };
+
   if (setupReady === null) {
     return (
       <Screen>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#9B5DE5" />
+        <View style={styles.page}>
+          <View style={styles.container}>
+            <View style={styles.loading}>
+              <ActivityIndicator size="large" color={colors.purple} />
+            </View>
+          </View>
         </View>
       </Screen>
     );
@@ -79,60 +124,104 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <View style={styles.topBar}>
-        <Text style={styles.title}>🎪 Market Day</Text>
-        <Pressable
-          accessibilityLabel="Grown-up settings"
-          style={styles.gearButton}
-          onPress={() => router.push('/settings')}>
-          <Text style={styles.gearIcon}>⚙️</Text>
-        </Pressable>
-      </View>
+      <View style={styles.page}>
+        <View style={styles.container}>
+          <View style={styles.topBar}>
+            <Text style={styles.title}>🎪 Market Day</Text>
+            <Pressable
+              accessibilityLabel="Grown-up settings"
+              style={styles.gearButton}
+              onPress={() => router.push('/settings')}>
+              <Text style={styles.gearIcon}>⚙️</Text>
+            </Pressable>
+          </View>
 
-      {activeMarket ? (
-        <View style={styles.marketWidget}>
-          <Text style={styles.marketName}>{activeMarket.name}</Text>
-          <View style={styles.marketMetaRow}>
-            <Text style={styles.marketMeta}>{activeMarket.dateLabel}</Text>
-            <Text style={styles.marketMetaDot}>·</Text>
-            <Text style={styles.marketMeta}>
-              {activeMarket.saleCount} {activeMarket.saleCount === 1 ? 'sale' : 'sales'}
-            </Text>
+          {activeMarket ? (
+            <HeroCard>
+              <Text style={styles.heroEyebrow}>
+                {activeMarket.name.toUpperCase()} · {activeMarket.dateLabel.toUpperCase()}
+              </Text>
+              <Text style={styles.heroTotal}>{formatMoney(activeMarket.totalCents)}</Text>
+              <Text style={styles.heroSubtitle}>
+                {activeMarket.itemCount} {activeMarket.itemCount === 1 ? 'item' : 'items'} sold today
+              </Text>
+              {activeMarket.totalCents === 0 ? (
+                <Text style={styles.heroEmpty}>Nothing sold yet — let&apos;s fix that! 🎉</Text>
+              ) : null}
+            </HeroCard>
+          ) : null}
+
+          <Text style={styles.menuLabel}>🍭 Menu</Text>
+          <Text style={styles.menuHint}>
+            Quick price check — tap &quot;Sell something&quot; below to log a sale
+          </Text>
+
+          <FlatList
+            data={items}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={styles.itemList}
+            style={styles.itemListScroll}
+            ListEmptyComponent={
+              <Text style={styles.emptyItems}>
+                No items yet — ask a grown-up to add some in setup.
+              </Text>
+            }
+            renderItem={({ item }) => (
+              <Pressable
+                accessibilityRole="button"
+                disabled={!canSell}
+                onPress={() => openSellWithItem(item)}
+                style={({ pressed }) => [
+                  styles.menuRow,
+                  pressed && canSell ? styles.menuRowPressed : null,
+                ]}>
+                <Text style={styles.menuEmoji}>{item.emoji}</Text>
+                <Text style={styles.menuName}>{item.name}</Text>
+                <Text style={styles.menuPrice}>{formatMoney(item.priceCents)}</Text>
+              </Pressable>
+            )}
+          />
+
+          <View style={styles.sellButtonWrap}>
+            {!canSell ? (
+              <Text style={styles.sellHint}>Ask a grown-up to start a Market Day in ⚙️ settings.</Text>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              disabled={!canSell}
+              onPress={() => router.push('/sell')}
+              style={({ pressed }) => [
+                styles.sellButtonOuter,
+                !canSell ? styles.sellButtonDisabled : null,
+                pressed && canSell ? styles.sellButtonOuterPressed : null,
+              ]}>
+              <View style={styles.sellButtonInner}>
+                <Text style={styles.sellButtonLabel}>🛒 Sell something!</Text>
+              </View>
+            </Pressable>
           </View>
         </View>
-      ) : null}
-
-      <SectionLabel>Items</SectionLabel>
-
-      <FlatList
-        data={items}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.itemList}
-        style={styles.itemListScroll}
-        ListEmptyComponent={
-          <Text style={styles.emptyItems}>No items yet — ask a grown-up to add some in setup.</Text>
-        }
-        renderItem={({ item }) => (
-          <ItemCard emoji={item.emoji} name={item.name} priceLabel={formatMoney(item.priceCents)} />
-        )}
-      />
-
-      {!canSell ? (
-        <Text style={styles.sellHint}>Ask a grown-up to start a Market Day in ⚙️ settings.</Text>
-      ) : null}
-
-      <Button
-        size="lg"
-        className="rounded-[20px] mb-2"
-        isDisabled={!canSell}
-        onPress={() => router.push('/sell')}>
-        <Button.Label className="text-lg font-bold">🛒 Sell something!</Button.Label>
-      </Button>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 440,
+    paddingHorizontal: 16,
+  },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,13 +230,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 20,
+    fontSize: 21,
     color: colors.ink,
   },
   gearButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
@@ -155,40 +244,95 @@ const styles = StyleSheet.create({
   gearIcon: {
     fontSize: 16,
   },
-  marketWidget: {
-    backgroundColor: colors.white,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 14,
+  heroCard: {
+    borderRadius: 26,
+    overflow: 'hidden',
+    marginBottom: 18,
   },
-  marketName: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
-    color: colors.ink,
+  heroContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+  heroEyebrow: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 12,
+    color: colors.white,
+    opacity: 0.85,
+    letterSpacing: 0.6,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  heroTotal: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 46,
+    color: colors.white,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  heroSubtitle: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    color: colors.white,
+    opacity: 0.9,
+    textAlign: 'center',
+  },
+  heroEmpty: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    color: colors.white,
+    opacity: 0.85,
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  menuLabel: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 12,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
     marginBottom: 4,
   },
-  marketMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  marketMeta: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 13,
+  menuHint: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12,
     color: colors.inkSoft,
-  },
-  marketMetaDot: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 13,
-    color: colors.inkSoft,
+    marginBottom: 10,
   },
   itemList: {
     gap: 8,
-    paddingBottom: 12,
+    paddingBottom: 120,
   },
   itemListScroll: {
     flex: 1,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  menuRowPressed: {
+    opacity: 0.88,
+  },
+  menuEmoji: {
+    width: 28,
+    fontSize: 22,
+    textAlign: 'center',
+  },
+  menuName: {
+    flex: 1,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: colors.ink,
+  },
+  menuPrice: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: colors.purpleDark,
   },
   emptyItems: {
     fontFamily: 'Nunito_600SemiBold',
@@ -202,6 +346,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.inkSoft,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
+  },
+  sellButtonWrap: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 8,
+  },
+  sellButtonOuter: {
+    borderRadius: 22,
+    backgroundColor: colors.purpleDark,
+    paddingBottom: 6,
+  },
+  sellButtonOuterPressed: {
+    paddingBottom: 2,
+    marginTop: 4,
+  },
+  sellButtonInner: {
+    backgroundColor: colors.purple,
+    borderRadius: 22,
+    paddingVertical: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sellButtonDisabled: {
+    opacity: 0.45,
+  },
+  sellButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 21,
+    color: colors.white,
   },
 });

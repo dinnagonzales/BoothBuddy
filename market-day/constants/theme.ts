@@ -7,7 +7,7 @@ export const colors = {
   greenDark: '#1FA85C',
   yellow: '#FFD93D',
   cream: '#FFFDF6',
-  background: '#F3E9FF',
+  background: '#EDE9F5',
   ink: '#2B2340',
   inkSoft: '#6E6480',
   white: '#FFFFFF',

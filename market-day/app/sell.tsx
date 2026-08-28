@@ -1,6 +1,6 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 
 import { ItemCard, Screen, ScreenHeader } from '@/components/Screen';
@@ -13,9 +13,18 @@ import type { Item } from '@/lib/types';
 export default function SellScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, addItem, changeQuantity, itemCount, totalCents } = useCart();
+  const navigation = useNavigation();
+  const { lines, addItem, changeQuantity, itemCount, totalCents, clearCart, editingSaleNumber } =
+    useCart();
   const [items, setItems] = useState<Item[]>([]);
   const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      clearCart();
+    });
+    return unsubscribe;
+  }, [navigation, clearCart]);
 
   useFocusEffect(
     useCallback(() => {
@@ -70,7 +79,9 @@ export default function SellScreen() {
       />
 
       <Card className="mt-2 mb-2 p-3.5">
-        <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">Cart</Text>
+        <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">
+          {editingSaleNumber != null ? `Fixing sale #${editingSaleNumber}` : 'Cart'}
+        </Text>
         {lines.length === 0 ? (
           <Text className="text-muted font-semibold py-2">Tap + to add items</Text>
         ) : (
