@@ -1,7 +1,7 @@
 # 002 — Market Day lifecycle (start, end, undo close)
 
 **Type:** AFK  
-**Status:** open  
+**Status:** done  
 **Blocked by:** 001
 
 ## What to build
@@ -12,11 +12,11 @@ Only one **Active Market Day** at a time. Starting a new one requires closing th
 
 ## Acceptance criteria
 
-- [ ] Admin starts a **Market Day** with a name (smart default provided)
-- [ ] **Sell something!** enables only during an **Active Market Day**
-- [ ] Admin ends **Market Day** → becomes **Closed Market Day**
-- [ ] **Undo close** works on the most recently closed **Market Day** until export
-- [ ] **Sales** logged during active session belong to that **Market Day** (not **Running Tab**)
+- [x] Admin starts a **Market Day** with a name (smart default provided)
+- [x] **Sell something!** enables only during an **Active Market Day**
+- [x] Admin ends **Market Day** → becomes **Closed Market Day**
+- [x] **Undo close** works on the most recently closed **Market Day** until export
+- [x] **Sales** logged during active session belong to that **Market Day** (not **Running Tab**)
 
 ## Blocked by
 

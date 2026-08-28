@@ -1,7 +1,7 @@
 # 003 — Admin Item catalog (add, edit, retire)
 
 **Type:** AFK  
-**Status:** open  
+**Status:** done  
 **Blocked by:** 001
 
 ## What to build
@@ -12,11 +12,11 @@ Cost is admin-only and never shown on **Home** or in the sell flow.
 
 ## Acceptance criteria
 
-- [ ] Admin can add a new **Item** (emoji icon, name, cost, price)
-- [ ] Admin can edit an existing **Item**
-- [ ] Admin can retire an **Item** — hidden from kid views, still in history
-- [ ] Retired **Items** cannot be added to new **Sales**
-- [ ] **Home** and checkout reflect catalog changes without app restart
+- [x] Admin can add a new **Item** (emoji icon, name, cost, price)
+- [x] Admin can edit an existing **Item**
+- [x] Admin can retire an **Item** — hidden from kid views, still in history
+- [x] Retired **Items** cannot be added to new **Sales**
+- [x] **Home** and checkout reflect catalog changes without app restart
 
 ## Blocked by
 

@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 
 import { ItemCard, Screen, ScreenHeader } from '@/components/Screen';
@@ -15,22 +15,32 @@ export default function SellScreen() {
   const router = useRouter();
   const { lines, addItem, changeQuantity, itemCount, totalCents } = useCart();
   const [items, setItems] = useState<Item[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    void getActiveItems(db).then((nextItems) => {
-      if (!cancelled) setItems(nextItems);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [db]);
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      setLoaded(false);
 
-  useEffect(() => {
-    if (items.length === 0) {
-      router.replace('/');
-    }
-  }, [items.length, router]);
+      void getActiveItems(db).then((nextItems) => {
+        if (cancelled) return;
+        setItems(nextItems);
+        setLoaded(true);
+      });
+
+      return () => {
+        cancelled = true;
+      };
+    }, [db]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (loaded && items.length === 0) {
+        router.replace('/');
+      }
+    }, [items.length, loaded, router]),
+  );
 
   return (
     <Screen>

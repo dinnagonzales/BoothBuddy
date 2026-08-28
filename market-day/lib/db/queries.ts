@@ -32,6 +32,28 @@ export async function getActiveItems(db: SQLiteDatabase): Promise<Item[]> {
   return rows.map(mapItem);
 }
 
+export async function getAllItems(db: SQLiteDatabase): Promise<Item[]> {
+  const rows = await db.getAllAsync<ItemRow>(
+    'SELECT * FROM items ORDER BY retired ASC, name COLLATE NOCASE',
+  );
+  return rows.map(mapItem);
+}
+
+export async function updateItem(
+  db: SQLiteDatabase,
+  id: number,
+  draft: { name: string; emoji: string; costCents: number; priceCents: number },
+): Promise<void> {
+  await db.runAsync(
+    'UPDATE items SET name = ?, emoji = ?, cost_cents = ?, price_cents = ? WHERE id = ?',
+    draft.name,
+    draft.emoji,
+    draft.costCents,
+    draft.priceCents,
+    id,
+  );
+}
+
 export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
   const row = await db.getFirstAsync<{
     id: number;

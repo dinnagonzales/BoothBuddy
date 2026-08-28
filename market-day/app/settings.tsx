@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import { ParentalGatePrompt } from '@/components/ParentalGatePrompt';
+import { AdminItemCatalog } from '@/components/AdminItemCatalog';
 import { Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
 import { Button, Card, Input } from '@/components/ui';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
@@ -151,9 +152,7 @@ export default function SettingsScreen() {
             ) : null}
 
             <SectionLabel>Items & cost</SectionLabel>
-            <Card className="p-4">
-              <Text className="text-muted font-semibold">Item management + CSV export coming soon</Text>
-            </Card>
+            <AdminItemCatalog db={db} />
           </View>
         )}
       </ScrollView>

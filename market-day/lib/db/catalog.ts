@@ -1,13 +1,15 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import type { Catalog, ItemDraft, SellerItem } from '@/lib/catalog';
+import type { Catalog, AdminItem, ItemDraft, SellerItem } from '@/lib/catalog';
 import {
   canUndoCloseMarketDay,
   closeActiveMarketDay,
   exportMarketDay,
   getActiveMarketDay,
+  getAllItems,
   startMarketDay,
   undoCloseMostRecentMarketDay,
+  updateItem,
 } from '@/lib/db/queries';
 
 export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
@@ -25,6 +27,9 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     async retire(id: number) {
       await db.runAsync('UPDATE items SET retired = 1 WHERE id = ?', id);
     },
+    async updateItem(id: number, draft: ItemDraft) {
+      await updateItem(db, id, draft);
+    },
     async listForSeller(): Promise<SellerItem[]> {
       const rows = await db.getAllAsync<{
         id: number;
@@ -39,6 +44,17 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         name: row.name,
         emoji: row.emoji,
         priceCents: row.price_cents,
+      }));
+    },
+    async listForAdmin(): Promise<AdminItem[]> {
+      const items = await getAllItems(db);
+      return items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        emoji: item.emoji,
+        costCents: item.costCents,
+        priceCents: item.priceCents,
+        retired: item.retired,
       }));
     },
     async getActiveMarketDay() {

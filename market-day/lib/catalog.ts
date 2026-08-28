@@ -14,10 +14,21 @@ export type SellerItem = {
   priceCents: number;
 };
 
+export type AdminItem = {
+  id: number;
+  name: string;
+  emoji: string;
+  costCents: number;
+  priceCents: number;
+  retired: boolean;
+};
+
 export type Catalog = {
   createItem(draft: ItemDraft): Promise<{ id: number }>;
+  updateItem(id: number, draft: ItemDraft): Promise<void>;
   retire(id: number): Promise<void>;
   listForSeller(): Promise<SellerItem[]>;
+  listForAdmin(): Promise<AdminItem[]>;
   getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
   startMarketDay(name: string): Promise<{ id: number; name: string }>;
   closeActiveMarketDay(): Promise<void>;
@@ -51,6 +62,14 @@ export function createCatalog(): Catalog {
       const item = items.find((entry) => entry.id === id);
       if (item) item.retired = true;
     },
+    async updateItem(id: number, draft: ItemDraft) {
+      const item = items.find((entry) => entry.id === id);
+      if (!item) return;
+      item.name = draft.name;
+      item.emoji = draft.emoji;
+      item.costCents = draft.costCents;
+      item.priceCents = draft.priceCents;
+    },
     async listForSeller(): Promise<SellerItem[]> {
       return items
         .filter((item) => !item.retired)
@@ -60,6 +79,16 @@ export function createCatalog(): Catalog {
           emoji,
           priceCents,
         }));
+    },
+    async listForAdmin(): Promise<AdminItem[]> {
+      return items.map(({ id, name, emoji, costCents, priceCents, retired }) => ({
+        id,
+        name,
+        emoji,
+        costCents,
+        priceCents,
+        retired,
+      }));
     },
     async getActiveMarketDay() {
       const active = marketDays.find((day) => day.closedAt === null);
