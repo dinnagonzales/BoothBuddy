@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import { OutlineAddButton } from '@/components/ExpandableCard';
 import { colors } from '@/constants/theme';
 import type { MenuItem, RemovedMenuItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
@@ -147,16 +148,11 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
         ))
       )}
 
-      <Pressable
-        accessibilityRole="button"
+      <OutlineAddButton
+        label="➕ Add item to today&apos;s menu"
         onPress={openAddPicker}
-        style={({ pressed }) => [
-          styles.addMenuButton,
-          embedded && styles.addMenuButtonEmbedded,
-          pressed && styles.addMenuButtonPressed,
-        ]}>
-        <Text style={styles.addMenuLabel}>➕ Add item to today&apos;s menu</Text>
-      </Pressable>
+        embedded={embedded}
+      />
     </View>
   );
 }
@@ -278,27 +274,5 @@ const styles = StyleSheet.create({
   },
   trashIcon: {
     fontSize: 12,
-  },
-  addMenuButton: {
-    width: '100%',
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: '#C9B8F0',
-    borderRadius: 16,
-    paddingVertical: 13,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  addMenuButtonEmbedded: {
-    backgroundColor: '#F3EFFA',
-  },
-  addMenuButtonPressed: {
-    opacity: 0.85,
-  },
-  addMenuLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
-    color: colors.purpleDark,
   },
 });

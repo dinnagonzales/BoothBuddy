@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import { Card, Button, Input } from '@/components/ui';
+import { ExpandableCard, OutlineAddButton } from '@/components/ExpandableCard';
 import { colors } from '@/constants/theme';
 import type { AdminItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
@@ -14,12 +14,21 @@ type AdminItemCatalogProps = {
 
 type FormMode = { type: 'add' } | { type: 'edit'; item: AdminItem };
 
-const emptyForm = () => ({
+type ItemFormState = {
+  emoji: string;
+  name: string;
+  cost: string;
+  price: string;
+};
+
+const emptyForm = (): ItemFormState => ({
   emoji: '📦',
   name: '',
   cost: '',
   price: '',
 });
+
+const formCardStyle = { borderRadius: 24 };
 
 export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
   const [items, setItems] = useState<AdminItem[]>([]);
@@ -102,77 +111,197 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
           <Text style={styles.emptyText}>No items yet.</Text>
         </View>
       ) : (
-        items.map((item) => (
-          <View
-            key={item.id}
-            style={[styles.costRow, item.archived && styles.costRowArchived]}>
-            <Text style={styles.emoji}>{item.emoji}</Text>
-            <View style={styles.meta}>
-              <Text style={styles.name}>
-                {item.name}
-                {item.archived ? ' (archived)' : ''}
-              </Text>
-              <Text style={styles.figs}>
-                cost {formatMoney(item.costCents)} · sells {formatMoney(item.priceCents)}
-              </Text>
+        items.map((item) => {
+          const isEditing = formMode?.type === 'edit' && formMode.item.id === item.id;
+
+          if (isEditing) {
+            return (
+              <ExpandableCard
+                key={item.id}
+                expanded
+                headerDivider
+                style={formCardStyle}
+                headerStyle={styles.editHeader}
+                bodyStyle={styles.editBody}
+                header={
+                  <ItemRow
+                    item={item}
+                    editing
+                    onEdit={() => openEditForm(item)}
+                  />
+                }>
+                <ItemForm
+                  mode={formMode}
+                  form={form}
+                  setForm={setForm}
+                  canSave={canSave}
+                  onSave={saveItem}
+                  onArchive={() => archiveItem(item.id)}
+                  onUnarchive={() => unarchiveItem(item.id)}
+                  onCancel={closeForm}
+                />
+              </ExpandableCard>
+            );
+          }
+
+          return (
+            <View
+              key={item.id}
+              style={[styles.costRow, item.archived && styles.costRowArchived]}>
+              <ItemRow item={item} onEdit={() => openEditForm(item)} />
             </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Edit ${item.name}`}
-              onPress={() => openEditForm(item)}
-              style={({ pressed }) => [styles.pencil, pressed && styles.pencilPressed]}>
-              <Text style={styles.pencilIcon}>✏️</Text>
-            </Pressable>
-          </View>
-        ))
+          );
+        })
       )}
 
-      {formMode ? (
-        <Card className="p-4 gap-3 mt-2">
-          <Text className="text-[11px] font-extrabold uppercase text-muted">
-            {formMode.type === 'add' ? 'Add Item' : 'Edit Item'}
-          </Text>
-          <Field label="Emoji" value={form.emoji} onChangeText={(emoji) => setForm((f) => ({ ...f, emoji }))} />
-          <Field label="Name" value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} />
-          <Field
-            label="Cost — not shown to the seller"
-            value={form.cost}
-            onChangeText={(cost) => setForm((f) => ({ ...f, cost }))}
-            keyboardType="decimal-pad"
+      {formMode?.type === 'add' ? (
+        <ExpandableCard
+          expanded
+          headerDivider
+          style={formCardStyle}
+          headerStyle={styles.addHeader}
+          bodyStyle={styles.editBody}
+          header={<Text style={styles.addHeaderTitle}>Add Item</Text>}>
+          <ItemForm
+            mode={formMode}
+            form={form}
+            setForm={setForm}
+            canSave={canSave}
+            onSave={saveItem}
+            onCancel={closeForm}
           />
-          <Field
-            label="Price"
-            value={form.price}
-            onChangeText={(price) => setForm((f) => ({ ...f, price }))}
-            keyboardType="decimal-pad"
-          />
-          <Button size="lg" isDisabled={!canSave} onPress={saveItem}>
-            <Button.Label className="font-bold">Save Item</Button.Label>
-          </Button>
-          {formMode.type === 'edit' && !formMode.item.archived ? (
-            <Button size="lg" variant="secondary" onPress={() => archiveItem(formMode.item.id)}>
-              <Button.Label className="font-bold">Archive Item</Button.Label>
-            </Button>
-          ) : null}
-          {formMode.type === 'edit' && formMode.item.archived ? (
-            <Button size="lg" variant="secondary" onPress={() => unarchiveItem(formMode.item.id)}>
-              <Button.Label className="font-bold">UnArchive Item</Button.Label>
-            </Button>
-          ) : null}
-          <Button size="lg" variant="secondary" onPress={closeForm}>
-            <Button.Label className="font-bold">Cancel</Button.Label>
-          </Button>
-        </Card>
+        </ExpandableCard>
       ) : (
+        <OutlineAddButton label="➕ Add Item" onPress={openAddForm} />
+      )}
+    </View>
+  );
+}
+
+function ItemRow({
+  item,
+  editing = false,
+  onEdit,
+}: {
+  item: AdminItem;
+  editing?: boolean;
+  onEdit: () => void;
+}) {
+  return (
+    <>
+      <Text style={[styles.emoji, editing && styles.emojiEdit]}>{item.emoji}</Text>
+      <View style={styles.meta}>
+        <Text style={[styles.name, editing && styles.nameEdit]}>
+          {item.name}
+          {item.archived ? ' (archived)' : ''}
+        </Text>
+        <Text style={[styles.figs, editing && styles.figsEdit]}>
+          cost {formatMoney(item.costCents)} · sells {formatMoney(item.priceCents)}
+        </Text>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Edit ${item.name}`}
+        onPress={onEdit}
+        style={({ pressed }) => [
+          styles.pencil,
+          editing && styles.pencilActive,
+          pressed && styles.pencilPressed,
+        ]}>
+        <Text style={[styles.pencilIcon, editing && styles.pencilIconActive]}>✏️</Text>
+      </Pressable>
+    </>
+  );
+}
+
+function ItemForm({
+  mode,
+  form,
+  setForm,
+  canSave,
+  onSave,
+  onArchive,
+  onUnarchive,
+  onCancel,
+}: {
+  mode: FormMode;
+  form: ItemFormState;
+  setForm: Dispatch<SetStateAction<ItemFormState>>;
+  canSave: boolean;
+  onSave: () => void;
+  onArchive?: () => void;
+  onUnarchive?: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <View style={styles.formBody}>
+      <Field
+        label="Emoji"
+        value={form.emoji}
+        onChangeText={(emoji) => setForm((f) => ({ ...f, emoji }))}
+        emoji
+        first
+      />
+      <Field label="Name" value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} />
+      <Field
+        label="Cost — not shown to the seller"
+        value={form.cost}
+        onChangeText={(cost) => setForm((f) => ({ ...f, cost }))}
+        keyboardType="decimal-pad"
+      />
+      <Field
+        label="Price"
+        value={form.price}
+        onChangeText={(price) => setForm((f) => ({ ...f, price }))}
+        keyboardType="decimal-pad"
+      />
+
+      <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
-          onPress={openAddForm}
-          style={({ pressed }) => [styles.addButtonOuter, pressed && styles.addButtonOuterPressed]}>
-          <View style={styles.addButtonInner}>
-            <Text style={styles.addButtonLabel}>➕ Add Item</Text>
+          accessibilityState={{ disabled: !canSave }}
+          disabled={!canSave}
+          onPress={onSave}
+          style={({ pressed }) => [
+            styles.saveButtonOuter,
+            !canSave && styles.saveButtonOuterDisabled,
+            pressed && canSave && styles.saveButtonOuterPressed,
+          ]}>
+          <View style={styles.saveButtonInner}>
+            <Text style={styles.saveButtonLabel}>Save Item</Text>
           </View>
         </Pressable>
-      )}
+
+        {mode.type === 'edit' && !mode.item.archived && onArchive ? (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onArchive}
+              style={({ pressed }) => [styles.archiveButton, pressed && styles.archiveButtonPressed]}>
+              <Text style={styles.archiveButtonLabel}>📦 Archive Item</Text>
+            </Pressable>
+            <Text style={styles.archiveHint}>
+              Hides it from the menu — doesn&apos;t delete past sales
+            </Text>
+          </>
+        ) : null}
+
+        {mode.type === 'edit' && mode.item.archived && onUnarchive ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onUnarchive}
+            style={({ pressed }) => [styles.archiveButton, pressed && styles.archiveButtonPressed]}>
+            <Text style={styles.archiveButtonLabel}>📦 UnArchive Item</Text>
+          </Pressable>
+        ) : null}
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onCancel}
+          style={({ pressed }) => [styles.cancelButton, pressed && styles.cancelButtonPressed]}>
+          <Text style={styles.cancelButtonLabel}>Cancel</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -182,16 +311,26 @@ function Field({
   value,
   onChangeText,
   keyboardType,
+  emoji = false,
+  first = false,
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   keyboardType?: 'decimal-pad' | 'default';
+  emoji?: boolean;
+  first?: boolean;
 }) {
   return (
-    <View className="gap-1.5">
-      <Text className="text-[11px] font-extrabold uppercase text-muted">{label}</Text>
-      <Input value={value} onChangeText={onChangeText} keyboardType={keyboardType} />
+    <View style={[styles.field, first && styles.fieldFirst]}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        placeholderTextColor={colors.inkSoft}
+        style={[styles.fieldInput, emoji && styles.fieldInputEmoji]}
+      />
     </View>
   );
 }
@@ -223,10 +362,35 @@ const styles = StyleSheet.create({
   costRowArchived: {
     opacity: 0.6,
   },
+  editHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+  addHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+  addHeaderTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: colors.ink,
+  },
+  editBody: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 22,
+  },
   emoji: {
     fontSize: 18,
     width: 24,
     textAlign: 'center',
+  },
+  emojiEdit: {
+    fontSize: 22,
+    width: 28,
   },
   meta: {
     flex: 1,
@@ -236,11 +400,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.ink,
   },
+  nameEdit: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+  },
   figs: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 11,
     color: colors.inkSoft,
     marginTop: 2,
+  },
+  figsEdit: {
+    fontSize: 12,
+    marginTop: 0,
   },
   pencil: {
     width: 26,
@@ -250,31 +422,113 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  pencilActive: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.purple,
+  },
   pencilPressed: {
-    opacity: 0.8,
+    opacity: 0.85,
   },
   pencilIcon: {
     fontSize: 11,
   },
-  addButtonOuter: {
-    marginTop: 8,
+  pencilIconActive: {
+    fontSize: 14,
+  },
+  formBody: {
+    gap: 0,
+  },
+  field: {
+    marginTop: 14,
+  },
+  fieldFirst: {
+    marginTop: 0,
+  },
+  fieldLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+    marginBottom: 6,
+  },
+  fieldInput: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 16,
+    color: colors.ink,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3EFFA',
+  },
+  fieldInputEmoji: {
+    fontSize: 24,
+    paddingTop: 6,
+    paddingBottom: 10,
+  },
+  actions: {
+    marginTop: 24,
+  },
+  saveButtonOuter: {
     borderRadius: 18,
     backgroundColor: colors.purpleDark,
     paddingBottom: 4,
+    marginBottom: 10,
   },
-  addButtonOuterPressed: {
+  saveButtonOuterDisabled: {
+    opacity: 0.45,
+  },
+  saveButtonOuterPressed: {
     paddingBottom: 1,
     marginTop: 3,
   },
-  addButtonInner: {
+  saveButtonInner: {
     backgroundColor: colors.purple,
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',
   },
-  addButtonLabel: {
+  saveButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: colors.white,
+  },
+  archiveButton: {
+    width: '100%',
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.amberBorder,
+    borderRadius: 16,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  archiveButtonPressed: {
+    opacity: 0.85,
+  },
+  archiveButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: colors.amberDark,
+  },
+  archiveHint: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  cancelButton: {
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  cancelButtonPressed: {
+    opacity: 0.7,
+  },
+  cancelButtonLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: colors.inkSoft,
   },
 });

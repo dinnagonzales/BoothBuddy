@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
+import { ExpandableCard } from '@/components/ExpandableCard';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { TodaysMenu } from '@/components/TodaysMenu';
@@ -133,21 +134,20 @@ export default function SettingsScreen() {
           </View>
         ) : null}
 
-        <View style={styles.menuCard}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: menuOpen }}
-            onPress={() => setMenuOpen((open) => !open)}
-            style={({ pressed }) => [styles.menuCardHeader, pressed && styles.menuCardHeaderPressed]}>
-            <Text style={styles.menuCardTitle}>Today&apos;s Menu</Text>
-            <Text style={styles.menuCardChevron}>{menuOpen ? '▾' : '▸'}</Text>
-          </Pressable>
-          {menuOpen ? (
-            <View style={styles.menuCardBody}>
-              <TodaysMenu db={db} embedded />
-            </View>
-          ) : null}
-        </View>
+        <ExpandableCard
+          expanded={menuOpen}
+          onHeaderPress={() => setMenuOpen((open) => !open)}
+          accessibilityLabel="Today's Menu"
+          style={styles.menuCard}
+          headerStyle={styles.menuCardHeader}
+          header={
+            <>
+              <Text style={styles.menuCardTitle}>Today&apos;s Menu</Text>
+              <Text style={styles.menuCardChevron}>{menuOpen ? '▾' : '▸'}</Text>
+            </>
+          }>
+          <TodaysMenu db={db} embedded />
+        </ExpandableCard>
 
         <View style={styles.salesSection}>
           <SectionLabel>Sales</SectionLabel>
@@ -205,20 +205,12 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   menuCard: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    overflow: 'hidden',
     marginBottom: 4,
   },
   menuCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  menuCardHeaderPressed: {
-    opacity: 0.85,
   },
   menuCardTitle: {
     fontFamily: 'Nunito_800ExtraBold',
@@ -230,12 +222,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.purpleDark,
     lineHeight: 18,
-  },
-  menuCardBody: {
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F0EBFA',
   },
   salesSection: {
     marginTop: 10,
