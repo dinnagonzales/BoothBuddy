@@ -68,11 +68,11 @@ Same checkout flow as seller, launched from grown-up settings → **Log a sale**
 
 Behind gear icon + parental gate (numeric code). Shows:
 
-- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown, sale list with Sale numbers.
+- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown, sale list with Sale numbers (and optional sale names when set).
 - Running Tab summary.
 - Item management (name, cost, price, emoji icon, optional photo).
 - Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.
-- **Admin edit** any Sale (line items, payment, cash received); changed line items re-snapshot current price/cost.
+- **Admin edit** any Sale (payment method, optional name/notes, remove whole sale); line-item quantity edit deferred — use remove + re-log for wrong items.
 - Export (see below).
 
 ---
@@ -83,7 +83,7 @@ Behind gear icon + parental gate (numeric code). Shows:
 
 **Market Day:** id, name, startedAt, closedAt, exportedAt
 
-**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash)
+**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), name (optional, admin-only), notes (optional, admin-only)
 
 **Line item:** itemId, quantity, priceAtSale, costAtSale
 
@@ -103,7 +103,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 
 - **Market Day:** one CSV per Closed Market Day; name in filename and rows.
 - **Running Tab:** date range picker → CSV for sales in range; marks sales exported.
-- Columns include: sale number, date/time, market day name (if any), items (name, qty, price, cost), total, payment method, cash received, profit.
+- Columns include: sale number, date/time, market day name (if any), items (name, qty, price, cost), total, payment method, cash received, profit, customer name (when set on the sale).
 - Export locks undo-close for Market Days.
 - Edits after export flag bucket **out of date — re-export recommended**.
 

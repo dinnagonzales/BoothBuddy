@@ -37,6 +37,8 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/inventory` | How to add inventory | Grown-up |
 | `/edit-items` | How to edit items | Grown-up |
 | `/end-market-day` | How to end a Market Day | Grown-up |
+| `/past-events` | Past Events | Grown-up |
+| `/export-sales` | Export sales (CSV) | Grown-up |
 | `/sales-dashboard` | Sales & profit | Grown-up |
 | `/first-time-setup` | First-time setup | Grown-up |
 | `/faq` | FAQ index | Everyone |
@@ -50,7 +52,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/faq/venmo-zelle` | Venmo / Zelle payments | Seller |
 | `/faq/edit-sale-later` | Change a sale later | Grown-up |
 | `/faq/one-market-day` | Can I run two Market Days? | Grown-up |
-| `/faq/undo-close` | I ended the day by mistake | Grown-up |
+| `/faq/reopen` | I ended the day by mistake | Grown-up |
 
 ---
 
@@ -63,6 +65,8 @@ Kids never see **cost** (what you paid) or **profit**.
 | **Inventory** | All the things in your shop (grown-ups manage this) |
 | **Cart** | What the customer is buying right now |
 | **Invoice #** | The order number for this sale (#1, #2, #3…) |
+| **Sale name** | Optional grown-up label for a sale (e.g. customer name) — shown instead of #N in settings when set |
+| **Sale notes** | Optional grown-up note on a sale (e.g. preorder pickup) — not shown to sellers |
 | **Pass Code** | 4-digit grown-up password for ⚙️ settings |
 | **Sold out** | Still on the menu, but you can’t add it to a sale |
 | **Archive** | Put an item away — hidden from the menu, but old sales still remember it |
@@ -149,7 +153,7 @@ Invoice numbers help you and your grown-up talk about an order: “Fix invoice #
 
 **For grown-ups**
 
-In settings, the same number appears as **Sale #N** (or a custom name if you added one).
+In settings, the same number appears as **Sale #N**. You can optionally add a **name** (e.g. customer or tab name) and **notes** (e.g. preorder) when you tap a sale to edit it — the name then shows on the sales list instead of **#N**.
 
 ---
 
@@ -189,10 +193,13 @@ This opens the shop so kids can sell.
 
 1. On the home screen, tap **⚙️**.
 2. Enter your **4-digit Pass Code**. Tap **Unlock**.
-3. If it says **No market day yet**, tap **▶️ Start Market Day**.
-4. The shop is open! All your items are on **Today’s Menu** automatically.
-5. (Optional) Open **Today’s Menu** to mark things sold out or remove them for today.
-6. Tell the seller: **“You can sell now!”**
+3. If it says **No market day yet**, fill in:
+   - **Market Day** — a name for today (defaults to “Market Day”)
+   - **Date** — tap to pick; defaults to today
+4. Tap **▶️ Start Market Day**.
+5. The shop is open! All your items are on **Today’s Menu** automatically.
+6. (Optional) Open **Today’s Menu** to mark things sold out or remove them for today.
+7. Tell the seller: **“You can sell now!”**
 
 **Only one Market Day can be open at a time.**
 
@@ -271,7 +278,43 @@ Changes show up on the home screen and in checkout right away — no restart nee
 
 Sales are saved. The kid can’t sell again until you start a new Market Day.
 
-**Ended by mistake?** Tap **Undo close** to reopen the last closed day (until you export — export is coming soon).
+The ended day appears under **Past Events** on Settings (scroll down on the “No market day yet” screen).
+
+**Ended by mistake?** See [Reopen a closed day](./faq/reopen).
+
+---
+
+## `/past-events` — Past Events
+
+**For grown-ups**
+
+After you **End Market Day**, that day moves to **Past Events** on Settings (when no day is active).
+
+Each row shows the **name**, **date**, and **number of sales**. Tap one to open its dashboard:
+
+- Totals and profit (same 2×2 grid as an active day)
+- Full **Sales** list — tap to edit or remove
+- **Export sales as CSV** (or **Re-export** if you already exported)
+- **↩ Reopen Market Day** — only on the most recently closed day, and only before export
+
+There is no **Today’s Menu** on past events — the menu was for that day only.
+
+---
+
+## `/export-sales` — Export sales (CSV)
+
+**For grown-ups**
+
+1. **⚙️** → Pass Code → **Settings**.
+2. Under **Past Events**, tap the Market Day you want.
+3. Tap **⬇ Export sales as CSV** (or **Re-export** if needed).
+4. Use the share sheet to save or email the file (Mail, AirDrop, Files, etc.).
+
+The CSV includes sale numbers, times, items, prices, costs, payment method, and profit — ready for Excel.
+
+If you edit a sale after exporting, the app shows **Re-export recommended**.
+
+After export, **Reopen** is no longer available for that day.
 
 ---
 
@@ -283,10 +326,12 @@ While a Market Day is active:
 
 1. **⚙️** → **Pass Code** → **Settings**.
 2. See totals: number of sales, **profit**, gross revenue, **Cash** vs **Venmo/Zelle**.
-3. Scroll the **Sales** list — each row shows sale number, time, amount, payment method.
-4. Tap a sale to edit payment, add a name or notes, or remove the sale.
+3. Scroll the **Sales** list — each row shows sale number (or name if you added one), time, amount, payment method.
+4. Tap a sale to change payment method, add optional **name** or **notes**, or remove the sale.
 
 Kids see a simpler view (no profit) from the **Market Day banner** on the home screen.
+
+**Past Events:** When no day is active, open a closed day from **Past Events** to review totals, edit sales, export, or reopen. See [Past Events](./past-events).
 
 ---
 
@@ -423,12 +468,14 @@ No change math — the full total is paid digitally.
 
 **Kids:** Right after checkout, use **✏️ Edit this sale** on the **Sold!** screen.
 
-**Grown-ups:** Later in the day:
+**Grown-ups:** Later — on an **active** day or from **Past Events**:
 
-1. **⚙️** → Pass Code → **Settings**.
+1. **⚙️** → Pass Code → **Settings** (active day) or **Past Events → tap a day**.
 2. Under **Sales**, tap the sale.
-3. Change **payment method**, add a **name** or **notes**, or **Remove sale**.
+3. Change **payment method**, add optional **name** or **notes**, or **Remove sale**.
 4. Tap **Save changes**.
+
+**Name** and **notes** are optional — leave them blank for a normal walk-up sale. They help later with running tabs and preorders.
 
 *(Coming later: edit item quantities on a saved sale.)*
 
@@ -442,14 +489,15 @@ To start a new day, **End Market Day** first (or confirm replacing the current o
 
 ---
 
-## `/faq/undo-close` — I ended the day by mistake
+## `/faq/reopen` — I ended the day by mistake
 
 1. **⚙️** → Pass Code → **Settings**.
-2. Tap **Undo close**.
+2. Under **Past Events**, tap the day you just ended.
+3. Tap **↩ Reopen Market Day**.
 
-That reopens the most recently closed Market Day so selling can continue.
+That makes it the active day again so selling can continue.
 
-This works until the day is **exported** (export feature coming soon).
+This works only for the **most recently** closed day, and only until you **export** it.
 
 ---
 
@@ -457,7 +505,7 @@ This works until the day is **exported** (export feature coming soon).
 
 **Grown-up — morning**
 
-- [ ] ⚙️ → Pass Code → **Start Market Day**
+- [ ] ⚙️ → Pass Code → enter **Market Day** name + **Date** → **Start Market Day**
 - [ ] Check **Today’s Menu** (sold out / remove items)
 - [ ] Hand device to seller
 
@@ -469,6 +517,7 @@ This works until the day is **exported** (export feature coming soon).
 
 - [ ] ⚙️ → **Settings** → review sales & profit
 - [ ] **End Market Day**
+- [ ] (Optional) **Past Events** → export CSV for Excel
 
 ---
 
@@ -485,10 +534,10 @@ Match app personality from mocks: friendly, colorful, kid-safe.
 
 ## Out of scope for help site (don’t document as available)
 
-- CSV export
 - Running Tab (sales outside Market Day)
 - Item photos
 - Change Pass Code without full reset
 - Biometric unlock
+- Edit item quantities on a saved sale (grown-up)
 
 Mention these only as “coming soon” where noted above.

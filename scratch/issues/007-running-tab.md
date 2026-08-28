@@ -8,6 +8,8 @@
 
 **Running Tab** is the admin-only bucket for misc **Sales** outside an **Active Market Day** (porch sales, one-offs). From the **Settings** tab, **Log a sale** launches the same checkout flow as the **Seller**, but **Sales** route to **Running Tab** (`marketDayId` null). Show a **Running Tab** summary section (total revenue, **Sale** count). **Export** uses a date-range picker; exported **Sales** are marked exported.
 
+Each **Sale** can carry optional **name** and **notes** (same fields as Market Day sales) for customer/tab labels and preorder context.
+
 The **Seller** cannot add to **Running Tab** — only the **Admin**. Checkout for Running Tab uses the global non-archived catalog (not today’s Menu). **Inventory** tab is unchanged.
 
 Running Tab UI can live below the Market Day dashboard when a day is active, or on the Settings empty state when no day is active — either way it stays on **Settings**, not **Inventory**.

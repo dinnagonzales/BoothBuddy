@@ -16,9 +16,9 @@ Lightweight tracker for Market Day MVP work. Not synced to GitHub or any externa
 | [001](issues/001-first-run-setup.md) | First-run setup: parental gate + first Item | AFK | — | done |
 | [002](issues/002-market-day-lifecycle.md) | Market Day lifecycle (start, end, undo close) | AFK | 001 | done |
 | [003](issues/003-admin-item-catalog.md) | Admin Item catalog (add, edit, archive) | AFK | 001 | done |
-| [004](issues/004-admin-sales-dashboard.md) | Admin sales dashboard (totals + Sale list) | AFK | 002 | open |
+| [004](issues/004-admin-sales-dashboard.md) | Admin sales dashboard (totals + Sale list) | AFK | 002 | done |
 | [005](issues/005-admin-edit-sale.md) | Admin edit Sale | AFK | 004 | open |
-| [006](issues/006-export-market-day-csv.md) | Export Closed Market Day (CSV + share sheet) | AFK | 002, 004 | open |
+| [006](issues/006-export-market-day-csv.md) | Export Closed Market Day (CSV + share sheet) | AFK | 002, 004 | done |
 | [007](issues/007-running-tab.md) | Running Tab: log sale + date-range export | AFK | 001, 003 | open |
 | [008](issues/008-item-photos.md) | Optional Item photos | AFK | 003 | open |
 | [009](issues/009-visual-polish.md) | Visual polish (mock fonts + spacing) | HITL | — | open |

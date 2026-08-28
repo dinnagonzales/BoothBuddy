@@ -33,8 +33,15 @@ A Menu Item the admin has marked unavailable for the rest of the day. Still visi
 _Avoid_: Out of stock, unavailable, 86'd
 
 **Sale**:
-One completed checkout: line items, total, and payment method. Each Sale receives a globally unique **Sale number** (#1, #2, #3…). Each line item snapshots the Item's price and cost at checkout time. After completion, a brief celebration overlay confirms the sale; dismissing it returns the seller to Home.
+One completed checkout: line items, total, and payment method. Each Sale receives a globally unique **Sale number** (#1, #2, #3…). Optional **name** and **notes** (admin-only metadata — e.g. customer label, preorder, or running-tab context). Each line item snapshots the Item's price and cost at checkout time. After completion, a brief celebration overlay confirms the sale; dismissing it returns the seller to Home.
 _Avoid_: Transaction, order, receipt, invoice
+
+**Sale name**:
+Optional free-text label on a Sale, set by the admin after checkout (e.g. customer name, tab name). Shown in the grown-up sales list and CSV export as **Customer Name** when set. Does not replace the Sale number.
+_Avoid_: Invoice title, customer ID
+
+**Sale notes**:
+Optional free-text note on a Sale, set by the admin after checkout (e.g. preorder pickup time, running-tab context). Stored in the app; not shown on kid-facing screens.
 
 **Sale number**:
 An auto-incrementing reference assigned to every Sale app-wide. Visible in grown-up settings, admin edit, and CSV export — not shown on the seller's celebration overlay.
@@ -57,7 +64,7 @@ A seller action on the celebration overlay that reopens the cart with the just-c
 _Avoid_: Undo, edit sale, oops
 
 **Admin edit**:
-The admin's ability to open and change any Sale from grown-up settings — line items, payment method, cash received. Changed line items re-snapshot the Item's current price and cost at save time. If the Sale's Market Day or Running Tab chunk has already been exported, the bucket is flagged as out of date and re-export is recommended.
+The admin's ability to open and change any Sale from grown-up settings — payment method, optional name and notes, or remove the whole mis-logged Sale. If composition needs to change beyond payment or metadata, remove the Sale and re-log from scratch (kid **Fix** on celebration, or admin remove + new checkout). If the Sale's Market Day or Running Tab chunk has already been exported, the bucket is flagged as out of date and re-export is recommended.
 _Avoid_: Void, correction, adjustment
 
 **Payment method**:

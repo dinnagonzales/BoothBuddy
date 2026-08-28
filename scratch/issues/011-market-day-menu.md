@@ -10,7 +10,7 @@ Each **Market Day** has a **Menu** — the set of **Items** offered that day. Wh
 
 **Remove** hides the **Item** from **Home** and checkout for that **Market Day**. **Sold out** keeps the **Item** visible on **Home** (with a clear indicator) but blocks adding it in checkout. These states are mutually exclusive. **Sold out** is reversible — the **Admin** can mark an **Item** available again.
 
-New **Items** added to the catalog during an **Active Market Day** auto-join the **Menu**. **Archiving** an **Item** drops it from the active **Menu**. **Undo close** restores the **Menu** snapshot (including **sold out** flags). When a **Market Day** is **Closed**, its **Menu** is frozen as a historical record (no admin UI for closed-day menus in MVP).
+New **Items** added to the catalog during an **Active Market Day** auto-join the **Menu**. **Archiving** an **Item** drops it from the active **Menu**. **Undo close** restores the **Menu** snapshot (including **sold out** flags). When a **Market Day** is **Closed**, its **Menu** is frozen as a historical record (no admin UI for closed-day menus in MVP). **Reopen** (from Past Events) restores the **Menu** snapshot.
 
 **Running Tab** sales use the global non-archived catalog — not filtered by the **Menu**.
 
@@ -22,7 +22,7 @@ New **Items** added to the catalog during an **Active Market Day** auto-join the
 - [x] **Admin** can mark a **Menu** **Item** **sold out** — visible on **Home** with indicator, blocked in checkout
 - [x] **Sold out** is reversible; **remove** and **sold out** are mutually exclusive
 - [x] New catalog **Items** auto-join the active **Menu**; **archive** auto-removes from active **Menu**
-- [x] **Undo close** restores **Menu** state exactly
+- [x] **Reopen** restores **Menu** state exactly
 - [x] **Closed Market Day** **Menu** persisted as snapshot (no closed-day menu UI in MVP)
 - [x] **Running Tab** checkout ignores **Menu** — uses all non-archived **Items**
 - [x] **Home** and checkout reflect **Menu** changes without app restart

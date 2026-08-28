@@ -16,11 +16,18 @@ Kid-friendly POS scaffold for iPad testing via **Expo Go** — no Apple Develope
 
 ## What's working in this scaffold
 
-- **Home** — Items menu (no sales totals)
+- **Home** — Items menu (no sales totals); tap Market Day banner for kid sales view
 - **Sell flow** — pick Items, cart ±, payment (cash w/ change + Venmo/Zelle)
 - **Celebration** — Fix reopens cart; tap away → Home
-- **Settings** — Market Day stats (parental gate + export coming soon)
-- **SQLite** — seeded demo Items + demo Market Day on first launch
+- **Settings** — Active Market Day dashboard (2×2 stats, Today's Menu, sales list with optional sale names)
+- **Past Events** — closed days on Settings empty state; detail view with export + Reopen
+- **Start Market Day** — name + date form (date defaults to today)
+- **Sales tab** — all-time sales across Market Days
+- **Inventory** — item CRUD, archive, delete (when no past sales)
+- **Sale detail (admin)** — edit payment method, optional name/notes, remove sale
+- **CSV export** — closed Market Day → share sheet (`expo-sharing`); **Customer Name** column when set
+- **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`)
+- **SQLite** — local-first data on device
 
 ## UI
 
@@ -41,11 +48,10 @@ constants/     theme colors from mocks
 
 ## Next build steps
 
-- Parental code gate (`expo-secure-store`)
-- Item CRUD + archive
-- Market Day close / undo close / export CSV (`expo-sharing`)
-- Admin edit sales
+- Admin edit sale — quantity stepper + per-sale PIN (partial: payment, name, notes, remove)
 - Running Tab sales from settings
+- Item photos
+- App Store / TestFlight build
 
 ## App Store path (later)
 
