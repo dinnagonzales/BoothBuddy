@@ -3,6 +3,7 @@ import * as Crypto from 'expo-crypto';
 export type SecretStore = {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
+  deleteItem(key: string): Promise<void>;
 };
 
 const CODE_KEY = 'parental-gate-code';
@@ -34,6 +35,9 @@ export function createMemorySecretStore(): SecretStore {
     async setItem(key, value) {
       records.set(key, value);
     },
+    async deleteItem(key) {
+      records.delete(key);
+    },
   };
 }
 
@@ -51,6 +55,9 @@ export function createParentalGate(store: SecretStore) {
       const stored = await store.getItem(CODE_KEY);
       if (stored == null) return false;
       return stored === (await hashCode(code));
+    },
+    async clearCode(): Promise<void> {
+      await store.deleteItem(CODE_KEY);
     },
   };
 }

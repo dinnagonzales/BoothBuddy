@@ -1,69 +1,65 @@
-import { useRef } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ComponentProps } from 'react';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PinInput, type PinInputHandle } from '@/components/PinInput';
 import { colors } from '@/constants/theme';
-import { PARENTAL_CODE_MAX_LENGTH } from '@/lib/parental-gate';
+import { parseMoneyInput } from '@/lib/money';
 
-type GrownUpSetupCardProps = {
-  code: string;
-  confirmCode: string;
-  codeError: string | null;
-  onCodeChange: (value: string) => void;
-  onConfirmCodeChange: (value: string) => void;
+type ItemSetupCardProps = {
+  emoji: string;
+  name: string;
+  cost: string;
+  price: string;
+  onEmojiChange: (value: string) => void;
+  onNameChange: (value: string) => void;
+  onCostChange: (value: string) => void;
+  onPriceChange: (value: string) => void;
   onSave: () => void;
-  canSave: boolean;
 };
 
-export function GrownUpSetupCard({
-  code,
-  confirmCode,
-  codeError,
-  onCodeChange,
-  onConfirmCodeChange,
+export function ItemSetupCard({
+  emoji,
+  name,
+  cost,
+  price,
+  onEmojiChange,
+  onNameChange,
+  onCostChange,
+  onPriceChange,
   onSave,
-  canSave,
-}: GrownUpSetupCardProps) {
-  const confirmPinRef = useRef<PinInputHandle>(null);
-
-  const handleCodeChange = (value: string) => {
-    onCodeChange(value);
-    if (value.length === PARENTAL_CODE_MAX_LENGTH) {
-      confirmPinRef.current?.focus();
-    }
-  };
+}: ItemSetupCardProps) {
+  const canSave = name.trim().length > 0 && parseMoneyInput(price) > 0;
 
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
         <View style={styles.card}>
           <View style={styles.iconCircle}>
-            <Text style={styles.iconEmoji}>🔒</Text>
+            <Text style={styles.iconEmoji}>📦</Text>
           </View>
 
-          <Text style={styles.title}>Grown-up setup</Text>
+          <Text style={styles.title}>Add your first Item</Text>
           <Text style={styles.subtext}>
-            Pick a 4-digit code. You'll need it every time you open grown-up settings.
+            Add at least one Item before the seller can use Home. Cost stays grown-up only.
           </Text>
 
           <View style={styles.form}>
-            <PinInput
-              label="Code"
-              value={code}
-              length={PARENTAL_CODE_MAX_LENGTH}
-              onChange={handleCodeChange}
+            <Field label="Emoji" value={emoji} onChangeText={onEmojiChange} placeholder="📦" />
+            <Field label="Name" value={name} onChangeText={onNameChange} placeholder="Dragon" />
+            <Field
+              label="Cost — not shown to the seller"
+              value={cost}
+              onChangeText={onCostChange}
+              placeholder="1.00"
+              keyboardType="decimal-pad"
             />
-            <PinInput
-              ref={confirmPinRef}
-              label="Type it again"
-              value={confirmCode}
-              length={PARENTAL_CODE_MAX_LENGTH}
-              autoComplete="off"
-              onChange={onConfirmCodeChange}
+            <Field
+              label="Price"
+              value={price}
+              onChangeText={onPriceChange}
+              placeholder="4.00"
+              keyboardType="decimal-pad"
             />
-
-            {codeError ? <Text style={styles.error}>{codeError}</Text> : null}
 
             <Pressable
               accessibilityRole="button"
@@ -75,16 +71,26 @@ export function GrownUpSetupCard({
                 !canSave && styles.buttonDisabled,
                 pressed && canSave && styles.buttonPressed,
               ]}>
-              <Text style={styles.buttonLabel}>Save code</Text>
+              <Text style={styles.buttonLabel}>Save Item and finish</Text>
             </Pressable>
-
-            <Text style={styles.tip}>
-              Tip: pick something easy for you to remember, tricky for them to guess 😉
-            </Text>
           </View>
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+function Field({
+  label,
+  ...props
+}: {
+  label: string;
+} & ComponentProps<typeof TextInput>) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput {...props} style={styles.input} placeholderTextColor={colors.inkSoft} />
+    </View>
   );
 }
 
@@ -166,19 +172,33 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   form: {
-    gap: 20,
+    gap: 16,
   },
-  error: {
+  field: {
+    gap: 8,
+  },
+  label: {
     fontFamily: 'Nunito_700Bold',
-    fontSize: 13,
-    color: colors.pinkDark,
-    textAlign: 'center',
+    fontSize: 12,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+  },
+  input: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 16,
+    color: colors.ink,
   },
   button: {
     backgroundColor: colors.purple,
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
+    marginTop: 4,
     ...buttonShadow,
   },
   buttonDisabled: {
@@ -196,12 +216,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: colors.white,
-  },
-  tip: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 12,
-    color: colors.inkSoft,
-    textAlign: 'center',
-    lineHeight: 17,
   },
 });

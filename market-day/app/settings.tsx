@@ -9,6 +9,7 @@ import { Button, Card } from '@/components/ui';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { getActiveMarketDay, getMarketDayStats, startMarketDay } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
+import { resetAppForForgottenCode } from '@/lib/reset-app';
 
 export default function SettingsScreen() {
   const db = useSQLiteContext();
@@ -72,6 +73,10 @@ export default function SettingsScreen() {
               const ok = await deviceParentalGate.verify(code);
               if (ok) setUnlocked(true);
               return ok;
+            }}
+            onForgotCode={async () => {
+              await resetAppForForgottenCode(db, deviceParentalGate);
+              router.replace('/setup');
             }}
           />
         ) : (

@@ -10,6 +10,10 @@ export const deviceSecretStore: SecretStore = {
     if (typeof localStorage === 'undefined') return;
     localStorage.setItem(key, value);
   },
+  async deleteItem(key) {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.removeItem(key);
+  },
 };
 
 export const deviceParentalGate = createParentalGate(deviceSecretStore);

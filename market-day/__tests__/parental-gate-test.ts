@@ -29,6 +29,9 @@ test('parental gate stores a hashed code, not the plaintext', async () => {
     setItem: async (key, value) => {
       records[key] = value;
     },
+    deleteItem: async (key) => {
+      delete records[key];
+    },
   });
 
   await gate.setCode('1234');
@@ -51,4 +54,16 @@ test('parental gate rejects codes that are not exactly 4 digits', async () => {
 
   await expect(gate.setCode('123')).rejects.toThrow(PARENTAL_CODE_LENGTH_ERROR);
   await expect(gate.setCode('12345')).rejects.toThrow(PARENTAL_CODE_LENGTH_ERROR);
+});
+
+test('parental gate can clear a saved code', async () => {
+  const gate = createParentalGate(createMemorySecretStore());
+
+  await gate.setCode('1234');
+  expect(await gate.isConfigured()).toBe(true);
+
+  await gate.clearCode();
+
+  expect(await gate.isConfigured()).toBe(false);
+  expect(await gate.verify('1234')).toBe(false);
 });

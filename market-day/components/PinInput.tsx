@@ -1,5 +1,12 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  type TextInputProps,
+  View,
+} from 'react-native';
 
 import { colors } from '@/constants/theme';
 
@@ -12,10 +19,11 @@ type PinInputProps = {
   value: string;
   length: number;
   onChange: (value: string) => void;
+  autoComplete?: TextInputProps['autoComplete'];
 };
 
 export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinInput(
-  { label, value, length, onChange },
+  { label, value, length, onChange, autoComplete = 'one-time-code' },
   ref,
 ) {
   const inputRef = useRef<TextInput>(null);
@@ -38,7 +46,21 @@ export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinIn
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.rowWrapper}>
-        <View style={styles.row} pointerEvents="box-none">
+        <TextInput
+          ref={inputRef}
+          value={value}
+          onChangeText={handleChange}
+          keyboardType="number-pad"
+          maxLength={length}
+          secureTextEntry
+          caretHidden
+          textContentType="oneTimeCode"
+          autoComplete={autoComplete}
+          accessibilityLabel={label}
+          pointerEvents="none"
+          style={styles.hiddenInput}
+        />
+        <View style={styles.row}>
           {Array.from({ length }, (_, index) => {
             const filled = index < value.length;
             return (
@@ -53,19 +75,6 @@ export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinIn
             );
           })}
         </View>
-        <TextInput
-          ref={inputRef}
-          value={value}
-          onChangeText={handleChange}
-          keyboardType="number-pad"
-          maxLength={length}
-          secureTextEntry
-          caretHidden
-          textContentType="oneTimeCode"
-          autoComplete="one-time-code"
-          accessibilityLabel={label}
-          style={styles.overlayInput}
-        />
       </View>
     </View>
   );
@@ -85,9 +94,16 @@ const styles = StyleSheet.create({
   rowWrapper: {
     position: 'relative',
   },
+  hiddenInput: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
   row: {
     flexDirection: 'row',
     gap: 10,
+    zIndex: 1,
   },
   box: {
     flex: 1,
@@ -107,10 +123,5 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     backgroundColor: colors.purple,
-  },
-  overlayInput: {
-    ...StyleSheet.absoluteFill,
-    opacity: 0,
-    color: 'transparent',
   },
 });

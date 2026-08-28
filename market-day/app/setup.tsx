@@ -1,19 +1,20 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text } from 'react-native';
 
 import { GrownUpSetupCard } from '@/components/GrownUpSetupCard';
-import { Screen, ScreenHeader } from '@/components/Screen';
-import { Button, Input } from '@/components/ui';
+import { ItemSetupCard } from '@/components/ItemSetupCard';
+import { Screen } from '@/components/Screen';
 import { createSqliteCatalog } from '@/lib/db/catalog';
+import { clearShopData } from '@/lib/db/reset';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { parseMoneyInput } from '@/lib/money';
 import {
   getParentalCodeLengthError,
   PARENTAL_CODE_MAX_LENGTH,
 } from '@/lib/parental-gate';
-import { isSetupComplete } from '@/lib/setup';
+import { beginFreshSetupIfNoCode, getSetupStep } from '@/lib/setup';
 
 type Step = 'loading' | 'code' | 'item';
 
@@ -33,20 +34,20 @@ export default function SetupScreen() {
     let cancelled = false;
     const catalog = createSqliteCatalog(db);
 
-    isSetupComplete(deviceParentalGate, catalog)
-      .then((complete) => {
+    void (async () => {
+      try {
+        await beginFreshSetupIfNoCode(deviceParentalGate, () => clearShopData(db));
+        const nextStep = await getSetupStep(deviceParentalGate, catalog);
         if (cancelled) return;
-        if (complete) {
+        if (nextStep === 'complete') {
           router.replace('/');
           return;
         }
-        deviceParentalGate.isConfigured().then((configured) => {
-          if (!cancelled) setStep(configured ? 'item' : 'code');
-        });
-      })
-      .catch(() => {
+        setStep(nextStep);
+      } catch {
         if (!cancelled) setStep('code');
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -64,11 +65,6 @@ export default function SetupScreen() {
       return;
     }
     await deviceParentalGate.setCode(code);
-    const catalog = createSqliteCatalog(db);
-    if (await isSetupComplete(deviceParentalGate, catalog)) {
-      router.replace('/');
-      return;
-    }
     setStep('item');
   };
 
@@ -95,9 +91,7 @@ export default function SetupScreen() {
   }
 
   const canSaveCode =
-    code.length === PARENTAL_CODE_MAX_LENGTH &&
-    confirmCode.length === PARENTAL_CODE_MAX_LENGTH &&
-    code === confirmCode;
+    code.length === PARENTAL_CODE_MAX_LENGTH && confirmCode.length === PARENTAL_CODE_MAX_LENGTH;
 
   if (step === 'code') {
     return (
@@ -120,53 +114,16 @@ export default function SetupScreen() {
   }
 
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={{ paddingBottom: 16, gap: 12 }}>
-        <ScreenHeader title="Grown-up setup" />
-
-        {step === 'item' ? (
-          <View className="gap-3">
-            <Text className="text-muted font-semibold text-center">
-              Add at least one Item before the seller can use Home.
-            </Text>
-            <Text className="text-[11px] font-extrabold uppercase text-muted">Emoji</Text>
-            <Input
-              accessibilityLabel="Item emoji"
-              value={emoji}
-              onChangeText={setEmoji}
-              placeholder="📦"
-            />
-            <Text className="text-[11px] font-extrabold uppercase text-muted">Name</Text>
-            <Input
-              accessibilityLabel="Item name"
-              value={name}
-              onChangeText={setName}
-              placeholder="Dragon"
-            />
-            <Text className="text-[11px] font-extrabold uppercase text-muted">
-              Cost — not shown to the seller
-            </Text>
-            <Input
-              accessibilityLabel="Item cost"
-              keyboardType="decimal-pad"
-              value={cost}
-              onChangeText={setCost}
-              placeholder="1.00"
-            />
-            <Text className="text-[11px] font-extrabold uppercase text-muted">Price</Text>
-            <Input
-              accessibilityLabel="Item price"
-              keyboardType="decimal-pad"
-              value={price}
-              onChangeText={setPrice}
-              placeholder="4.00"
-            />
-            <Button size="lg" isDisabled={!name.trim() || parseMoneyInput(price) <= 0} onPress={saveItem}>
-              <Button.Label className="font-bold">Save Item and finish</Button.Label>
-            </Button>
-          </View>
-        ) : null}
-      </ScrollView>
-    </Screen>
+    <ItemSetupCard
+      emoji={emoji}
+      name={name}
+      cost={cost}
+      price={price}
+      onEmojiChange={setEmoji}
+      onNameChange={setName}
+      onCostChange={setCost}
+      onPriceChange={setPrice}
+      onSave={saveItem}
+    />
   );
 }
