@@ -15,12 +15,14 @@ import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 import { createSqliteCatalog } from '@/lib/db/catalog';
-import { getActiveItems, getActiveMarketDay, getMarketDayStats } from '@/lib/db/queries';
+import { getHomeItems, getActiveMarketDay, getMarketDayStats } from '@/lib/db/queries';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 import { isSetupComplete } from '@/lib/setup';
 import type { Item } from '@/lib/types';
+
+type HomeItem = Item & { soldOut?: boolean };
 
 type ActiveMarketSummary = {
   name: string;
@@ -51,7 +53,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { addItem } = useCart();
   const [setupReady, setSetupReady] = useState<boolean | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<HomeItem[]>([]);
   const [canSell, setCanSell] = useState(false);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
 
@@ -65,7 +67,7 @@ export default function HomeScreen() {
           if (cancelled) return;
           setSetupReady(complete);
           if (complete) {
-            setItems(await getActiveItems(db));
+            setItems(await getHomeItems(db));
             const marketDay = await getActiveMarketDay(db);
             if (marketDay) {
               const stats = await getMarketDayStats(db, marketDay.id);
@@ -92,8 +94,8 @@ export default function HomeScreen() {
     }, [db]),
   );
 
-  const openSellWithItem = (item: Item) => {
-    if (!canSell) return;
+  const openSellWithItem = (item: HomeItem) => {
+    if (!canSell || item.soldOut) return;
     addItem({
       itemId: item.id,
       name: item.name,
@@ -169,15 +171,23 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <Pressable
                 accessibilityRole="button"
-                disabled={!canSell}
+                disabled={!canSell || item.soldOut}
                 onPress={() => openSellWithItem(item)}
                 style={({ pressed }) => [
                   styles.menuRow,
-                  pressed && canSell ? styles.menuRowPressed : null,
+                  item.soldOut ? styles.menuRowSoldOut : null,
+                  pressed && canSell && !item.soldOut ? styles.menuRowPressed : null,
                 ]}>
                 <Text style={styles.menuEmoji}>{item.emoji}</Text>
-                <Text style={styles.menuName}>{item.name}</Text>
-                <Text style={styles.menuPrice}>{formatMoney(item.priceCents)}</Text>
+                <View style={styles.menuNameWrap}>
+                  <Text style={[styles.menuName, item.soldOut ? styles.menuNameSoldOut : null]}>
+                    {item.name}
+                  </Text>
+                  {item.soldOut ? <Text style={styles.soldOutLabel}>Sold out</Text> : null}
+                </View>
+                <Text style={[styles.menuPrice, item.soldOut ? styles.menuPriceSoldOut : null]}>
+                  {formatMoney(item.priceCents)}
+                </Text>
               </Pressable>
             )}
           />
@@ -318,21 +328,40 @@ const styles = StyleSheet.create({
   menuRowPressed: {
     opacity: 0.88,
   },
+  menuRowSoldOut: {
+    opacity: 0.65,
+  },
   menuEmoji: {
     width: 28,
     fontSize: 22,
     textAlign: 'center',
   },
   menuName: {
-    flex: 1,
     fontFamily: 'Nunito_700Bold',
     fontSize: 14,
     color: colors.ink,
+  },
+  menuNameWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  menuNameSoldOut: {
+    color: colors.inkSoft,
+  },
+  soldOutLabel: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
   },
   menuPrice: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     color: colors.purpleDark,
+  },
+  menuPriceSoldOut: {
+    color: colors.inkSoft,
   },
   emptyItems: {
     fontFamily: 'Nunito_600SemiBold',

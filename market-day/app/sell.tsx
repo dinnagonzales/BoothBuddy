@@ -6,7 +6,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { ItemCard, Screen, ScreenHeader } from '@/components/Screen';
 import { Button, Card } from '@/components/ui';
 import { useCart } from '@/context/CartContext';
-import { getActiveItems, getNextSaleNumber, getSale } from '@/lib/db/queries';
+import { getCheckoutItems, getNextSaleNumber, getSale } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
 import type { Item } from '@/lib/types';
 
@@ -79,7 +79,7 @@ export default function SellScreen() {
       let cancelled = false;
       setLoaded(false);
 
-      void getActiveItems(db).then((nextItems) => {
+      void getCheckoutItems(db).then((nextItems) => {
         if (cancelled) return;
         setItems(nextItems);
         setLoaded(true);

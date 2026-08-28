@@ -23,7 +23,7 @@ Lightweight tracker for Market Day MVP work. Not synced to GitHub or any externa
 | [008](issues/008-item-photos.md) | Optional Item photos | AFK | 003 | open |
 | [009](issues/009-visual-polish.md) | Visual polish (mock fonts + spacing) | HITL | — | open |
 | [010](issues/010-app-store-submission.md) | App Store submission | HITL | 001–007 | open |
-| [011](issues/011-market-day-menu.md) | Market Day Menu (default all Items, remove, sold out) | AFK | 002, 003 | open |
+| [011](issues/011-market-day-menu.md) | Market Day Menu (default all Items, remove, sold out) | AFK | 002, 003 | done |
 
 ## Suggested order
 

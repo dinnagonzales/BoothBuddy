@@ -1,15 +1,23 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import type { Catalog, AdminItem, ItemDraft, SellerItem } from '@/lib/catalog';
+import type { Catalog, AdminItem, ItemDraft, MenuItem, SellerItem } from '@/lib/catalog';
 import {
+  archiveItem,
   canUndoCloseMarketDay,
   closeActiveMarketDay,
+  createItem,
   exportMarketDay,
   getActiveMarketDay,
   getAllItems,
+  getCheckoutItems,
+  getMenuForAdmin,
+  getHomeItems,
+  getRunningTabItems,
+  markAvailable,
+  markSoldOut,
+  removeFromMenu,
   startMarketDay,
   undoCloseMostRecentMarketDay,
-  archiveItem,
   unarchiveItem,
   updateItem,
 } from '@/lib/db/queries';
@@ -17,14 +25,7 @@ import {
 export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
   return {
     async createItem(draft: ItemDraft) {
-      const result = await db.runAsync(
-        'INSERT INTO items (name, emoji, cost_cents, price_cents) VALUES (?, ?, ?, ?)',
-        draft.name,
-        draft.emoji,
-        draft.costCents,
-        draft.priceCents,
-      );
-      return { id: Number(result.lastInsertRowId) };
+      return createItem(db, draft);
     },
     async archive(id: number) {
       await archiveItem(db, id);
@@ -36,19 +37,31 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
       await updateItem(db, id, draft);
     },
     async listForSeller(): Promise<SellerItem[]> {
-      const rows = await db.getAllAsync<{
-        id: number;
-        name: string;
-        emoji: string;
-        price_cents: number;
-      }>(
-        'SELECT id, name, emoji, price_cents FROM items WHERE archived = 0 ORDER BY name COLLATE NOCASE',
-      );
-      return rows.map((row) => ({
-        id: row.id,
-        name: row.name,
-        emoji: row.emoji,
-        priceCents: row.price_cents,
+      const items = await getHomeItems(db);
+      return items.map(({ id, name, emoji, priceCents, soldOut }) => ({
+        id,
+        name,
+        emoji,
+        priceCents,
+        ...(soldOut ? { soldOut } : {}),
+      }));
+    },
+    async listForCheckout(): Promise<SellerItem[]> {
+      const items = await getCheckoutItems(db);
+      return items.map(({ id, name, emoji, priceCents }) => ({
+        id,
+        name,
+        emoji,
+        priceCents,
+      }));
+    },
+    async listForRunningTab(): Promise<SellerItem[]> {
+      const items = await getRunningTabItems(db);
+      return items.map(({ id, name, emoji, priceCents }) => ({
+        id,
+        name,
+        emoji,
+        priceCents,
       }));
     },
     async listForAdmin(): Promise<AdminItem[]> {
@@ -61,6 +74,18 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         priceCents: item.priceCents,
         archived: item.archived,
       }));
+    },
+    async listMenuForAdmin(): Promise<MenuItem[]> {
+      return getMenuForAdmin(db);
+    },
+    async removeFromMenu(itemId: number) {
+      await removeFromMenu(db, itemId);
+    },
+    async markSoldOut(itemId: number) {
+      await markSoldOut(db, itemId);
+    },
+    async markAvailable(itemId: number) {
+      await markAvailable(db, itemId);
     },
     async getActiveMarketDay() {
       const marketDay = await getActiveMarketDay(db);

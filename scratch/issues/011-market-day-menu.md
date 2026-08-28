@@ -1,7 +1,7 @@
 # 011 — Market Day Menu (default all Items, remove, sold out)
 
 **Type:** AFK  
-**Status:** open  
+**Status:** done  
 **Blocked by:** 002, 003
 
 ## What to build
@@ -16,16 +16,16 @@ New **Items** added to the catalog during an **Active Market Day** auto-join the
 
 ## Acceptance criteria
 
-- [ ] **Start Market Day** auto-populates **Menu** with all non-archived **Items** (no extra review step)
-- [ ] **Today's Menu** section in **Grown-up settings** during an **Active Market Day**
-- [ ] **Admin** can **remove** an **Item** from **Menu** — hidden from **Home** and checkout
-- [ ] **Admin** can mark a **Menu** **Item** **sold out** — visible on **Home** with indicator, blocked in checkout
-- [ ] **Sold out** is reversible; **remove** and **sold out** are mutually exclusive
-- [ ] New catalog **Items** auto-join the active **Menu**; **archive** auto-removes from active **Menu**
-- [ ] **Undo close** restores **Menu** state exactly
-- [ ] **Closed Market Day** **Menu** persisted as snapshot (no closed-day menu UI in MVP)
-- [ ] **Running Tab** checkout ignores **Menu** — uses all non-archived **Items**
-- [ ] **Home** and checkout reflect **Menu** changes without app restart
+- [x] **Start Market Day** auto-populates **Menu** with all non-archived **Items** (no extra review step)
+- [x] **Today's Menu** section in **Grown-up settings** during an **Active Market Day**
+- [x] **Admin** can **remove** an **Item** from **Menu** — hidden from **Home** and checkout
+- [x] **Admin** can mark a **Menu** **Item** **sold out** — visible on **Home** with indicator, blocked in checkout
+- [x] **Sold out** is reversible; **remove** and **sold out** are mutually exclusive
+- [x] New catalog **Items** auto-join the active **Menu**; **archive** auto-removes from active **Menu**
+- [x] **Undo close** restores **Menu** state exactly
+- [x] **Closed Market Day** **Menu** persisted as snapshot (no closed-day menu UI in MVP)
+- [x] **Running Tab** checkout ignores **Menu** — uses all non-archived **Items**
+- [x] **Home** and checkout reflect **Menu** changes without app restart
 
 ## Blocked by
 

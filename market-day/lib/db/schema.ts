@@ -20,6 +20,14 @@ const SCHEMA = `
     exported_at TEXT
   );
 
+  CREATE TABLE IF NOT EXISTS menu_items (
+    market_day_id INTEGER NOT NULL REFERENCES market_days(id) ON DELETE CASCADE,
+    item_id INTEGER NOT NULL REFERENCES items(id),
+    sold_out INTEGER NOT NULL DEFAULT 0,
+    removed INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (market_day_id, item_id)
+  );
+
   CREATE TABLE IF NOT EXISTS sales (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sale_number INTEGER NOT NULL UNIQUE,

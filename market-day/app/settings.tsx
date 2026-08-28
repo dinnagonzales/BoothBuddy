@@ -5,6 +5,7 @@ import { ScrollView, Text, View } from 'react-native';
 
 import { ParentalGatePrompt } from '@/components/ParentalGatePrompt';
 import { AdminItemCatalog } from '@/components/AdminItemCatalog';
+import { TodaysMenu } from '@/components/TodaysMenu';
 import { Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
 import { Button, Card, Input } from '@/components/ui';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
@@ -149,6 +150,13 @@ export default function SettingsScreen() {
               <Button size="lg" variant="secondary" onPress={handleUndoClose}>
                 <Button.Label className="font-bold">Undo close</Button.Label>
               </Button>
+            ) : null}
+
+            {activeDay ? (
+              <>
+                <SectionLabel>Today&apos;s Menu</SectionLabel>
+                <TodaysMenu db={db} />
+              </>
             ) : null}
 
             <SectionLabel>Items & cost</SectionLabel>

@@ -32,6 +32,183 @@ export async function getActiveItems(db: SQLiteDatabase): Promise<Item[]> {
   return rows.map(mapItem);
 }
 
+type MenuItemRow = {
+  id: number;
+  name: string;
+  emoji: string;
+  photo_uri: string | null;
+  cost_cents: number;
+  price_cents: number;
+  sold_out: number;
+};
+
+async function populateMenuForMarketDay(db: SQLiteDatabase, marketDayId: number): Promise<void> {
+  await db.runAsync(
+    `INSERT INTO menu_items (market_day_id, item_id, sold_out, removed)
+     SELECT ?, id, 0, 0 FROM items WHERE archived = 0`,
+    marketDayId,
+  );
+}
+
+async function addItemToActiveMenu(db: SQLiteDatabase, itemId: number): Promise<void> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return;
+
+  await db.runAsync(
+    `INSERT OR IGNORE INTO menu_items (market_day_id, item_id, sold_out, removed)
+     VALUES (?, ?, 0, 0)`,
+    active.id,
+    itemId,
+  );
+}
+
+async function removeItemFromActiveMenu(db: SQLiteDatabase, itemId: number): Promise<void> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return;
+
+  await db.runAsync(
+    `UPDATE menu_items
+     SET removed = 1, sold_out = 0
+     WHERE market_day_id = ? AND item_id = ?`,
+    active.id,
+    itemId,
+  );
+}
+
+function mapMenuItem(row: MenuItemRow): Item & { soldOut: boolean } {
+  return {
+    id: row.id,
+    name: row.name,
+    emoji: row.emoji,
+    photoUri: row.photo_uri,
+    costCents: row.cost_cents,
+    priceCents: row.price_cents,
+    archived: false,
+    soldOut: row.sold_out === 1,
+  };
+}
+
+export async function getHomeItems(db: SQLiteDatabase): Promise<Array<Item & { soldOut?: boolean }>> {
+  const active = await getActiveMarketDay(db);
+  if (!active) {
+    return getActiveItems(db);
+  }
+
+  const rows = await db.getAllAsync<MenuItemRow>(
+    `SELECT i.id, i.name, i.emoji, i.photo_uri, i.cost_cents, i.price_cents, m.sold_out
+     FROM menu_items m
+     JOIN items i ON i.id = m.item_id
+     WHERE m.market_day_id = ? AND m.removed = 0
+     ORDER BY i.name COLLATE NOCASE`,
+    active.id,
+  );
+
+  return rows.map(mapMenuItem);
+}
+
+export async function getCheckoutItems(db: SQLiteDatabase): Promise<Item[]> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return [];
+
+  const rows = await db.getAllAsync<ItemRow>(
+    `SELECT i.*
+     FROM menu_items m
+     JOIN items i ON i.id = m.item_id
+     WHERE m.market_day_id = ? AND m.removed = 0 AND m.sold_out = 0
+     ORDER BY i.name COLLATE NOCASE`,
+    active.id,
+  );
+
+  return rows.map(mapItem);
+}
+
+export async function getRunningTabItems(db: SQLiteDatabase): Promise<Item[]> {
+  return getActiveItems(db);
+}
+
+export async function getMenuForAdmin(db: SQLiteDatabase) {
+  const active = await getActiveMarketDay(db);
+  if (!active) return [];
+
+  const rows = await db.getAllAsync<{
+    id: number;
+    name: string;
+    emoji: string;
+    price_cents: number;
+    sold_out: number;
+  }>(
+    `SELECT i.id, i.name, i.emoji, i.price_cents, m.sold_out
+     FROM menu_items m
+     JOIN items i ON i.id = m.item_id
+     WHERE m.market_day_id = ? AND m.removed = 0
+     ORDER BY i.name COLLATE NOCASE`,
+    active.id,
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    emoji: row.emoji,
+    priceCents: row.price_cents,
+    soldOut: row.sold_out === 1,
+  }));
+}
+
+export async function removeFromMenu(db: SQLiteDatabase, itemId: number): Promise<void> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return;
+
+  await db.runAsync(
+    `UPDATE menu_items
+     SET removed = 1, sold_out = 0
+     WHERE market_day_id = ? AND item_id = ?`,
+    active.id,
+    itemId,
+  );
+}
+
+export async function markSoldOut(db: SQLiteDatabase, itemId: number): Promise<void> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return;
+
+  await db.runAsync(
+    `UPDATE menu_items
+     SET sold_out = 1
+     WHERE market_day_id = ? AND item_id = ? AND removed = 0`,
+    active.id,
+    itemId,
+  );
+}
+
+export async function markAvailable(db: SQLiteDatabase, itemId: number): Promise<void> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return;
+
+  await db.runAsync(
+    `UPDATE menu_items
+     SET sold_out = 0
+     WHERE market_day_id = ? AND item_id = ? AND removed = 0`,
+    active.id,
+    itemId,
+  );
+}
+
+export async function createItem(
+  db: SQLiteDatabase,
+  draft: { name: string; emoji: string; costCents: number; priceCents: number },
+): Promise<{ id: number }> {
+  const result = await db.runAsync(
+    'INSERT INTO items (name, emoji, cost_cents, price_cents) VALUES (?, ?, ?, ?)',
+    draft.name,
+    draft.emoji,
+    draft.costCents,
+    draft.priceCents,
+  );
+  const id = Number(result.lastInsertRowId);
+  await addItemToActiveMenu(db, id);
+  return { id };
+}
+
 export async function getAllItems(db: SQLiteDatabase): Promise<Item[]> {
   const rows = await db.getAllAsync<ItemRow>(
     'SELECT * FROM items ORDER BY archived ASC, name COLLATE NOCASE',
@@ -56,10 +233,12 @@ export async function updateItem(
 
 export async function archiveItem(db: SQLiteDatabase, id: number): Promise<void> {
   await db.runAsync('UPDATE items SET archived = 1 WHERE id = ?', id);
+  await removeItemFromActiveMenu(db, id);
 }
 
 export async function unarchiveItem(db: SQLiteDatabase, id: number): Promise<void> {
   await db.runAsync('UPDATE items SET archived = 0 WHERE id = ?', id);
+  await addItemToActiveMenu(db, id);
 }
 
 export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
@@ -102,6 +281,8 @@ export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<
   if (!row) {
     throw new Error('Failed to create Market Day');
   }
+
+  await populateMenuForMarketDay(db, row.id);
 
   return {
     id: row.id,
