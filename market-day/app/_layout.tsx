@@ -2,19 +2,20 @@ import 'react-native-gesture-handler';
 import '../global.css';
 
 import { ActivityIndicator, Text, View } from 'react-native';
+import { SQLiteProvider } from 'expo-sqlite';
 import { Stack } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Suspense } from 'react';
 
-import { SQLiteProviderWrapper } from '@/components/SQLiteProviderWrapper';
 import { CartProvider } from '@/context/CartContext';
+import { initDatabase } from '@/lib/db/schema';
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
-        <SQLiteProviderWrapper>
+        <SQLiteProvider databaseName="market-day-v1.db" onInit={initDatabase}>
           <CartProvider>
             <Suspense
               fallback={
@@ -38,7 +39,7 @@ export default function RootLayout() {
               </Stack>
             </Suspense>
           </CartProvider>
-        </SQLiteProviderWrapper>
+        </SQLiteProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
   );
