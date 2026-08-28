@@ -44,12 +44,12 @@ export function GrownUpSetupCard({
 
           <Text style={styles.title}>Grown-up setup</Text>
           <Text style={styles.subtext}>
-            Pick a 4-digit code. You'll need it every time you open grown-up settings.
+            Pick a 4-digit Pass Code. You'll need it every time you open settings.
           </Text>
 
           <View style={styles.form}>
             <PinInput
-              label="Code"
+              label="Pass Code"
               value={code}
               length={PARENTAL_CODE_MAX_LENGTH}
               onChange={handleCodeChange}
@@ -75,7 +75,7 @@ export function GrownUpSetupCard({
                 !canSave && styles.buttonDisabled,
                 pressed && canSave && styles.buttonPressed,
               ]}>
-              <Text style={styles.buttonLabel}>Save code</Text>
+              <Text style={styles.buttonLabel}>Save Pass Code</Text>
             </Pressable>
 
             <Text style={styles.tip}>

@@ -19,7 +19,7 @@ Kid-friendly POS scaffold for iPad testing via **Expo Go** — no Apple Develope
 - **Home** — Items menu (no sales totals)
 - **Sell flow** — pick Items, cart ±, payment (cash w/ change + Venmo/Zelle)
 - **Celebration** — Fix reopens cart; tap away → Home
-- **Grown-up settings** — Market Day stats (parental gate + export coming soon)
+- **Settings** — Market Day stats (parental gate + export coming soon)
 - **SQLite** — seeded demo Items + demo Market Day on first launch
 
 ## UI

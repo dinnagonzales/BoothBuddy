@@ -23,6 +23,13 @@ export type MenuItem = {
   soldOut: boolean;
 };
 
+export type RemovedMenuItem = {
+  id: number;
+  name: string;
+  emoji: string;
+  priceCents: number;
+};
+
 export type AdminItem = {
   id: number;
   name: string;
@@ -42,7 +49,9 @@ export type Catalog = {
   listForRunningTab(): Promise<SellerItem[]>;
   listForAdmin(): Promise<AdminItem[]>;
   listMenuForAdmin(): Promise<MenuItem[]>;
+  listRemovedFromMenu(): Promise<RemovedMenuItem[]>;
   removeFromMenu(itemId: number): Promise<void>;
+  addToMenu(itemId: number): Promise<void>;
   markSoldOut(itemId: number): Promise<void>;
   markAvailable(itemId: number): Promise<void>;
   getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
@@ -226,6 +235,24 @@ export function createCatalog(): Catalog {
       if (!active) return [];
       return listMenuItemsForMarketDay(active.id);
     },
+    async listRemovedFromMenu(): Promise<RemovedMenuItem[]> {
+      const active = getActiveMarketDayRecord();
+      if (!active) return [];
+      return menuEntries
+        .filter((entry) => entry.marketDayId === active.id && entry.removed)
+        .map((entry) => {
+          const item = items.find((candidate) => candidate.id === entry.itemId);
+          if (!item || item.archived) {
+            throw new Error(`Menu Item ${entry.itemId} not found`);
+          }
+          return {
+            id: item.id,
+            name: item.name,
+            emoji: item.emoji,
+            priceCents: item.priceCents,
+          };
+        });
+    },
     async removeFromMenu(itemId: number) {
       const active = getActiveMarketDayRecord();
       if (!active) return;
@@ -233,6 +260,25 @@ export function createCatalog(): Catalog {
       if (entry) {
         entry.removed = true;
         entry.soldOut = false;
+      }
+    },
+    async addToMenu(itemId: number) {
+      const active = getActiveMarketDayRecord();
+      if (!active) return;
+      const item = items.find((candidate) => candidate.id === itemId);
+      if (!item || item.archived) return;
+
+      const entry = getMenuEntry(active.id, itemId);
+      if (entry) {
+        entry.removed = false;
+        entry.soldOut = false;
+      } else {
+        menuEntries.push({
+          marketDayId: active.id,
+          itemId,
+          soldOut: false,
+          removed: false,
+        });
       }
     },
     async markSoldOut(itemId: number) {

@@ -12,9 +12,11 @@ import {
   getCheckoutItems,
   getMenuForAdmin,
   getHomeItems,
+  getRemovedMenuItems,
   getRunningTabItems,
   markAvailable,
   markSoldOut,
+  addToMenu as addItemToMenu,
   removeFromMenu,
   startMarketDay,
   undoCloseMostRecentMarketDay,
@@ -78,8 +80,14 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     async listMenuForAdmin(): Promise<MenuItem[]> {
       return getMenuForAdmin(db);
     },
+    async listRemovedFromMenu() {
+      return getRemovedMenuItems(db);
+    },
     async removeFromMenu(itemId: number) {
       await removeFromMenu(db, itemId);
+    },
+    async addToMenu(itemId: number) {
+      await addItemToMenu(db, itemId);
     },
     async markSoldOut(itemId: number) {
       await markSoldOut(db, itemId);

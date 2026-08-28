@@ -30,6 +30,75 @@ test('starting a Market Day auto-populates the Menu with all non-archived Items'
   ]);
 });
 
+test('admin can add a removed Item back to the Menu', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    emoji: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  await catalog.createItem({
+    name: 'Unicorn',
+    emoji: '🦄',
+    costCents: 150,
+    priceCents: 500,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.removeFromMenu(dragon.id);
+
+  expect(await catalog.listRemovedFromMenu()).toEqual([
+    {
+      id: dragon.id,
+      name: 'Dragon',
+      emoji: '🐉',
+      priceCents: 400,
+    },
+  ]);
+
+  await catalog.addToMenu(dragon.id);
+
+  expect(await catalog.listRemovedFromMenu()).toEqual([]);
+  expect(await catalog.listMenuForAdmin()).toEqual(
+    expect.arrayContaining([
+      {
+        id: expect.any(Number),
+        name: 'Unicorn',
+        emoji: '🦄',
+        priceCents: 500,
+        soldOut: false,
+      },
+      {
+        id: dragon.id,
+        name: 'Dragon',
+        emoji: '🐉',
+        priceCents: 400,
+        soldOut: false,
+      },
+    ]),
+  );
+  expect(await catalog.listForSeller()).toEqual(
+    expect.arrayContaining([
+      {
+        id: expect.any(Number),
+        name: 'Unicorn',
+        emoji: '🦄',
+        priceCents: 500,
+        soldOut: false,
+      },
+      {
+        id: dragon.id,
+        name: 'Dragon',
+        emoji: '🐉',
+        priceCents: 400,
+        soldOut: false,
+      },
+    ]),
+  );
+});
+
 test('removing an Item from the Menu hides it from Home and checkout', async () => {
   const catalog = createCatalog();
 

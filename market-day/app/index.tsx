@@ -131,7 +131,7 @@ export default function HomeScreen() {
           <View style={styles.topBar}>
             <Text style={styles.title}>🎪 Market Day</Text>
             <Pressable
-              accessibilityLabel="Grown-up settings"
+              accessibilityLabel="Settings"
               style={styles.gearButton}
               onPress={() => router.push('/settings')}>
               <Text style={styles.gearIcon}>⚙️</Text>

@@ -92,11 +92,11 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, gap: 12 }}>
-        <ScreenHeader title="⚙️ Grown-up settings" onBack={() => router.back()} />
+        <ScreenHeader title="⚙️ Settings" onBack={() => router.back()} />
 
         {!unlocked ? (
           <ParentalGatePrompt
-            title="Enter your grown-up code"
+            title="Enter Pass Code"
             errorText="That code is not right."
             submitLabel="Unlock"
             onSubmit={async (code) => {
@@ -127,9 +127,13 @@ export default function SettingsScreen() {
             </Card>
 
             {activeDay ? (
-              <Button size="lg" variant="secondary" onPress={handleEndMarketDay}>
-                <Button.Label className="font-bold">End Market Day</Button.Label>
-              </Button>
+              <>
+                <Button size="lg" variant="secondary" onPress={handleEndMarketDay}>
+                  <Button.Label className="font-bold">End Market Day</Button.Label>
+                </Button>
+                <SectionLabel>Today&apos;s Menu</SectionLabel>
+                <TodaysMenu db={db} />
+              </>
             ) : (
               <>
                 <Card className="p-4 gap-2">
@@ -150,13 +154,6 @@ export default function SettingsScreen() {
               <Button size="lg" variant="secondary" onPress={handleUndoClose}>
                 <Button.Label className="font-bold">Undo close</Button.Label>
               </Button>
-            ) : null}
-
-            {activeDay ? (
-              <>
-                <SectionLabel>Today&apos;s Menu</SectionLabel>
-                <TodaysMenu db={db} />
-              </>
             ) : null}
 
             <SectionLabel>Items & cost</SectionLabel>

@@ -55,7 +55,7 @@ export function ParentalGatePrompt({
   if (showForgotConfirm) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Forgot your code?</Text>
+        <Text style={styles.title}>Forgot Pass Code?</Text>
         <Text style={styles.body}>
           There is no way to recover the old code. You can erase everything on this device and set
           up Market Day again from scratch.
@@ -84,7 +84,7 @@ export function ParentalGatePrompt({
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <TextInput
-        accessibilityLabel="Parental code"
+        accessibilityLabel="Pass Code"
         keyboardType="number-pad"
         maxLength={PARENTAL_CODE_MAX_LENGTH}
         secureTextEntry
@@ -111,7 +111,7 @@ export function ParentalGatePrompt({
       </Pressable>
       {onForgotCode ? (
         <Pressable accessibilityRole="button" onPress={() => setShowForgotConfirm(true)}>
-          <Text style={styles.forgotLink}>Forgot your code?</Text>
+          <Text style={styles.forgotLink}>Forgot Pass Code?</Text>
         </Pressable>
       ) : null}
     </View>

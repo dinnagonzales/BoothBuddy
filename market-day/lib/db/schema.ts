@@ -1,5 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import { ensureActiveMarketDayMenu } from '@/lib/db/queries';
+
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,4 +60,6 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   if (hasRetired && !hasArchived) {
     await db.execAsync('ALTER TABLE items RENAME COLUMN retired TO archived');
   }
+
+  await ensureActiveMarketDayMenu(db);
 }
