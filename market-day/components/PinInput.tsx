@@ -1,7 +1,11 @@
-import { useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
+
+export type PinInputHandle = {
+  focus: () => void;
+};
 
 type PinInputProps = {
   label: string;
@@ -10,8 +14,17 @@ type PinInputProps = {
   onChange: (value: string) => void;
 };
 
-export function PinInput({ label, value, length, onChange }: PinInputProps) {
+export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinInput(
+  { label, value, length, onChange },
+  ref,
+) {
   const inputRef = useRef<TextInput>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+  }));
 
   const focus = () => {
     inputRef.current?.focus();
@@ -56,7 +69,7 @@ export function PinInput({ label, value, length, onChange }: PinInputProps) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   group: {

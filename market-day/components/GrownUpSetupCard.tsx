@@ -1,7 +1,8 @@
+import { useRef } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PinInput } from '@/components/PinInput';
+import { PinInput, type PinInputHandle } from '@/components/PinInput';
 import { colors } from '@/constants/theme';
 import { PARENTAL_CODE_MAX_LENGTH } from '@/lib/parental-gate';
 
@@ -24,6 +25,15 @@ export function GrownUpSetupCard({
   onSave,
   canSave,
 }: GrownUpSetupCardProps) {
+  const confirmPinRef = useRef<PinInputHandle>(null);
+
+  const handleCodeChange = (value: string) => {
+    onCodeChange(value);
+    if (value.length === PARENTAL_CODE_MAX_LENGTH) {
+      confirmPinRef.current?.focus();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
@@ -42,9 +52,10 @@ export function GrownUpSetupCard({
               label="Code"
               value={code}
               length={PARENTAL_CODE_MAX_LENGTH}
-              onChange={onCodeChange}
+              onChange={handleCodeChange}
             />
             <PinInput
+              ref={confirmPinRef}
               label="Type it again"
               value={confirmCode}
               length={PARENTAL_CODE_MAX_LENGTH}
