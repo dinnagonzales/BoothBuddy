@@ -30,6 +30,7 @@ test('admin dashboard shows total revenue and item count for the active Market D
   expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
     totalCents: 800,
     itemCount: 2,
+    profitCents: 600,
     cashCents: 800,
     venmoCents: 0,
   });
@@ -86,6 +87,7 @@ test('admin dashboard shows Cash and Venmo/Zelle totals separately', async () =>
   expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
     totalCents: 1000,
     itemCount: 4,
+    profitCents: 750,
     cashCents: 400,
     venmoCents: 600,
   });
@@ -201,6 +203,7 @@ test('admin dashboard shows an empty Sale list before any Sales are logged', asy
   expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
     totalCents: 0,
     itemCount: 0,
+    profitCents: 0,
     cashCents: 0,
     venmoCents: 0,
   });

@@ -27,7 +27,13 @@ export default function SettingsScreen() {
   const params = useLocalSearchParams<{ saleSaved?: string }>();
   const [activeDay, setActiveDay] = useState<MarketDay | null>(null);
   const [canUndo, setCanUndo] = useState(false);
-  const [stats, setStats] = useState({ totalCents: 0, itemCount: 0, cashCents: 0, venmoCents: 0 });
+  const [stats, setStats] = useState({
+    totalCents: 0,
+    itemCount: 0,
+    profitCents: 0,
+    cashCents: 0,
+    venmoCents: 0,
+  });
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [savedSaleNumber, setSavedSaleNumber] = useState<number | null>(null);
@@ -40,7 +46,7 @@ export default function SettingsScreen() {
       setStats(await getMarketDayStats(db, day.id));
       setSales(await getMarketDaySales(db, day.id));
     } else {
-      setStats({ totalCents: 0, itemCount: 0, cashCents: 0, venmoCents: 0 });
+      setStats({ totalCents: 0, itemCount: 0, profitCents: 0, cashCents: 0, venmoCents: 0 });
       setSales([]);
     }
   }, [db]);
@@ -134,7 +140,7 @@ export default function SettingsScreen() {
           name={activeDay.name}
           startedAt={activeDay.startedAt}
           totalCents={stats.totalCents}
-          itemCount={stats.itemCount}
+          profitCents={stats.profitCents}
           saleCount={sales.length}
           cashCents={stats.cashCents}
           venmoCents={stats.venmoCents}

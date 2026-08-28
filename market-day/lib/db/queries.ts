@@ -427,6 +427,13 @@ export function cartTotal(lines: CartLine[]): number {
   return lines.reduce((sum, line) => sum + line.priceCents * line.quantity, 0);
 }
 
+export function cartProfit(lines: CartLine[]): number {
+  return lines.reduce(
+    (sum, line) => sum + (line.priceCents - line.costCents) * line.quantity,
+    0,
+  );
+}
+
 export async function getNextSaleNumber(db: SQLiteDatabase): Promise<number> {
   const row = await db.getFirstAsync<{ n: number }>(
     'SELECT COALESCE(MAX(sale_number), 0) + 1 AS n FROM sales',
@@ -627,12 +634,18 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
   const row = await db.getFirstAsync<{
     total_cents: number;
     item_count: number;
+    profit_cents: number;
     cash_cents: number;
     venmo_cents: number;
   }>(
     `SELECT
        COALESCE(SUM(s.total_cents), 0) AS total_cents,
        COALESCE(SUM((SELECT SUM(li.quantity) FROM line_items li WHERE li.sale_id = s.id)), 0) AS item_count,
+       COALESCE(SUM(
+         (SELECT SUM((li.price_cents - li.cost_cents) * li.quantity)
+          FROM line_items li
+          WHERE li.sale_id = s.id)
+       ), 0) AS profit_cents,
        COALESCE(SUM(CASE WHEN s.payment_method = 'cash' THEN s.total_cents ELSE 0 END), 0) AS cash_cents,
        COALESCE(SUM(CASE WHEN s.payment_method = 'venmo_zelle' THEN s.total_cents ELSE 0 END), 0) AS venmo_cents
      FROM sales s
@@ -643,6 +656,7 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
   return {
     totalCents: row?.total_cents ?? 0,
     itemCount: row?.item_count ?? 0,
+    profitCents: row?.profit_cents ?? 0,
     cashCents: row?.cash_cents ?? 0,
     venmoCents: row?.venmo_cents ?? 0,
   };

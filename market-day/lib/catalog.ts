@@ -43,6 +43,7 @@ export type AdminItem = {
 export type MarketDayStats = {
   totalCents: number;
   itemCount: number;
+  profitCents: number;
   cashCents: number;
   venmoCents: number;
 };
@@ -119,6 +120,13 @@ type StoredSale = {
 
 function cartTotal(lines: CartLine[]): number {
   return lines.reduce((sum, line) => sum + line.priceCents * line.quantity, 0);
+}
+
+function cartProfit(lines: CartLine[]): number {
+  return lines.reduce(
+    (sum, line) => sum + (line.priceCents - line.costCents) * line.quantity,
+    0,
+  );
 }
 
 export function createCatalog(): Catalog {
@@ -405,6 +413,7 @@ export function createCatalog(): Catalog {
       const daySales = sales.filter((sale) => sale.marketDayId === marketDayId);
       let totalCents = 0;
       let itemCount = 0;
+      let profitCents = 0;
       let cashCents = 0;
       let venmoCents = 0;
 
@@ -412,6 +421,7 @@ export function createCatalog(): Catalog {
         const saleTotal = cartTotal(sale.lines);
         totalCents += saleTotal;
         itemCount += sale.lines.reduce((sum, line) => sum + line.quantity, 0);
+        profitCents += cartProfit(sale.lines);
         if (sale.paymentMethod === 'cash') {
           cashCents += saleTotal;
         } else {
@@ -419,7 +429,7 @@ export function createCatalog(): Catalog {
         }
       }
 
-      return { totalCents, itemCount, cashCents, venmoCents };
+      return { totalCents, itemCount, profitCents, cashCents, venmoCents };
     },
     async listSalesForMarketDay(marketDayId) {
       return sales

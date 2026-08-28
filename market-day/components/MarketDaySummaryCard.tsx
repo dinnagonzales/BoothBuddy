@@ -1,90 +1,141 @@
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 
 import { colors } from '@/constants/theme';
-import { formatMarketDayDate, paymentMethodLabel } from '@/lib/market-day';
+import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 
 type MarketDaySummaryCardProps = {
   name: string;
   startedAt: string;
   totalCents: number;
-  itemCount: number;
+  profitCents: number;
   saleCount: number;
   cashCents: number;
   venmoCents: number;
 };
 
-function countLabel(count: number, singular: string, plural: string): string {
-  return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
+type StatBoxProps = {
+  emoji: string;
+  label: string;
+  value: string;
+  subValue?: string;
+  backgroundColor: string;
+};
+
+function StatBox({ emoji, label, value, subValue, backgroundColor }: StatBoxProps) {
+  return (
+    <View style={[styles.statBox, { backgroundColor }]}>
+      <Text style={styles.statEmoji}>{emoji}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+      {subValue ? <Text style={styles.statSub}>{subValue}</Text> : null}
+    </View>
+  );
 }
 
 export function MarketDaySummaryCard({
   name,
   startedAt,
   totalCents,
-  itemCount,
+  profitCents,
   saleCount,
   cashCents,
   venmoCents,
 }: MarketDaySummaryCardProps) {
-  const itemLabel = countLabel(itemCount, 'item', 'items');
-  const saleLabel = countLabel(saleCount, 'sale', 'sales');
-
   return (
-    <View style={styles.card}>
-      <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
-        <Defs>
-          <SvgGradient id="summaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor={colors.pink} />
-            <Stop offset="100%" stopColor={colors.purple} />
-          </SvgGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#summaryGradient)" />
-      </Svg>
-      <View style={styles.content}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.amount}>{formatMoney(totalCents)}</Text>
-        <Text style={styles.sub}>
-          {formatMarketDayDate(startedAt)} · {itemLabel} · {saleLabel}
-        </Text>
-        <Text style={styles.sub}>
-          {formatMoney(cashCents)} cash · {formatMoney(venmoCents)}{' '}
-          {paymentMethodLabel('venmo_zelle')}
-        </Text>
+    <View style={styles.wrap}>
+      <Text style={styles.name}>{name}</Text>
+      <Text style={styles.date}>{formatMarketDayDate(startedAt)}</Text>
+
+      <View style={styles.grid}>
+        <View style={styles.gridRow}>
+          <StatBox
+            emoji="🧾"
+            label="Total Sales"
+            value={String(saleCount)}
+            backgroundColor={colors.purple}
+          />
+          <StatBox
+            emoji="💰"
+            label="Profit"
+            value={formatMoney(profitCents)}
+            subValue={`${formatMoney(totalCents)} gross`}
+            backgroundColor={colors.pink}
+          />
+        </View>
+        <View style={styles.gridRow}>
+          <StatBox
+            emoji="📱"
+            label="Zelle / Venmo"
+            value={formatMoney(venmoCents)}
+            backgroundColor={colors.blue}
+          />
+          <StatBox
+            emoji="💵"
+            label="Cash"
+            value={formatMoney(cashCents)}
+            backgroundColor={colors.green}
+          />
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 22,
-    overflow: 'hidden',
+  wrap: {
     marginBottom: 18,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    alignItems: 'center',
   },
   name: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
-    color: colors.white,
+    fontSize: 20,
+    color: colors.ink,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  date: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  grid: {
+    gap: 10,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statBox: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    minHeight: 108,
+  },
+  statEmoji: {
+    fontSize: 18,
     marginBottom: 6,
   },
-  amount: {
+  statLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 10,
+    color: colors.white,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 4,
+  },
+  statValue: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 32,
+    fontSize: 26,
     color: colors.white,
   },
-  sub: {
+  statSub: {
     fontFamily: 'Nunito_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: colors.white,
-    opacity: 0.9,
+    opacity: 0.85,
     marginTop: 2,
-    textAlign: 'center',
   },
 });

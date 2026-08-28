@@ -55,6 +55,7 @@ test('admin can remove a mis-logged Sale', async () => {
   expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
     totalCents: 800,
     itemCount: 2,
+    profitCents: 600,
     cashCents: 0,
     venmoCents: 800,
   });
@@ -102,6 +103,7 @@ test('admin can change payment method on a Sale', async () => {
   expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
     totalCents: 400,
     itemCount: 1,
+    profitCents: 300,
     cashCents: 0,
     venmoCents: 400,
   });
