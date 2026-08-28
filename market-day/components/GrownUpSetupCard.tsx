@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PinInput } from '@/components/PinInput';
 import { colors } from '@/constants/theme';
@@ -24,59 +25,93 @@ export function GrownUpSetupCard({
   canSave,
 }: GrownUpSetupCardProps) {
   return (
-    <View style={styles.page}>
-      <View style={styles.card}>
-        <View style={styles.iconCircle}>
-          <Text style={styles.iconEmoji}>🔒</Text>
-        </View>
+    <SafeAreaView style={styles.page}>
+      <View style={styles.center}>
+        <View style={styles.card}>
+          <View style={styles.iconCircle}>
+            <Text style={styles.iconEmoji}>🔒</Text>
+          </View>
 
-        <Text style={styles.title}>Grown-up setup</Text>
-        <Text style={styles.subtext}>
-          Pick a 4-digit code. You'll need it every time you open grown-up settings.
-        </Text>
-
-        <View style={styles.form}>
-          <PinInput
-            label="Code"
-            value={code}
-            length={PARENTAL_CODE_MAX_LENGTH}
-            onChange={onCodeChange}
-          />
-          <PinInput
-            label="Type it again"
-            value={confirmCode}
-            length={PARENTAL_CODE_MAX_LENGTH}
-            onChange={onConfirmCodeChange}
-          />
-
-          {codeError ? <Text style={styles.error}>{codeError}</Text> : null}
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canSave }}
-            disabled={!canSave}
-            onPress={onSave}
-            style={({ pressed }) => [
-              styles.button,
-              !canSave && styles.buttonDisabled,
-              pressed && canSave && styles.buttonPressed,
-            ]}>
-            <Text style={styles.buttonLabel}>Save code</Text>
-          </Pressable>
-
-          <Text style={styles.tip}>
-            Tip: pick something easy for you to remember, tricky for them to guess 😉
+          <Text style={styles.title}>Grown-up setup</Text>
+          <Text style={styles.subtext}>
+            Pick a 4-digit code. You'll need it every time you open grown-up settings.
           </Text>
+
+          <View style={styles.form}>
+            <PinInput
+              label="Code"
+              value={code}
+              length={PARENTAL_CODE_MAX_LENGTH}
+              onChange={onCodeChange}
+            />
+            <PinInput
+              label="Type it again"
+              value={confirmCode}
+              length={PARENTAL_CODE_MAX_LENGTH}
+              onChange={onConfirmCodeChange}
+            />
+
+            {codeError ? <Text style={styles.error}>{codeError}</Text> : null}
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSave }}
+              disabled={!canSave}
+              onPress={onSave}
+              style={({ pressed }) => [
+                styles.button,
+                !canSave && styles.buttonDisabled,
+                pressed && canSave && styles.buttonPressed,
+              ]}>
+              <Text style={styles.buttonLabel}>Save code</Text>
+            </Pressable>
+
+            <Text style={styles.tip}>
+              Tip: pick something easy for you to remember, tricky for them to guess 😉
+            </Text>
+          </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const cardShadow = Platform.select({
+  web: { boxShadow: '0 10px 0 rgba(43, 35, 64, 0.06)' },
+  default: {
+    shadowColor: '#2B2340',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.06,
+    shadowRadius: 0,
+    elevation: 2,
+  },
+});
+
+const buttonShadow = Platform.select({
+  web: { boxShadow: `0 5px 0 ${colors.purpleDark}` },
+  default: {
+    shadowColor: colors.purpleDark,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+});
+
+const buttonShadowPressed = Platform.select({
+  web: { boxShadow: `0 2px 0 ${colors.purpleDark}` },
+  default: {
+    shadowOffset: { width: 0, height: 2 },
+  },
+});
 
 const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#EDE9F5',
+  },
+  center: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
@@ -88,12 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     paddingVertical: 32,
     paddingHorizontal: 28,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.06,
-    shadowRadius: 0,
-    elevation: 0,
-    boxShadow: '0 10px 0 rgba(43, 35, 64, 0.06)',
+    ...cardShadow,
   },
   iconCircle: {
     width: 56,
@@ -137,22 +167,18 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
-    shadowColor: colors.purpleDark,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 0,
-    boxShadow: `0 5px 0 ${colors.purpleDark}`,
+    ...buttonShadow,
   },
   buttonDisabled: {
     opacity: 0.45,
-    shadowOpacity: 0,
-    boxShadow: 'none',
+    ...Platform.select({
+      web: { boxShadow: 'none' },
+      default: { shadowOpacity: 0 },
+    }),
   },
   buttonPressed: {
     transform: [{ translateY: 3 }],
-    shadowOffset: { width: 0, height: 2 },
-    boxShadow: `0 2px 0 ${colors.purpleDark}`,
+    ...buttonShadowPressed,
   },
   buttonLabel: {
     fontFamily: 'Fredoka_600SemiBold',

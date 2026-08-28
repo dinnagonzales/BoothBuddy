@@ -10,11 +10,9 @@ const CODE_KEY = 'parental-gate-code';
 export const PARENTAL_CODE_MIN_LENGTH = 4;
 export const PARENTAL_CODE_MAX_LENGTH = 4;
 
-export const PARENTAL_CODE_LENGTH_HINT =
-  'Use a numeric code. Min is 4 and max is 4 digits.';
+export const PARENTAL_CODE_LENGTH_HINT = 'Use a 4-digit numeric code.';
 
-export const PARENTAL_CODE_LENGTH_ERROR =
-  'Numeric code min is 4 and max is 4.';
+export const PARENTAL_CODE_LENGTH_ERROR = 'Enter a 4-digit numeric code.';
 
 export function getParentalCodeLengthError(code: string): string | null {
   if (code.length < PARENTAL_CODE_MIN_LENGTH || code.length > PARENTAL_CODE_MAX_LENGTH) {

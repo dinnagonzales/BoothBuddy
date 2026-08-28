@@ -1,18 +1,17 @@
 import 'react-native-gesture-handler';
 import '../global.css';
 
+import { useFonts } from 'expo-font';
 import {
   Fredoka_500Medium,
   Fredoka_600SemiBold,
   Fredoka_700Bold,
-  useFonts as useFredokaFonts,
 } from '@expo-google-fonts/fredoka';
 import {
   Nunito_400Regular,
   Nunito_600SemiBold,
   Nunito_700Bold,
   Nunito_800ExtraBold,
-  useFonts as useNunitoFonts,
 } from '@expo-google-fonts/nunito';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SQLiteProvider } from 'expo-sqlite';
@@ -28,18 +27,15 @@ import { initDatabase } from '@/lib/db/schema';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [fredokaLoaded] = useFredokaFonts({
+  const [fontsLoaded] = useFonts({
     Fredoka_500Medium,
     Fredoka_600SemiBold,
     Fredoka_700Bold,
-  });
-  const [nunitoLoaded] = useNunitoFonts({
     Nunito_400Regular,
     Nunito_600SemiBold,
     Nunito_700Bold,
     Nunito_800ExtraBold,
   });
-  const fontsLoaded = fredokaLoaded && nunitoLoaded;
 
   useEffect(() => {
     if (fontsLoaded) {

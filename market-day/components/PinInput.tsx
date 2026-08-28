@@ -24,34 +24,36 @@ export function PinInput({ label, value, length, onChange }: PinInputProps) {
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
-      <Pressable style={styles.row} onPress={focus} accessibilityRole="none">
-        {Array.from({ length }, (_, index) => {
-          const filled = index < value.length;
-          return (
-            <Pressable
-              key={index}
-              style={[styles.box, filled && styles.boxFilled]}
-              onPress={focus}
-              accessibilityLabel={`${label} digit ${index + 1}`}
-              accessibilityState={{ selected: filled }}>
-              {filled ? <View style={styles.dot} /> : null}
-            </Pressable>
-          );
-        })}
-      </Pressable>
-      <TextInput
-        ref={inputRef}
-        value={value}
-        onChangeText={handleChange}
-        keyboardType="number-pad"
-        maxLength={length}
-        secureTextEntry
-        caretHidden
-        textContentType="oneTimeCode"
-        autoComplete="one-time-code"
-        accessibilityLabel={label}
-        style={styles.hiddenInput}
-      />
+      <View style={styles.rowWrapper}>
+        <View style={styles.row} pointerEvents="box-none">
+          {Array.from({ length }, (_, index) => {
+            const filled = index < value.length;
+            return (
+              <Pressable
+                key={index}
+                style={[styles.box, filled && styles.boxFilled]}
+                onPress={focus}
+                accessibilityLabel={`${label} digit ${index + 1}`}
+                accessibilityState={{ selected: filled }}>
+                {filled ? <View style={styles.dot} /> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+        <TextInput
+          ref={inputRef}
+          value={value}
+          onChangeText={handleChange}
+          keyboardType="number-pad"
+          maxLength={length}
+          secureTextEntry
+          caretHidden
+          textContentType="oneTimeCode"
+          autoComplete="one-time-code"
+          accessibilityLabel={label}
+          style={styles.overlayInput}
+        />
+      </View>
     </View>
   );
 }
@@ -66,6 +68,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: colors.inkSoft,
+  },
+  rowWrapper: {
+    position: 'relative',
   },
   row: {
     flexDirection: 'row',
@@ -90,10 +95,9 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: colors.purple,
   },
-  hiddenInput: {
-    position: 'absolute',
+  overlayInput: {
+    ...StyleSheet.absoluteFill,
     opacity: 0,
-    width: 1,
-    height: 1,
+    color: 'transparent',
   },
 });
