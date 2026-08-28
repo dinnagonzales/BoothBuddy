@@ -9,20 +9,28 @@ One discrete selling event — one fair, one booth, one stretch of time. The adm
 _Avoid_: Session, event, day (calendar sense)
 
 **Running Tab**:
-The always-open bucket for sales that are not part of an Active Market Day — porch sales, one-offs, anything logged outside a formal event. Never closed; accumulates over time. Sales are logged by the admin from grown-up settings using the same checkout flow as the seller, routed to the Running Tab instead of a Market Day. Export uses a date range picker; exported sales are marked exported and flag re-export if later edited.
+The always-open bucket for sales that are not part of an Active Market Day — porch sales, one-offs, anything logged outside a formal event. Never closed; accumulates over time. Sales are logged by the admin from grown-up settings using the same checkout flow as the seller, routed to the Running Tab instead of a Market Day. Checkout uses the global non-archived catalog, not the active Market Day's Menu. Export uses a date range picker; exported sales are marked exported and flag re-export if later edited.
 _Avoid_: Orphan bucket, misc tab, default session
 
 **Home**:
-The seller's landing screen and return point after every Sale. Shows the **Items** list (icon, name, price) for customer questions, plus a **Sell something!** button to start checkout. Does not show sales totals — those are admin-only.
+The seller's landing screen and return point after every Sale. During an **Active Market Day**, shows the **Items** list from today's **Menu** (icon, name, price; **sold out** Items show a clear indicator). Plus a **Sell something!** button to start checkout. Does not show sales totals — those are admin-only.
 _Avoid_: Dashboard, today view
 
 **Item**:
 A sellable product the vendor offers. Has name, price, cost (admin-only), and icon — emoji by default, optional photo. An Item with past Sales can be **archived** (hidden from Home and checkout) but remains in history and exports. The admin can **UnArchive** an Item to restore it to the seller.
 _Avoid_: Product, SKU, listing
 
+**Menu**:
+The set of Items offered during one Market Day. When the admin starts a Market Day, the Menu auto-populates with every non-archived Item. The admin can remove Items from the Menu or mark them sold out. New catalog Items auto-join the active Menu; archiving an Item drops it from the active Menu. A Closed Market Day's Menu is frozen as a historical snapshot.
+_Avoid_: Day catalog, offering list, daily inventory
+
 **Items**:
-The read-only list on Home showing every Item's icon, name, and price. Same rows as checkout, without add buttons.
-_Avoid_: Catalog, inventory list, product menu, stickers
+The read-only list on Home showing each Menu Item's icon, name, and price (sold out Items included with an indicator). Same rows as checkout, without add buttons.
+_Avoid_: Catalog, inventory list, stickers
+
+**Sold out**:
+A Menu Item the admin has marked unavailable for the rest of the day. Still visible on Home so customers can ask, but blocked from checkout. Reversible — the admin can mark it available again. Mutually exclusive with being removed from the Menu.
+_Avoid_: Out of stock, unavailable, 86'd
 
 **Sale**:
 One completed checkout: line items, total, and payment method. Each Sale receives a globally unique **Sale number** (#1, #2, #3…). Each line item snapshots the Item's price and cost at checkout time. After completion, a brief celebration overlay confirms the sale; dismissing it returns the seller to Home.
@@ -85,7 +93,7 @@ The adult owner who sets up items and prices before a Market Day and exports sal
 _Avoid_: Parent, grown-up (UI label only), owner
 
 **Grown-up settings**:
-The admin-only area behind the gear icon. Protected by a parental gate (numeric code set by the admin). Shows the Active or most recent Market Day dashboard, Running Tab summary, item/cost management, and export actions.
+The admin-only area behind the gear icon. Protected by a parental gate (numeric code set by the admin). Shows the Active or most recent Market Day dashboard, Today's Menu (during an Active Market Day), Running Tab summary, item/cost management, and export actions.
 _Avoid_: Admin panel, settings, back office
 
 **Parental gate**:

@@ -130,7 +130,7 @@ export default function SellScreen() {
       />
 
       <View style={styles.cartContainer}>
-        <Card className="p-3.5">
+        <Card style={styles.cartCard}>
           <Text className="text-[11px] font-extrabold uppercase text-muted mb-1.5">Cart</Text>
           {lines.length === 0 ? (
             <Text className="text-muted font-semibold py-2">Tap + to add items</Text>
@@ -186,9 +186,11 @@ export default function SellScreen() {
 
 const styles = StyleSheet.create({
   cartContainer: {
-    marginTop: 16,
-    marginBottom: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
+    marginTop: 24,
+    marginBottom: 24,
+  },
+  cartCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
 });
