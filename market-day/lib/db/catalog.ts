@@ -1,7 +1,14 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import type { Catalog, ItemDraft, SellerItem } from '@/lib/catalog';
-import { getActiveMarketDay } from '@/lib/db/queries';
+import {
+  canUndoCloseMarketDay,
+  closeActiveMarketDay,
+  exportMarketDay,
+  getActiveMarketDay,
+  startMarketDay,
+  undoCloseMostRecentMarketDay,
+} from '@/lib/db/queries';
 
 export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
   return {
@@ -37,6 +44,22 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     async getActiveMarketDay() {
       const marketDay = await getActiveMarketDay(db);
       return marketDay ? { id: marketDay.id, name: marketDay.name } : null;
+    },
+    async startMarketDay(name: string) {
+      const marketDay = await startMarketDay(db, name);
+      return { id: marketDay.id, name: marketDay.name };
+    },
+    async closeActiveMarketDay() {
+      await closeActiveMarketDay(db);
+    },
+    async undoCloseMostRecentMarketDay() {
+      await undoCloseMostRecentMarketDay(db);
+    },
+    async canUndoClose() {
+      return canUndoCloseMarketDay(db);
+    },
+    async exportMarketDay(id: number) {
+      await exportMarketDay(db, id);
     },
   };
 }

@@ -1,5 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import { ActiveMarketDayExistsError, NothingToUndoCloseError } from '@/lib/market-day';
 import type { CartLine, Item, MarketDay, PaymentMethod, Sale } from '@/lib/types';
 
 type ItemRow = {
@@ -53,9 +54,94 @@ export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay 
   };
 }
 
-export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<void> {
-  await db.runAsync('UPDATE market_days SET closed_at = datetime(\'now\') WHERE closed_at IS NULL');
-  await db.runAsync('INSERT INTO market_days (name) VALUES (?)', name);
+export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<MarketDay> {
+  const active = await getActiveMarketDay(db);
+  if (active) {
+    throw new ActiveMarketDayExistsError();
+  }
+
+  const result = await db.runAsync('INSERT INTO market_days (name) VALUES (?)', name);
+  const row = await db.getFirstAsync<{
+    id: number;
+    name: string;
+    started_at: string;
+    closed_at: string | null;
+    exported_at: string | null;
+  }>('SELECT * FROM market_days WHERE id = ?', result.lastInsertRowId);
+
+  if (!row) {
+    throw new Error('Failed to create Market Day');
+  }
+
+  return {
+    id: row.id,
+    name: row.name,
+    startedAt: row.started_at,
+    closedAt: row.closed_at,
+    exportedAt: row.exported_at,
+  };
+}
+
+export async function closeActiveMarketDay(db: SQLiteDatabase): Promise<void> {
+  await db.runAsync(`UPDATE market_days SET closed_at = datetime('now') WHERE closed_at IS NULL`);
+}
+
+export async function undoCloseMostRecentMarketDay(db: SQLiteDatabase): Promise<void> {
+  const closed = await db.getFirstAsync<{ id: number }>(
+    `SELECT id FROM market_days
+     WHERE closed_at IS NOT NULL AND exported_at IS NULL
+     ORDER BY closed_at DESC
+     LIMIT 1`,
+  );
+
+  if (!closed) {
+    throw new NothingToUndoCloseError();
+  }
+
+  await db.runAsync('UPDATE market_days SET closed_at = NULL WHERE id = ?', closed.id);
+}
+
+export async function canUndoCloseMarketDay(db: SQLiteDatabase): Promise<boolean> {
+  const row = await db.getFirstAsync<{ id: number }>(
+    `SELECT id FROM market_days
+     WHERE closed_at IS NOT NULL AND exported_at IS NULL
+     LIMIT 1`,
+  );
+  return row !== null;
+}
+
+export async function exportMarketDay(db: SQLiteDatabase, marketDayId: number): Promise<void> {
+  await db.runAsync(
+    `UPDATE market_days SET exported_at = datetime('now') WHERE id = ?`,
+    marketDayId,
+  );
+}
+
+export async function getDashboardMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
+  const active = await getActiveMarketDay(db);
+  if (active) return active;
+
+  const row = await db.getFirstAsync<{
+    id: number;
+    name: string;
+    started_at: string;
+    closed_at: string | null;
+    exported_at: string | null;
+  }>(
+    `SELECT * FROM market_days
+     ORDER BY COALESCE(closed_at, started_at) DESC
+     LIMIT 1`,
+  );
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    startedAt: row.started_at,
+    closedAt: row.closed_at,
+    exportedAt: row.exported_at,
+  };
 }
 
 export function cartTotal(lines: CartLine[]): number {

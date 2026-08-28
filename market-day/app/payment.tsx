@@ -6,6 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { Button, Card, Chip, Input, cn } from '@/components/ui';
 import { useCart } from '@/context/CartContext';
+import { marketDayIdForSale } from '@/lib/market-day';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/types';
@@ -27,7 +28,14 @@ export default function PaymentScreen() {
   const completeSale = () => {
     void (async () => {
       const marketDay = await getActiveMarketDay(db);
-      if (!marketDay || lines.length === 0) return;
+      if (lines.length === 0) return;
+
+      let marketDayId: number;
+      try {
+        marketDayId = marketDayIdForSale(marketDay);
+      } catch {
+        return;
+      }
 
       const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
 
@@ -36,7 +44,7 @@ export default function PaymentScreen() {
       }
 
       const sale = await createSale(db, {
-        marketDayId: marketDay.id,
+        marketDayId,
         lines,
         paymentMethod,
         cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,

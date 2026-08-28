@@ -1,3 +1,5 @@
+import { ActiveMarketDayExistsError, NothingToUndoCloseError } from '@/lib/market-day';
+
 export type ItemDraft = {
   name: string;
   emoji: string;
@@ -17,17 +19,31 @@ export type Catalog = {
   retire(id: number): Promise<void>;
   listForSeller(): Promise<SellerItem[]>;
   getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
+  startMarketDay(name: string): Promise<{ id: number; name: string }>;
+  closeActiveMarketDay(): Promise<void>;
+  undoCloseMostRecentMarketDay(): Promise<void>;
+  canUndoClose(): Promise<boolean>;
+  exportMarketDay(id: number): Promise<void>;
 };
 
 type StoredItem = ItemDraft & { id: number; retired: boolean };
 
+type StoredMarketDay = {
+  id: number;
+  name: string;
+  closedAt: string | null;
+  exportedAt: string | null;
+};
+
 export function createCatalog(): Catalog {
   const items: StoredItem[] = [];
-  let nextId = 1;
+  const marketDays: StoredMarketDay[] = [];
+  let nextItemId = 1;
+  let nextMarketDayId = 1;
 
   return {
     async createItem(draft: ItemDraft) {
-      const item = { id: nextId++, retired: false, ...draft };
+      const item = { id: nextItemId++, retired: false, ...draft };
       items.push(item);
       return item;
     },
@@ -46,7 +62,45 @@ export function createCatalog(): Catalog {
         }));
     },
     async getActiveMarketDay() {
-      return null;
+      const active = marketDays.find((day) => day.closedAt === null);
+      return active ? { id: active.id, name: active.name } : null;
+    },
+    async startMarketDay(name: string) {
+      if (await this.getActiveMarketDay()) {
+        throw new ActiveMarketDayExistsError();
+      }
+      const marketDay = {
+        id: nextMarketDayId++,
+        name,
+        closedAt: null,
+        exportedAt: null,
+      };
+      marketDays.push(marketDay);
+      return { id: marketDay.id, name: marketDay.name };
+    },
+    async closeActiveMarketDay() {
+      const active = marketDays.find((day) => day.closedAt === null);
+      if (active) {
+        active.closedAt = new Date().toISOString();
+      }
+    },
+    async undoCloseMostRecentMarketDay() {
+      const closed = [...marketDays]
+        .filter((day) => day.closedAt !== null && day.exportedAt === null)
+        .sort((a, b) => b.closedAt!.localeCompare(a.closedAt!))[0];
+      if (!closed) {
+        throw new NothingToUndoCloseError();
+      }
+      closed.closedAt = null;
+    },
+    async canUndoClose() {
+      return marketDays.some((day) => day.closedAt !== null && day.exportedAt === null);
+    },
+    async exportMarketDay(id: number) {
+      const marketDay = marketDays.find((day) => day.id === id);
+      if (marketDay) {
+        marketDay.exportedAt = new Date().toISOString();
+      }
     },
   };
 }
