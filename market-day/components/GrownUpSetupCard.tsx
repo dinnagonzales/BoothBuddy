@@ -52,6 +52,8 @@ export function GrownUpSetupCard({
               label="Pass Code"
               value={code}
               length={PARENTAL_CODE_MAX_LENGTH}
+              autoComplete="off"
+              autoFocus
               onChange={handleCodeChange}
             />
             <PinInput

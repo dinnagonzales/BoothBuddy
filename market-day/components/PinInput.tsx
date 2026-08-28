@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -20,10 +21,11 @@ type PinInputProps = {
   length: number;
   onChange: (value: string) => void;
   autoComplete?: TextInputProps['autoComplete'];
+  autoFocus?: boolean;
 };
 
 export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinInput(
-  { label, value, length, onChange, autoComplete = 'one-time-code' },
+  { label, value, length, onChange, autoComplete = 'off', autoFocus = false },
   ref,
 ) {
   const inputRef = useRef<TextInput>(null);
@@ -34,7 +36,7 @@ export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinIn
     },
   }));
 
-  const focus = () => {
+  const focusInput = () => {
     inputRef.current?.focus();
   };
 
@@ -45,37 +47,43 @@ export const PinInput = forwardRef<PinInputHandle, PinInputProps>(function PinIn
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.rowWrapper}>
+      <Pressable
+        accessibilityRole="none"
+        onPress={focusInput}
+        style={styles.rowWrapper}>
+        <View style={styles.row} pointerEvents="none">
+          {Array.from({ length }, (_, index) => {
+            const filled = index < value.length;
+            return (
+              <View
+                key={index}
+                style={[styles.box, filled && styles.boxFilled]}
+                accessibilityLabel={`${label} digit ${index + 1}`}
+                accessibilityState={{ selected: filled }}>
+                {filled ? <View style={styles.dot} /> : null}
+              </View>
+            );
+          })}
+        </View>
         <TextInput
           ref={inputRef}
           value={value}
           onChangeText={handleChange}
           keyboardType="number-pad"
+          inputMode="numeric"
           maxLength={length}
-          secureTextEntry
           caretHidden
-          textContentType="oneTimeCode"
+          autoFocus={autoFocus}
+          autoCorrect={false}
+          spellCheck={false}
+          contextMenuHidden
+          importantForAutofill="no"
+          textContentType="none"
           autoComplete={autoComplete}
           accessibilityLabel={label}
-          pointerEvents="none"
-          style={styles.hiddenInput}
+          style={styles.overlayInput}
         />
-        <View style={styles.row}>
-          {Array.from({ length }, (_, index) => {
-            const filled = index < value.length;
-            return (
-              <Pressable
-                key={index}
-                style={[styles.box, filled && styles.boxFilled]}
-                onPress={focus}
-                accessibilityLabel={`${label} digit ${index + 1}`}
-                accessibilityState={{ selected: filled }}>
-                {filled ? <View style={styles.dot} /> : null}
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      </Pressable>
     </View>
   );
 });
@@ -94,16 +102,18 @@ const styles = StyleSheet.create({
   rowWrapper: {
     position: 'relative',
   },
-  hiddenInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
+  overlayInput: {
+    ...StyleSheet.absoluteFillObject,
     opacity: 0,
+    fontSize: 16,
+    ...Platform.select({
+      ios: { padding: 0 },
+      default: {},
+    }),
   },
   row: {
     flexDirection: 'row',
     gap: 10,
-    zIndex: 1,
   },
   box: {
     flex: 1,
