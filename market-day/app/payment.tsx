@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen, ScreenHeader } from '@/components/Screen';
@@ -9,6 +9,7 @@ import { colors } from '@/constants/theme';
 import { useCart } from '@/context/CartContext';
 import { marketDayIdForSale } from '@/lib/market-day';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
+import { paymentCanComplete } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/types';
 
@@ -28,9 +29,21 @@ const chipShadow = Platform.select({
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId, invoiceNumber } = useCart();
+  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes } =
+    useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
+
+  useEffect(() => {
+    if (editingSaleId == null) return;
+
+    if (editingPaymentMethod != null) {
+      setPaymentMethod(editingPaymentMethod);
+    }
+    if (editingPaymentMethod === 'cash' && editingCashReceivedCents != null) {
+      setCashReceivedCents(editingCashReceivedCents);
+    }
+  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents]);
 
   const changeCents = useMemo(
     () => Math.max(cashReceivedCents - totalCents, 0),
@@ -41,8 +54,7 @@ export default function PaymentScreen() {
     [cashReceivedCents, totalCents],
   );
   const cashCoversTotal = cashReceivedCents >= totalCents;
-  const canComplete =
-    paymentMethod === 'venmo_zelle' || (paymentMethod === 'cash' && cashCoversTotal);
+  const canComplete = paymentCanComplete(paymentMethod, cashReceivedCents, totalCents);
 
   const completeSale = () => {
     if (!canComplete) return;
@@ -69,6 +81,8 @@ export default function PaymentScreen() {
         lines,
         paymentMethod,
         cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
+        name: saleName,
+        notes: saleNotes,
       });
 
       clearCart();

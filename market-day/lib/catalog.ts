@@ -1,9 +1,9 @@
 import {
   ActiveMarketDayExistsError,
+  CannotDeleteActiveMarketDayError,
   ItemHasSalesError,
   NothingToUndoCloseError,
 } from '@/lib/market-day';
-import type { CartLine, PaymentMethod, SaleSummary } from '@/lib/types';
 
 export type ItemDraft = {
   name: string;
@@ -80,7 +80,7 @@ export type Catalog = {
   markSoldOut(itemId: number): Promise<void>;
   markAvailable(itemId: number): Promise<void>;
   getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
-  startMarketDay(name: string): Promise<{ id: number; name: string }>;
+  startMarketDay(name: string, startedAt?: string): Promise<{ id: number; name: string }>;
   closeActiveMarketDay(): Promise<void>;
   undoCloseMostRecentMarketDay(): Promise<void>;
   canUndoClose(): Promise<boolean>;
@@ -95,6 +95,8 @@ export type Catalog = {
   }): Promise<{ saleNumber: number }>;
   getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
   listSalesForMarketDay(marketDayId: number): Promise<SaleSummary[]>;
+  getAllTimeStats(): Promise<MarketDayStats>;
+  listAllTimeSales(): Promise<AllTimeSaleSummary[]>;
   getSale(saleNumber: number): Promise<SaleDetail | null>;
   removeSale(saleNumber: number): Promise<void>;
   updateSalePaymentMethod(saleNumber: number, paymentMethod: PaymentMethod): Promise<void>;
@@ -107,6 +109,10 @@ export type Catalog = {
     },
   ): Promise<void>;
   marketDayNeedsReexport(marketDayId: number): Promise<boolean>;
+  listClosedMarketDays(): Promise<ClosedMarketDaySummary[]>;
+  getMarketDayById(id: number): Promise<MarketDay | null>;
+  canReopenMarketDay(id: number): Promise<boolean>;
+  deleteMarketDay(id: number): Promise<void>;
 };
 
 type StoredItem = ItemDraft & { id: number; archived: boolean };
@@ -114,6 +120,7 @@ type StoredItem = ItemDraft & { id: number; archived: boolean };
 type StoredMarketDay = {
   id: number;
   name: string;
+  startedAt: string;
   closedAt: string | null;
   exportedAt: string | null;
   needsReexport: boolean;
@@ -398,13 +405,18 @@ export function createCatalog(): Catalog {
       const active = getActiveMarketDayRecord();
       return active ? { id: active.id, name: active.name } : null;
     },
-    async startMarketDay(name: string) {
+    async startMarketDay(name: string, startedAt?: string) {
       if (await this.getActiveMarketDay()) {
         throw new ActiveMarketDayExistsError();
       }
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        throw new Error('Market Day name is required');
+      }
       const marketDay = {
         id: nextMarketDayId++,
-        name,
+        name: trimmedName,
+        startedAt: startedAt ?? new Date().toISOString(),
         closedAt: null,
         exportedAt: null,
         needsReexport: false,
@@ -486,6 +498,43 @@ export function createCatalog(): Catalog {
           createdAt: sale.createdAt,
         }));
     },
+    async getAllTimeStats() {
+      let totalCents = 0;
+      let itemCount = 0;
+      let profitCents = 0;
+      let cashCents = 0;
+      let venmoCents = 0;
+
+      for (const sale of sales) {
+        const saleTotal = cartTotal(sale.lines);
+        totalCents += saleTotal;
+        itemCount += sale.lines.reduce((sum, line) => sum + line.quantity, 0);
+        profitCents += cartProfit(sale.lines);
+        if (sale.paymentMethod === 'cash') {
+          cashCents += saleTotal;
+        } else {
+          venmoCents += saleTotal;
+        }
+      }
+
+      return { totalCents, itemCount, profitCents, cashCents, venmoCents };
+    },
+    async listAllTimeSales() {
+      return sales
+        .slice()
+        .sort((a, b) => {
+          const byDate = b.createdAt.localeCompare(a.createdAt);
+          return byDate !== 0 ? byDate : b.saleNumber - a.saleNumber;
+        })
+        .map((sale) => ({
+          saleNumber: sale.saleNumber,
+          totalCents: cartTotal(sale.lines),
+          paymentMethod: sale.paymentMethod,
+          name: sale.name,
+          createdAt: sale.createdAt,
+          marketDayName: marketDays.find((day) => day.id === sale.marketDayId)?.name ?? null,
+        }));
+    },
     async removeSale(saleNumber) {
       const index = sales.findIndex((sale) => sale.saleNumber === saleNumber);
       if (index === -1) return;
@@ -547,6 +596,60 @@ export function createCatalog(): Catalog {
     async marketDayNeedsReexport(marketDayId) {
       const marketDay = marketDays.find((day) => day.id === marketDayId);
       return marketDay?.needsReexport ?? false;
+    },
+    async listClosedMarketDays() {
+      return [...marketDays]
+        .filter((day) => day.closedAt !== null)
+        .sort((a, b) => b.closedAt!.localeCompare(a.closedAt!) || b.id - a.id)
+        .map((day) => ({
+          id: day.id,
+          name: day.name,
+          startedAt: day.startedAt,
+          closedAt: day.closedAt!,
+          saleCount: sales.filter((sale) => sale.marketDayId === day.id).length,
+        }));
+    },
+    async getMarketDayById(id) {
+      const day = marketDays.find((entry) => entry.id === id);
+      if (!day) return null;
+      return {
+        id: day.id,
+        name: day.name,
+        startedAt: day.startedAt,
+        closedAt: day.closedAt,
+        exportedAt: day.exportedAt,
+        needsReexport: day.needsReexport,
+      };
+    },
+    async canReopenMarketDay(id) {
+      const reopenable = [...marketDays]
+        .filter((day) => day.closedAt !== null && day.exportedAt === null)
+        .sort((a, b) => b.closedAt!.localeCompare(a.closedAt!) || b.id - a.id)[0];
+      return reopenable?.id === id;
+    },
+    async deleteMarketDay(id) {
+      const day = marketDays.find((entry) => entry.id === id);
+      if (!day) return;
+      if (!day.closedAt) {
+        throw new CannotDeleteActiveMarketDayError();
+      }
+
+      for (let i = sales.length - 1; i >= 0; i--) {
+        if (sales[i].marketDayId === id) {
+          sales.splice(i, 1);
+        }
+      }
+
+      for (let i = menuEntries.length - 1; i >= 0; i--) {
+        if (menuEntries[i].marketDayId === id) {
+          menuEntries.splice(i, 1);
+        }
+      }
+
+      const index = marketDays.findIndex((entry) => entry.id === id);
+      if (index !== -1) {
+        marketDays.splice(index, 1);
+      }
     },
   };
 }

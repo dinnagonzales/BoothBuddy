@@ -35,6 +35,8 @@ export type Sale = {
   totalCents: number;
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
+  name: string | null;
+  notes: string | null;
   createdAt: string;
 };
 
@@ -42,5 +44,18 @@ export type SaleSummary = {
   saleNumber: number;
   totalCents: number;
   paymentMethod: PaymentMethod;
+  name: string | null;
   createdAt: string;
+};
+
+export type AllTimeSaleSummary = SaleSummary & {
+  marketDayName: string | null;
+};
+
+export type ClosedMarketDaySummary = {
+  id: number;
+  name: string;
+  startedAt: string;
+  closedAt: string;
+  saleCount: number;
 };

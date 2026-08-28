@@ -134,12 +134,18 @@ export default function HomeScreen() {
           </View>
 
           {activeMarket ? (
-            <HeroCard>
-              <Text style={styles.heroEyebrow}>
-                {activeMarket.name.toUpperCase()} · {activeMarket.dateLabel.toUpperCase()}
-              </Text>
-              <Text style={styles.heroSubtitle}>Tap an item or sell something below</Text>
-            </HeroCard>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`View ${activeMarket.name} sales`}
+              onPress={() => router.push('/market-day')}
+              style={({ pressed }) => [styles.heroCardWrap, pressed && styles.heroCardPressed]}>
+              <HeroCard>
+                <Text style={styles.heroEyebrow}>
+                  {activeMarket.name.toUpperCase()} · {activeMarket.dateLabel.toUpperCase()}
+                </Text>
+                <Text style={styles.heroSubtitle}>Tap for today&apos;s sales · sell something below</Text>
+              </HeroCard>
+            </Pressable>
           ) : null}
 
           <Text style={styles.menuLabel}>🍭 Menu</Text>
@@ -246,6 +252,11 @@ const styles = StyleSheet.create({
   heroCard: {
     borderRadius: 26,
     overflow: 'hidden',
+  },
+  heroCardPressed: {
+    opacity: 0.92,
+  },
+  heroCardWrap: {
     marginBottom: 18,
   },
   heroContent: {

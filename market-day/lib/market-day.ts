@@ -26,6 +26,20 @@ export function suggestMarketDayName(now = new Date()): string {
   return `Market Day – ${formatted}`;
 }
 
+export function defaultMarketDayName(): string {
+  return 'Market Day';
+}
+
+export function startOfLocalDay(date = new Date()): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function marketDayStartedAtIso(date: Date): string {
+  const local = startOfLocalDay(date);
+  local.setHours(12, 0, 0, 0);
+  return local.toISOString();
+}
+
 export class ActiveMarketDayExistsError extends Error {
   constructor() {
     super('An Active Market Day already exists');
@@ -44,6 +58,13 @@ export class NoActiveMarketDayError extends Error {
   constructor() {
     super('No Active Market Day');
     this.name = 'NoActiveMarketDayError';
+  }
+}
+
+export class CannotDeleteActiveMarketDayError extends Error {
+  constructor() {
+    super('Active Market Day cannot be deleted');
+    this.name = 'CannotDeleteActiveMarketDayError';
   }
 }
 

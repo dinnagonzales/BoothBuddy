@@ -3,7 +3,10 @@ import {
   ActiveMarketDayExistsError,
   NoActiveMarketDayError,
   NothingToUndoCloseError,
+  defaultMarketDayName,
+  formatMarketDayDate,
   marketDayIdForSale,
+  marketDayStartedAtIso,
   suggestMarketDayName,
 } from '@/lib/market-day';
 
@@ -73,6 +76,28 @@ test('suggested Market Day name uses today’s date', () => {
   const name = suggestMarketDayName(new Date('2026-09-18T12:00:00'));
 
   expect(name).toBe('Market Day – Sep 18, 2026');
+});
+
+test('default Market Day name is separate from the date', () => {
+  expect(defaultMarketDayName()).toBe('Market Day');
+});
+
+test('admin can start a Market Day with a custom name and date', async () => {
+  const catalog = createCatalog();
+  const startedAt = marketDayStartedAtIso(new Date('2026-09-18T12:00:00'));
+
+  const { id } = await catalog.startMarketDay('Spring Fair 2026', startedAt);
+  const day = await catalog.getMarketDayById(id);
+
+  expect(day).toEqual({
+    id,
+    name: 'Spring Fair 2026',
+    startedAt,
+    closedAt: null,
+    exportedAt: null,
+    needsReexport: false,
+  });
+  expect(formatMarketDayDate(startedAt)).toBe('Sep 18, 2026');
 });
 
 test('Sales logged during an Active Market Day belong to that Market Day', () => {

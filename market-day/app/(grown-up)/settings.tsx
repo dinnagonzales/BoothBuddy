@@ -6,27 +6,28 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { ExpandableCard } from '@/components/ExpandableCard';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
+import { PastEventsList } from '@/components/PastEventsList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { StartMarketDayForm } from '@/components/StartMarketDayForm';
 import { TodaysMenu } from '@/components/TodaysMenu';
 import { colors } from '@/constants/theme';
 import {
-  canUndoCloseMarketDay,
   closeActiveMarketDay,
   getActiveMarketDay,
+  getClosedMarketDays,
   getMarketDaySales,
   getMarketDayStats,
   startMarketDay,
-  undoCloseMostRecentMarketDay,
 } from '@/lib/db/queries';
-import { suggestMarketDayName } from '@/lib/market-day';
-import type { MarketDay, SaleSummary } from '@/lib/types';
+import { leaveGrownUpArea } from '@/lib/navigation';
+import type { ClosedMarketDaySummary, MarketDay, SaleSummary } from '@/lib/types';
 
 export default function SettingsScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
   const params = useLocalSearchParams<{ saleSaved?: string }>();
   const [activeDay, setActiveDay] = useState<MarketDay | null>(null);
-  const [canUndo, setCanUndo] = useState(false);
+  const [pastEvents, setPastEvents] = useState<ClosedMarketDaySummary[]>([]);
   const [stats, setStats] = useState({
     totalCents: 0,
     itemCount: 0,
@@ -37,15 +38,17 @@ export default function SettingsScreen() {
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [savedSaleNumber, setSavedSaleNumber] = useState<number | null>(null);
+  const [starting, setStarting] = useState(false);
 
   const refreshDashboard = useCallback(async () => {
     const day = await getActiveMarketDay(db);
     setActiveDay(day);
-    setCanUndo(await canUndoCloseMarketDay(db));
     if (day) {
+      setPastEvents([]);
       setStats(await getMarketDayStats(db, day.id));
       setSales(await getMarketDaySales(db, day.id));
     } else {
+      setPastEvents(await getClosedMarketDays(db));
       setStats({ totalCents: 0, itemCount: 0, profitCents: 0, cashCents: 0, venmoCents: 0 });
       setSales([]);
     }
@@ -70,10 +73,15 @@ export default function SettingsScreen() {
     return () => clearTimeout(timeout);
   }, [params.saleSaved, router]);
 
-  const handleStartMarketDay = () => {
+  const handleStartMarketDay = ({ name, startedAt }: { name: string; startedAt: string }) => {
     void (async () => {
-      await startMarketDay(db, suggestMarketDayName());
-      await refreshDashboard();
+      setStarting(true);
+      try {
+        await startMarketDay(db, name, startedAt);
+        await refreshDashboard();
+      } finally {
+        setStarting(false);
+      }
     })();
   };
 
@@ -97,44 +105,37 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleUndoClose = () => {
-    void (async () => {
-      await undoCloseMostRecentMarketDay(db);
-      await refreshDashboard();
-    })();
-  };
-
   if (!activeDay) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader title="⚙️ Settings" onBack={() => router.back()} />
-        <View style={styles.emptyWrap}>
-          <View style={styles.emptyBadge}>
-            <Text style={styles.emptyBadgeIcon}>🎪</Text>
-          </View>
-          <Text style={styles.emptyTitle}>No market day yet</Text>
-          <Text style={styles.emptyBody}>Start one to begin tracking today&apos;s sales.</Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={handleStartMarketDay}
-            style={({ pressed }) => [styles.startButtonOuter, pressed && styles.startButtonOuterPressed]}>
-            <View style={styles.startButtonInner}>
-              <Text style={styles.startButtonLabel}>▶️ Start Market Day</Text>
+        <ScreenHeader title="⚙️ Settings" onBack={() => leaveGrownUpArea(router)} />
+        <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.emptyWrap}>
+            <View style={styles.emptyBadge}>
+              <Text style={styles.emptyBadgeIcon}>🎪</Text>
             </View>
-          </Pressable>
-          {canUndo ? (
-            <Pressable accessibilityRole="button" onPress={handleUndoClose} style={styles.undoLink}>
-              <Text style={styles.undoLinkLabel}>Undo close</Text>
-            </Pressable>
-          ) : null}
-        </View>
+            <Text style={styles.emptyTitle}>No market day yet</Text>
+            <Text style={styles.emptyBody}>Start one to begin tracking today&apos;s sales.</Text>
+            <StartMarketDayForm onStart={handleStartMarketDay} busy={starting} />
+          </View>
+
+          <PastEventsList
+            events={pastEvents}
+            onEventPress={(marketDayId) =>
+              router.push({
+                pathname: '/(grown-up)/past/[id]',
+                params: { id: String(marketDayId) },
+              })
+            }
+          />
+        </ScrollView>
       </View>
     );
   }
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="⚙️ Settings" onBack={() => router.back()} />
+      <ScreenHeader title="⚙️ Settings" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <MarketDaySummaryCard
           name={activeDay.name}
@@ -248,12 +249,16 @@ const styles = StyleSheet.create({
   salesSection: {
     marginTop: 10,
   },
+  emptyScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
   emptyWrap: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
-    paddingBottom: 24,
+    paddingTop: 48,
+    paddingBottom: 8,
   },
   emptyBadge: {
     width: 64,
@@ -279,36 +284,6 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  startButtonOuter: {
-    width: '100%',
-    borderRadius: 18,
-    backgroundColor: colors.purpleDark,
-    paddingBottom: 4,
-  },
-  startButtonOuterPressed: {
-    paddingBottom: 1,
-    marginTop: 3,
-  },
-  startButtonInner: {
-    backgroundColor: colors.purple,
-    borderRadius: 18,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  startButtonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
-    color: colors.white,
-  },
-  undoLink: {
-    marginTop: 10,
-    paddingVertical: 4,
-  },
-  undoLinkLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 10,
-    color: colors.purpleDark,
   },
   endDock: {
     paddingTop: 10,

@@ -1,14 +1,22 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 
-import type { CartLine } from '@/lib/types';
+import type { CartLine, PaymentMethod } from '@/lib/types';
 
 type CartContextValue = {
   lines: CartLine[];
   editingSaleId: number | null;
+  editingPaymentMethod: PaymentMethod | null;
+  editingCashReceivedCents: number | null;
   invoiceNumber: number | null;
+  saleName: string;
+  saleNotes: string;
   setLines: (lines: CartLine[]) => void;
   setEditingSaleId: (saleId: number | null) => void;
+  setEditingPaymentMethod: (paymentMethod: PaymentMethod | null) => void;
+  setEditingCashReceivedCents: (cashReceivedCents: number | null) => void;
   setInvoiceNumber: (saleNumber: number | null) => void;
+  setSaleName: (name: string) => void;
+  setSaleNotes: (notes: string) => void;
   addItem: (line: Omit<CartLine, 'quantity'>) => void;
   changeQuantity: (itemId: number, delta: number) => void;
   clearCart: () => void;
@@ -21,7 +29,11 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
+  const [editingPaymentMethod, setEditingPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [editingCashReceivedCents, setEditingCashReceivedCents] = useState<number | null>(null);
   const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
+  const [saleName, setSaleName] = useState('');
+  const [saleNotes, setSaleNotes] = useState('');
 
   const value = useMemo<CartContextValue>(() => {
     const addItem = (line: Omit<CartLine, 'quantity'>) => {
@@ -59,21 +71,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return {
       lines,
       editingSaleId,
+      editingPaymentMethod,
+      editingCashReceivedCents,
       invoiceNumber,
+      saleName,
+      saleNotes,
       setLines,
       setEditingSaleId,
+      setEditingPaymentMethod,
+      setEditingCashReceivedCents,
       setInvoiceNumber,
+      setSaleName,
+      setSaleNotes,
       addItem,
       changeQuantity,
       clearCart: () => {
         setLines([]);
         setEditingSaleId(null);
+        setEditingPaymentMethod(null);
+        setEditingCashReceivedCents(null);
         setInvoiceNumber(null);
+        setSaleName('');
+        setSaleNotes('');
       },
       itemCount,
       totalCents,
     };
-  }, [lines, editingSaleId, invoiceNumber]);
+  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

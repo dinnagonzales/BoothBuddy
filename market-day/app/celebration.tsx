@@ -5,12 +5,13 @@ import { Pressable, Text, View } from 'react-native';
 import { Button, Card } from '@/components/ui';
 import { useCart } from '@/context/CartContext';
 import { getSale, getSaleLineItems } from '@/lib/db/queries';
+import { cashReceivedForEditedSale } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 
 export default function CelebrationScreen() {
   const router = useRouter();
   const db = useSQLiteContext();
-  const { setLines, setEditingSaleId, setInvoiceNumber } = useCart();
+  const { setLines, setEditingSaleId, setEditingPaymentMethod, setEditingCashReceivedCents, setInvoiceNumber, setSaleName, setSaleNotes } = useCart();
   const params = useLocalSearchParams<{
     saleId: string;
     itemCount: string;
@@ -34,7 +35,19 @@ export default function CelebrationScreen() {
       ]);
       setLines(lines);
       setEditingSaleId(saleId);
+      setEditingPaymentMethod(sale?.paymentMethod ?? null);
+      setEditingCashReceivedCents(
+        sale
+          ? cashReceivedForEditedSale(
+              sale.paymentMethod,
+              sale.cashReceivedCents,
+              sale.totalCents,
+            )
+          : null,
+      );
       setInvoiceNumber(sale?.saleNumber ?? null);
+      setSaleName(sale?.name ?? '');
+      setSaleNotes(sale?.notes ?? '');
       router.replace({
         pathname: '/sell',
         params: { invoiceNumber: String(sale?.saleNumber ?? '') },

@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { AdminItemCatalog } from '@/components/AdminItemCatalog';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { leaveGrownUpArea } from '@/lib/navigation';
 
 export default function InventoryScreen() {
   const db = useSQLiteContext();
@@ -11,7 +12,7 @@ export default function InventoryScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="📦 Inventory" onBack={() => router.back()} />
+      <ScreenHeader title="📦 Inventory" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <SectionLabel>Items & cost</SectionLabel>
         <AdminItemCatalog db={db} />

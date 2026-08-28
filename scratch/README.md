@@ -24,6 +24,7 @@ Lightweight tracker for Market Day MVP work. Not synced to GitHub or any externa
 | [009](issues/009-visual-polish.md) | Visual polish (mock fonts + spacing) | HITL | — | open |
 | [010](issues/010-app-store-submission.md) | App Store submission | HITL | 001–007 | open |
 | [011](issues/011-market-day-menu.md) | Market Day Menu (default all Items, remove, sold out) | AFK | 002, 003 | done |
+| [012](issues/012-web-help-site-content.md) | Web help site content (features + FAQ for kids) | HITL | — | open |
 
 ## Suggested order
 

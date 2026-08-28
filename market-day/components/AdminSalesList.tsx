@@ -1,17 +1,33 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
-import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
+import { formatMarketDayDate, formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
-import type { SaleSummary } from '@/lib/types';
+import type { AllTimeSaleSummary, SaleSummary } from '@/lib/types';
 
 type AdminSalesListProps = {
-  sales: SaleSummary[];
+  sales: SaleSummary[] | AllTimeSaleSummary[];
   savedSaleNumber?: number | null;
   onSalePress?: (saleNumber: number) => void;
+  showSaleContext?: boolean;
 };
 
-export function AdminSalesList({ sales, savedSaleNumber, onSalePress }: AdminSalesListProps) {
+function saleSubtitle(sale: SaleSummary | AllTimeSaleSummary, showSaleContext: boolean): string {
+  if (showSaleContext) {
+    const marketDayName =
+      'marketDayName' in sale && sale.marketDayName ? `${sale.marketDayName} · ` : '';
+    return `${formatMarketDayDate(sale.createdAt)} · ${marketDayName}${formatSaleTime(sale.createdAt)}`;
+  }
+
+  return `${sale.name ? `#${sale.saleNumber} · ` : ''}${formatSaleTime(sale.createdAt)}`;
+}
+
+export function AdminSalesList({
+  sales,
+  savedSaleNumber,
+  onSalePress,
+  showSaleContext = false,
+}: AdminSalesListProps) {
   if (sales.length === 0) {
     return (
       <View style={styles.emptyCard}>
@@ -34,8 +50,10 @@ export function AdminSalesList({ sales, savedSaleNumber, onSalePress }: AdminSal
             onPress={() => onSalePress?.(sale.saleNumber)}
             style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
             <View>
-              <Text style={styles.saleNumber}>#{sale.saleNumber}</Text>
-              <Text style={styles.saleTime}>{formatSaleTime(sale.createdAt)}</Text>
+              <Text style={styles.saleNumber}>
+                {sale.name ? sale.name : `#${sale.saleNumber}`}
+              </Text>
+              <Text style={styles.saleTime}>{saleSubtitle(sale, showSaleContext)}</Text>
             </View>
             <View style={styles.saleAmountWrap}>
               <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>

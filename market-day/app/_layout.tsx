@@ -70,8 +70,10 @@ export default function RootLayout() {
                 <Stack.Screen name="setup" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="sell" />
                 <Stack.Screen name="payment" />
+                <Stack.Screen name="market-day" />
                 <Stack.Screen name="settings" />
                 <Stack.Screen name="inventory" />
+                <Stack.Screen name="sales" />
                 <Stack.Screen
                   name="celebration"
                   options={{ presentation: 'transparentModal', animation: 'fade' }}

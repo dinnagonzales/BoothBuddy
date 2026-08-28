@@ -49,6 +49,7 @@ test('admin can remove a mis-logged Sale', async () => {
       saleNumber: 2,
       totalCents: 800,
       paymentMethod: 'venmo_zelle',
+      name: null,
       createdAt: expect.any(String),
     },
   ]);
@@ -97,6 +98,7 @@ test('admin can change payment method on a Sale', async () => {
       saleNumber: 1,
       totalCents: 400,
       paymentMethod: 'venmo_zelle',
+      name: null,
       createdAt: expect.any(String),
     },
   ]);
@@ -175,4 +177,55 @@ test('exported Market Day is flagged for re-export after removing a Sale', async
   await catalog.removeSale(saleNumber);
 
   expect(await catalog.marketDayNeedsReexport(marketDay.id)).toBe(true);
+});
+
+test('admin can add optional name and notes to a Sale', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    emoji: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        emoji: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 500,
+  });
+
+  await catalog.updateSale(saleNumber, {
+    name: '  Emma  ',
+    notes: ' Pick up at 3 ',
+  });
+
+  const sale = await catalog.getSale(saleNumber);
+  expect(sale?.name).toBe('Emma');
+  expect(sale?.notes).toBe('Pick up at 3');
+  expect(await catalog.listSalesForMarketDay(marketDay.id)).toEqual([
+    {
+      saleNumber: 1,
+      totalCents: 400,
+      paymentMethod: 'cash',
+      name: 'Emma',
+      createdAt: expect.any(String),
+    },
+  ]);
+
+  await catalog.updateSale(saleNumber, { name: '', notes: '' });
+
+  expect((await catalog.getSale(saleNumber))?.name).toBeNull();
+  expect((await catalog.getSale(saleNumber))?.notes).toBeNull();
 });

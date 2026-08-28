@@ -7,6 +7,7 @@ import { GrownUpNav } from '@/components/GrownUpNav';
 import { ParentalGatePrompt } from '@/components/ParentalGatePrompt';
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
+import { leaveGrownUpArea } from '@/lib/navigation';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
 
 export default function GrownUpLayout() {
@@ -18,7 +19,7 @@ export default function GrownUpLayout() {
     return (
       <Screen>
         <View style={styles.page}>
-          <ScreenHeader title="🔒 Grown-up area" onBack={() => router.back()} />
+          <ScreenHeader title="🔒 Grown-up area" onBack={() => leaveGrownUpArea(router)} />
           <ParentalGatePrompt
             title="Enter Pass Code"
             errorText="That code is not right."

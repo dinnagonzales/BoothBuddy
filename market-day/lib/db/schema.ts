@@ -70,5 +70,15 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
     );
   }
 
+  const salesColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(sales)');
+  const hasSaleName = salesColumns.some((column) => column.name === 'name');
+  if (!hasSaleName) {
+    await db.execAsync('ALTER TABLE sales ADD COLUMN name TEXT');
+  }
+  const hasSaleNotes = salesColumns.some((column) => column.name === 'notes');
+  if (!hasSaleNotes) {
+    await db.execAsync('ALTER TABLE sales ADD COLUMN notes TEXT');
+  }
+
   await ensureActiveMarketDayMenu(db);
 }

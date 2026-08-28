@@ -2,10 +2,20 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 import {
   ActiveMarketDayExistsError,
+  CannotDeleteActiveMarketDayError,
   ItemHasSalesError,
   NothingToUndoCloseError,
 } from '@/lib/market-day';
-import type { CartLine, Item, MarketDay, PaymentMethod, Sale, SaleSummary } from '@/lib/types';
+import type {
+  AllTimeSaleSummary,
+  CartLine,
+  Item,
+  MarketDay,
+  PaymentMethod,
+  Sale,
+  SaleSummary,
+  ClosedMarketDaySummary,
+} from '@/lib/types';
 
 type ItemRow = {
   id: number;
@@ -344,13 +354,26 @@ export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay 
   };
 }
 
-export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<MarketDay> {
+export async function startMarketDay(
+  db: SQLiteDatabase,
+  name: string,
+  startedAt: string,
+): Promise<MarketDay> {
   const active = await getActiveMarketDay(db);
   if (active) {
     throw new ActiveMarketDayExistsError();
   }
 
-  const result = await db.runAsync('INSERT INTO market_days (name) VALUES (?)', name);
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    throw new Error('Market Day name is required');
+  }
+
+  const result = await db.runAsync(
+    'INSERT INTO market_days (name, started_at) VALUES (?, ?)',
+    trimmedName,
+    startedAt,
+  );
   const row = await db.getFirstAsync<{
     id: number;
     name: string;
@@ -384,7 +407,7 @@ export async function undoCloseMostRecentMarketDay(db: SQLiteDatabase): Promise<
   const closed = await db.getFirstAsync<{ id: number }>(
     `SELECT id FROM market_days
      WHERE closed_at IS NOT NULL AND exported_at IS NULL
-     ORDER BY closed_at DESC
+     ORDER BY closed_at DESC, id DESC
      LIMIT 1`,
   );
 
@@ -722,6 +745,67 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
   };
 }
 
+export async function getAllTimeStats(db: SQLiteDatabase) {
+  const row = await db.getFirstAsync<{
+    total_cents: number;
+    item_count: number;
+    profit_cents: number;
+    cash_cents: number;
+    venmo_cents: number;
+  }>(
+    `SELECT
+       COALESCE(SUM(s.total_cents), 0) AS total_cents,
+       COALESCE(SUM((SELECT SUM(li.quantity) FROM line_items li WHERE li.sale_id = s.id)), 0) AS item_count,
+       COALESCE(SUM(
+         (SELECT SUM((li.price_cents - li.cost_cents) * li.quantity)
+          FROM line_items li
+          WHERE li.sale_id = s.id)
+       ), 0) AS profit_cents,
+       COALESCE(SUM(CASE WHEN s.payment_method = 'cash' THEN s.total_cents ELSE 0 END), 0) AS cash_cents,
+       COALESCE(SUM(CASE WHEN s.payment_method = 'venmo_zelle' THEN s.total_cents ELSE 0 END), 0) AS venmo_cents
+     FROM sales s`,
+  );
+
+  return {
+    totalCents: row?.total_cents ?? 0,
+    itemCount: row?.item_count ?? 0,
+    profitCents: row?.profit_cents ?? 0,
+    cashCents: row?.cash_cents ?? 0,
+    venmoCents: row?.venmo_cents ?? 0,
+  };
+}
+
+export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSummary[]> {
+  const rows = await db.getAllAsync<{
+    sale_number: number;
+    total_cents: number;
+    payment_method: PaymentMethod;
+    name: string | null;
+    created_at: string;
+    market_day_name: string | null;
+  }>(
+    `SELECT
+       s.sale_number,
+       s.total_cents,
+       s.payment_method,
+       s.name,
+       s.created_at,
+       md.name AS market_day_name
+     FROM sales s
+     LEFT JOIN market_days md ON md.id = s.market_day_id
+     ORDER BY s.created_at DESC, s.sale_number DESC`,
+  );
+
+  return rows.map((row) => ({
+    saleNumber: row.sale_number,
+    totalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    name: row.name,
+    createdAt: row.created_at,
+    marketDayName: row.market_day_name,
+  }));
+}
+
 export async function getMarketDaySales(
   db: SQLiteDatabase,
   marketDayId: number,
@@ -746,5 +830,152 @@ export async function getMarketDaySales(
     paymentMethod: row.payment_method,
     name: row.name,
     createdAt: row.created_at,
+  }));
+}
+
+type MarketDayRow = {
+  id: number;
+  name: string;
+  started_at: string;
+  closed_at: string | null;
+  exported_at: string | null;
+  needs_reexport: number;
+};
+
+function mapMarketDayRow(row: MarketDayRow): MarketDay {
+  return {
+    id: row.id,
+    name: row.name,
+    startedAt: row.started_at,
+    closedAt: row.closed_at,
+    exportedAt: row.exported_at,
+    needsReexport: row.needs_reexport === 1,
+  };
+}
+
+export async function getMarketDayById(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<MarketDay | null> {
+  const row = await db.getFirstAsync<MarketDayRow>(
+    'SELECT * FROM market_days WHERE id = ?',
+    marketDayId,
+  );
+  if (!row) return null;
+  return mapMarketDayRow(row);
+}
+
+export async function getClosedMarketDays(
+  db: SQLiteDatabase,
+): Promise<ClosedMarketDaySummary[]> {
+  const rows = await db.getAllAsync<{
+    id: number;
+    name: string;
+    started_at: string;
+    closed_at: string;
+    sale_count: number;
+  }>(
+    `SELECT md.id, md.name, md.started_at, md.closed_at,
+            (SELECT COUNT(*) FROM sales s WHERE s.market_day_id = md.id) AS sale_count
+     FROM market_days md
+     WHERE md.closed_at IS NOT NULL
+     ORDER BY md.closed_at DESC, md.id DESC`,
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    startedAt: row.started_at,
+    closedAt: row.closed_at,
+    saleCount: row.sale_count,
+  }));
+}
+
+export async function canReopenMarketDay(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<boolean> {
+  const reopenable = await db.getFirstAsync<{ id: number }>(
+    `SELECT id FROM market_days
+     WHERE closed_at IS NOT NULL AND exported_at IS NULL
+     ORDER BY closed_at DESC, id DESC
+     LIMIT 1`,
+  );
+  return reopenable?.id === marketDayId;
+}
+
+export async function deleteMarketDay(db: SQLiteDatabase, marketDayId: number): Promise<void> {
+  const day = await getMarketDayById(db, marketDayId);
+  if (!day) return;
+  if (!day.closedAt) {
+    throw new CannotDeleteActiveMarketDayError();
+  }
+
+  const saleRows = await db.getAllAsync<{ id: number }>(
+    'SELECT id FROM sales WHERE market_day_id = ?',
+    marketDayId,
+  );
+  for (const sale of saleRows) {
+    await deleteSale(db, sale.id);
+  }
+
+  await db.runAsync('DELETE FROM market_days WHERE id = ?', marketDayId);
+}
+
+export type MarketDayExportRow = {
+  saleNumber: number;
+  createdAt: string;
+  marketDayName: string;
+  itemName: string;
+  quantity: number;
+  priceCents: number;
+  costCents: number;
+  saleTotalCents: number;
+  paymentMethod: PaymentMethod;
+  cashReceivedCents: number | null;
+  customerName: string | null;
+};
+
+export async function getMarketDayExportRows(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<MarketDayExportRow[]> {
+  const marketDay = await getMarketDayById(db, marketDayId);
+  if (!marketDay) return [];
+
+  const rows = await db.getAllAsync<{
+    sale_number: number;
+    created_at: string;
+    total_cents: number;
+    payment_method: PaymentMethod;
+    cash_received_cents: number | null;
+    name: string | null;
+    item_name: string;
+    quantity: number;
+    price_cents: number;
+    cost_cents: number;
+  }>(
+    `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.name,
+            i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
+     FROM sales s
+     JOIN line_items li ON li.sale_id = s.id
+     JOIN items i ON i.id = li.item_id
+     WHERE s.market_day_id = ?
+     ORDER BY s.sale_number ASC, li.id ASC`,
+    marketDayId,
+  );
+
+  return rows.map((row) => ({
+    saleNumber: row.sale_number,
+    createdAt: row.created_at,
+    marketDayName: marketDay.name,
+    itemName: row.item_name,
+    quantity: row.quantity,
+    priceCents: row.price_cents,
+    costCents: row.cost_cents,
+    saleTotalCents: row.total_cents,
+    paymentMethod: row.payment_method,
+    cashReceivedCents: row.cash_received_cents,
+    customerName: row.name,
   }));
 }

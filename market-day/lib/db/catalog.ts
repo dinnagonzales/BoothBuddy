@@ -3,15 +3,21 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Catalog, AdminItem, ItemDraft, MenuItem, SellerItem } from '@/lib/catalog';
 import {
   archiveItem,
+  canReopenMarketDay,
   canUndoCloseMarketDay,
   closeActiveMarketDay,
   createItem,
   deleteItem as deleteItemFromDb,
+  deleteMarketDay as deleteMarketDayFromDb,
   createSale,
   exportMarketDay,
   getActiveMarketDay,
   getAllItems,
+  getAllTimeSales,
+  getAllTimeStats,
   getCheckoutItems,
+  getClosedMarketDays,
+  getMarketDayById,
   getMarketDaySales,
   getMarketDayStats,
   getMenuForAdmin,
@@ -116,8 +122,8 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
       const marketDay = await getActiveMarketDay(db);
       return marketDay ? { id: marketDay.id, name: marketDay.name } : null;
     },
-    async startMarketDay(name: string) {
-      const marketDay = await startMarketDay(db, name);
+    async startMarketDay(name: string, startedAt?: string) {
+      const marketDay = await startMarketDay(db, name, startedAt ?? new Date().toISOString());
       return { id: marketDay.id, name: marketDay.name };
     },
     async closeActiveMarketDay() {
@@ -141,6 +147,12 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async listSalesForMarketDay(marketDayId) {
       return getMarketDaySales(db, marketDayId);
+    },
+    async getAllTimeStats() {
+      return getAllTimeStats(db);
+    },
+    async listAllTimeSales() {
+      return getAllTimeSales(db);
     },
     async getSale(saleNumber) {
       const sale = await getSaleByNumber(db, saleNumber);
@@ -167,6 +179,18 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async marketDayNeedsReexport(marketDayId) {
       return marketDayNeedsReexport(db, marketDayId);
+    },
+    async listClosedMarketDays() {
+      return getClosedMarketDays(db);
+    },
+    async getMarketDayById(id) {
+      return getMarketDayById(db, id);
+    },
+    async canReopenMarketDay(id) {
+      return canReopenMarketDay(db, id);
+    },
+    async deleteMarketDay(id) {
+      await deleteMarketDayFromDb(db, id);
     },
   };
 }

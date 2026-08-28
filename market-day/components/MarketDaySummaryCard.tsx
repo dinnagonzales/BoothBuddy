@@ -4,27 +4,18 @@ import { colors } from '@/constants/theme';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 
-type MarketDaySummaryCardProps = {
-  name: string;
-  startedAt: string;
-  totalCents: number;
-  profitCents: number;
-  saleCount: number;
-  cashCents: number;
-  venmoCents: number;
-};
-
 type StatBoxProps = {
   emoji: string;
   label: string;
   value: string;
   subValue?: string;
   backgroundColor: string;
+  fullWidth?: boolean;
 };
 
-function StatBox({ emoji, label, value, subValue, backgroundColor }: StatBoxProps) {
+function StatBox({ emoji, label, value, subValue, backgroundColor, fullWidth }: StatBoxProps) {
   return (
-    <View style={[styles.statBox, { backgroundColor }]}>
+    <View style={[styles.statBox, fullWidth && styles.statBoxFullWidth, { backgroundColor }]}>
       <Text style={styles.statEmoji}>{emoji}</Text>
       <Text style={styles.statLabel}>{label}</Text>
       <Text style={styles.statValue}>{value}</Text>
@@ -33,51 +24,91 @@ function StatBox({ emoji, label, value, subValue, backgroundColor }: StatBoxProp
   );
 }
 
+type MarketDaySummaryCardProps = {
+  name?: string;
+  startedAt?: string;
+  saleCount: number;
+  cashCents: number;
+  venmoCents: number;
+  variant?: 'admin' | 'viewOnly' | 'allTime';
+  totalCents?: number;
+  profitCents?: number;
+};
+
 export function MarketDaySummaryCard({
   name,
   startedAt,
-  totalCents,
-  profitCents,
+  totalCents = 0,
+  profitCents = 0,
   saleCount,
   cashCents,
   venmoCents,
+  variant = 'admin',
 }: MarketDaySummaryCardProps) {
   return (
     <View style={styles.wrap}>
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.date}>{formatMarketDayDate(startedAt)}</Text>
+      <Text style={styles.name}>{variant === 'allTime' ? 'All Time' : name}</Text>
+      {variant !== 'allTime' && startedAt ? (
+        <Text style={styles.date}>{formatMarketDayDate(startedAt)}</Text>
+      ) : null}
 
-      <View style={styles.grid}>
-        <View style={styles.gridRow}>
+      {variant === 'viewOnly' ? (
+        <View style={styles.stack}>
           <StatBox
             emoji="🧾"
             label="Total Sales"
             value={String(saleCount)}
             backgroundColor={colors.purple}
+            fullWidth
           />
-          <StatBox
-            emoji="💰"
-            label="Profit"
-            value={formatMoney(profitCents)}
-            subValue={`${formatMoney(totalCents)} gross`}
-            backgroundColor={colors.pink}
-          />
-        </View>
-        <View style={styles.gridRow}>
           <StatBox
             emoji="📱"
             label="Zelle / Venmo"
             value={formatMoney(venmoCents)}
             backgroundColor={colors.blue}
+            fullWidth
           />
           <StatBox
             emoji="💵"
             label="Cash"
             value={formatMoney(cashCents)}
             backgroundColor={colors.green}
+            fullWidth
           />
         </View>
-      </View>
+      ) : (
+        <View style={styles.grid}>
+          <View style={styles.gridRow}>
+            <StatBox
+              emoji="🧾"
+              label="Total Sales"
+              value={String(saleCount)}
+              backgroundColor={colors.purple}
+            />
+            <StatBox
+              emoji="💰"
+              label="Profit"
+              value={formatMoney(profitCents)}
+              subValue={`${formatMoney(totalCents)} gross`}
+              backgroundColor={colors.pink}
+            />
+          </View>
+          <View style={styles.gridRow}>
+            <StatBox
+              emoji="📱"
+              label="Zelle / Venmo"
+              value={formatMoney(venmoCents)}
+              backgroundColor={colors.blue}
+            />
+            <StatBox
+              emoji="💵"
+              label="Cash"
+              value={formatMoney(cashCents)}
+              backgroundColor={colors.green}
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -100,6 +131,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 14,
   },
+  stack: {
+    gap: 10,
+  },
   grid: {
     gap: 10,
   },
@@ -113,6 +147,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     minHeight: 108,
+  },
+  statBoxFullWidth: {
+    flex: undefined,
+    width: '100%',
   },
   statEmoji: {
     fontSize: 18,
