@@ -25,31 +25,33 @@ export default function PaymentScreen() {
   );
 
   const completeSale = () => {
-    const marketDay = getActiveMarketDay(db);
-    if (!marketDay || lines.length === 0) return;
+    void (async () => {
+      const marketDay = await getActiveMarketDay(db);
+      if (!marketDay || lines.length === 0) return;
 
-    const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
+      const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
 
-    if (editingSaleId) {
-      deleteSale(db, editingSaleId);
-    }
+      if (editingSaleId) {
+        await deleteSale(db, editingSaleId);
+      }
 
-    const sale = createSale(db, {
-      marketDayId: marketDay.id,
-      lines,
-      paymentMethod,
-      cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
-    });
+      const sale = await createSale(db, {
+        marketDayId: marketDay.id,
+        lines,
+        paymentMethod,
+        cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
+      });
 
-    clearCart();
-    router.replace({
-      pathname: '/celebration',
-      params: {
-        saleId: String(sale.id),
-        itemCount: String(itemCount),
-        totalCents: String(sale.totalCents),
-      },
-    });
+      clearCart();
+      router.replace({
+        pathname: '/celebration',
+        params: {
+          saleId: String(sale.id),
+          itemCount: String(itemCount),
+          totalCents: String(sale.totalCents),
+        },
+      });
+    })();
   };
 
   return (

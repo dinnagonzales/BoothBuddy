@@ -3,11 +3,16 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
+import { GrownUpSetupCard } from '@/components/GrownUpSetupCard';
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { Button, Input } from '@/components/ui';
 import { createSqliteCatalog } from '@/lib/db/catalog';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { parseMoneyInput } from '@/lib/money';
+import {
+  getParentalCodeLengthError,
+  PARENTAL_CODE_MAX_LENGTH,
+} from '@/lib/parental-gate';
 import { isSetupComplete } from '@/lib/setup';
 
 type Step = 'loading' | 'code' | 'item';
@@ -28,16 +33,20 @@ export default function SetupScreen() {
     let cancelled = false;
     const catalog = createSqliteCatalog(db);
 
-    isSetupComplete(deviceParentalGate, catalog).then((complete) => {
-      if (cancelled) return;
-      if (complete) {
-        router.replace('/');
-        return;
-      }
-      deviceParentalGate.isConfigured().then((configured) => {
-        if (!cancelled) setStep(configured ? 'item' : 'code');
+    isSetupComplete(deviceParentalGate, catalog)
+      .then((complete) => {
+        if (cancelled) return;
+        if (complete) {
+          router.replace('/');
+          return;
+        }
+        deviceParentalGate.isConfigured().then((configured) => {
+          if (!cancelled) setStep(configured ? 'item' : 'code');
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setStep('code');
       });
-    });
 
     return () => {
       cancelled = true;
@@ -45,8 +54,9 @@ export default function SetupScreen() {
   }, [db, router]);
 
   const saveCode = async () => {
-    if (!code) {
-      setCodeError('Enter a numeric code.');
+    const lengthError = getParentalCodeLengthError(code);
+    if (lengthError) {
+      setCodeError(lengthError);
       return;
     }
     if (code !== confirmCode) {
@@ -62,12 +72,12 @@ export default function SetupScreen() {
     setStep('item');
   };
 
-  const saveItem = () => {
+  const saveItem = async () => {
     const trimmedName = name.trim();
     const priceCents = parseMoneyInput(price);
     if (!trimmedName || priceCents <= 0) return;
 
-    createSqliteCatalog(db).createItem({
+    await createSqliteCatalog(db).createItem({
       name: trimmedName,
       emoji: emoji.trim() || '📦',
       costCents: parseMoneyInput(cost),
@@ -84,46 +94,37 @@ export default function SetupScreen() {
     );
   }
 
+  const canSaveCode =
+    code.length === PARENTAL_CODE_MAX_LENGTH &&
+    confirmCode.length === PARENTAL_CODE_MAX_LENGTH &&
+    code === confirmCode;
+
+  if (step === 'code') {
+    return (
+      <GrownUpSetupCard
+        code={code}
+        confirmCode={confirmCode}
+        codeError={codeError}
+        onCodeChange={(value) => {
+          setCode(value);
+          setCodeError(null);
+        }}
+        onConfirmCodeChange={(value) => {
+          setConfirmCode(value);
+          setCodeError(null);
+        }}
+        onSave={saveCode}
+        canSave={canSaveCode}
+      />
+    );
+  }
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ paddingBottom: 16, gap: 12 }}>
         <ScreenHeader title="Grown-up setup" />
 
-        {step === 'code' ? (
-          <View className="gap-3">
-            <Text className="text-muted font-semibold text-center">
-              Pick a numeric code. You will need it every time you open grown-up settings.
-            </Text>
-            <Text className="text-[11px] font-extrabold uppercase text-muted">Code</Text>
-            <Input
-              accessibilityLabel="Parental code"
-              keyboardType="number-pad"
-              secureTextEntry
-              placeholder="Code"
-              value={code}
-              onChangeText={(value) => {
-                setCode(value.replace(/[^\d]/g, ''));
-                setCodeError(null);
-              }}
-            />
-            <Text className="text-[11px] font-extrabold uppercase text-muted">Type it again</Text>
-            <Input
-              accessibilityLabel="Confirm parental code"
-              keyboardType="number-pad"
-              secureTextEntry
-              placeholder="Type it again"
-              value={confirmCode}
-              onChangeText={(value) => {
-                setConfirmCode(value.replace(/[^\d]/g, ''));
-                setCodeError(null);
-              }}
-            />
-            {codeError ? <Text className="text-center text-danger font-bold">{codeError}</Text> : null}
-            <Button size="lg" isDisabled={!code} onPress={saveCode}>
-              <Button.Label className="font-bold">Save code</Button.Label>
-            </Button>
-          </View>
-        ) : (
+        {step === 'item' ? (
           <View className="gap-3">
             <Text className="text-muted font-semibold text-center">
               Add at least one Item before the seller can use Home.
@@ -164,7 +165,7 @@ export default function SetupScreen() {
               <Button.Label className="font-bold">Save Item and finish</Button.Label>
             </Button>
           </View>
-        )}
+        ) : null}
       </ScrollView>
     </Screen>
   );

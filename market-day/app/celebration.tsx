@@ -26,10 +26,12 @@ export default function CelebrationScreen() {
   };
 
   const fixSale = () => {
-    const lines = getSaleLineItems(db, saleId);
-    setLines(lines);
-    setEditingSaleId(saleId);
-    router.replace('/sell');
+    void (async () => {
+      const lines = await getSaleLineItems(db, saleId);
+      setLines(lines);
+      setEditingSaleId(saleId);
+      router.replace('/sell');
+    })();
   };
 
   return (

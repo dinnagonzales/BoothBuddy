@@ -13,10 +13,10 @@ export type SellerItem = {
 };
 
 export type Catalog = {
-  createItem(draft: ItemDraft): { id: number };
-  retire(id: number): void;
-  listForSeller(): SellerItem[];
-  getActiveMarketDay(): { id: number; name: string } | null;
+  createItem(draft: ItemDraft): Promise<{ id: number }>;
+  retire(id: number): Promise<void>;
+  listForSeller(): Promise<SellerItem[]>;
+  getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
 };
 
 type StoredItem = ItemDraft & { id: number; retired: boolean };
@@ -26,16 +26,16 @@ export function createCatalog(): Catalog {
   let nextId = 1;
 
   return {
-    createItem(draft: ItemDraft) {
+    async createItem(draft: ItemDraft) {
       const item = { id: nextId++, retired: false, ...draft };
       items.push(item);
       return item;
     },
-    retire(id: number) {
+    async retire(id: number) {
       const item = items.find((entry) => entry.id === id);
       if (item) item.retired = true;
     },
-    listForSeller(): SellerItem[] {
+    async listForSeller(): Promise<SellerItem[]> {
       return items
         .filter((item) => !item.retired)
         .map(({ id, name, emoji, priceCents }) => ({
@@ -45,7 +45,7 @@ export function createCatalog(): Catalog {
           priceCents,
         }));
     },
-    getActiveMarketDay() {
+    async getActiveMarketDay() {
       return null;
     },
   };

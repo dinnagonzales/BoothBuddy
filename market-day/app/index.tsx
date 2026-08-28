@@ -23,14 +23,18 @@ export default function HomeScreen() {
       let cancelled = false;
       const catalog = createSqliteCatalog(db);
 
-      isSetupComplete(deviceParentalGate, catalog).then((complete) => {
-        if (cancelled) return;
-        setSetupReady(complete);
-        if (complete) {
-          setItems(catalog.listForSeller());
-          setCanSell(catalog.getActiveMarketDay() !== null);
-        }
-      });
+      isSetupComplete(deviceParentalGate, catalog)
+        .then(async (complete) => {
+          if (cancelled) return;
+          setSetupReady(complete);
+          if (complete) {
+            setItems(await catalog.listForSeller());
+            setCanSell((await catalog.getActiveMarketDay()) !== null);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setSetupReady(false);
+        });
 
       return () => {
         cancelled = true;

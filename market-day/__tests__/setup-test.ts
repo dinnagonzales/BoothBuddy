@@ -14,7 +14,7 @@ test('setup is complete after a parental code and a first Item', async () => {
   const catalog = createCatalog();
 
   await gate.setCode('1234');
-  catalog.createItem({
+  await catalog.createItem({
     name: 'Dragon',
     emoji: '🐉',
     costCents: 100,
@@ -37,7 +37,7 @@ test('setup is incomplete with an Item but no parental code', async () => {
   const gate = createParentalGate(createMemorySecretStore());
   const catalog = createCatalog();
 
-  catalog.createItem({
+  await catalog.createItem({
     name: 'Dragon',
     emoji: '🐉',
     costCents: 100,
@@ -52,13 +52,13 @@ test('setup is incomplete when the only Item is retired', async () => {
   const catalog = createCatalog();
 
   await gate.setCode('1234');
-  const item = catalog.createItem({
+  const item = await catalog.createItem({
     name: 'Dragon',
     emoji: '🐉',
     costCents: 100,
     priceCents: 400,
   });
-  catalog.retire(item.id);
+  await catalog.retire(item.id);
 
   expect(await isSetupComplete(gate, catalog)).toBe(false);
 });
@@ -68,7 +68,7 @@ test('seller cannot sell after setup when there is no Active Market Day', async 
   const catalog = createCatalog();
 
   await gate.setCode('1234');
-  catalog.createItem({
+  await catalog.createItem({
     name: 'Dragon',
     emoji: '🐉',
     costCents: 100,
@@ -76,5 +76,5 @@ test('seller cannot sell after setup when there is no Active Market Day', async 
   });
 
   expect(await isSetupComplete(gate, catalog)).toBe(true);
-  expect(catalog.getActiveMarketDay()).toBeNull();
+  expect(await catalog.getActiveMarketDay()).toBeNull();
 });

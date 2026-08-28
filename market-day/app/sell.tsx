@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 
 import { ItemCard, Screen, ScreenHeader } from '@/components/Screen';
@@ -8,12 +8,23 @@ import { Button, Card } from '@/components/ui';
 import { useCart } from '@/context/CartContext';
 import { getActiveItems } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
+import type { Item } from '@/lib/types';
 
 export default function SellScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
   const { lines, addItem, changeQuantity, itemCount, totalCents } = useCart();
-  const items = getActiveItems(db);
+  const [items, setItems] = useState<Item[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getActiveItems(db).then((nextItems) => {
+      if (!cancelled) setItems(nextItems);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [db]);
 
   useEffect(() => {
     if (items.length === 0) {

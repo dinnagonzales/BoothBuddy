@@ -24,16 +24,15 @@ function mapItem(row: ItemRow): Item {
   };
 }
 
-export function getActiveItems(db: SQLiteDatabase): Item[] {
-  return db
-    .getAllSync<ItemRow>(
-      'SELECT * FROM items WHERE retired = 0 ORDER BY name COLLATE NOCASE',
-    )
-    .map(mapItem);
+export async function getActiveItems(db: SQLiteDatabase): Promise<Item[]> {
+  const rows = await db.getAllAsync<ItemRow>(
+    'SELECT * FROM items WHERE retired = 0 ORDER BY name COLLATE NOCASE',
+  );
+  return rows.map(mapItem);
 }
 
-export function getActiveMarketDay(db: SQLiteDatabase): MarketDay | null {
-  const row = db.getFirstSync<{
+export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
+  const row = await db.getFirstAsync<{
     id: number;
     name: string;
     started_at: string;
@@ -54,16 +53,16 @@ export function getActiveMarketDay(db: SQLiteDatabase): MarketDay | null {
   };
 }
 
-export function startMarketDay(db: SQLiteDatabase, name: string): void {
-  db.runSync('UPDATE market_days SET closed_at = datetime(\'now\') WHERE closed_at IS NULL');
-  db.runSync('INSERT INTO market_days (name) VALUES (?)', name);
+export async function startMarketDay(db: SQLiteDatabase, name: string): Promise<void> {
+  await db.runAsync('UPDATE market_days SET closed_at = datetime(\'now\') WHERE closed_at IS NULL');
+  await db.runAsync('INSERT INTO market_days (name) VALUES (?)', name);
 }
 
 export function cartTotal(lines: CartLine[]): number {
   return lines.reduce((sum, line) => sum + line.priceCents * line.quantity, 0);
 }
 
-export function createSale(
+export async function createSale(
   db: SQLiteDatabase,
   params: {
     marketDayId: number;
@@ -71,12 +70,14 @@ export function createSale(
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
   },
-): Sale {
+): Promise<Sale> {
   const totalCents = cartTotal(params.lines);
-  const nextNumber =
-    db.getFirstSync<{ n: number }>('SELECT COALESCE(MAX(sale_number), 0) + 1 AS n FROM sales')?.n ?? 1;
+  const nextRow = await db.getFirstAsync<{ n: number }>(
+    'SELECT COALESCE(MAX(sale_number), 0) + 1 AS n FROM sales',
+  );
+  const nextNumber = nextRow?.n ?? 1;
 
-  const result = db.runSync(
+  const result = await db.runAsync(
     `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents)
      VALUES (?, ?, ?, ?, ?)`,
     nextNumber,
@@ -89,7 +90,7 @@ export function createSale(
   const saleId = result.lastInsertRowId;
 
   for (const line of params.lines) {
-    db.runSync(
+    await db.runAsync(
       `INSERT INTO line_items (sale_id, item_id, quantity, price_cents, cost_cents)
        VALUES (?, ?, ?, ?, ?)`,
       saleId,
@@ -111,8 +112,8 @@ export function createSale(
   };
 }
 
-export function getSale(db: SQLiteDatabase, saleId: number): Sale | null {
-  const row = db.getFirstSync<{
+export async function getSale(db: SQLiteDatabase, saleId: number): Promise<Sale | null> {
+  const row = await db.getFirstAsync<{
     id: number;
     sale_number: number;
     market_day_id: number | null;
@@ -135,39 +136,39 @@ export function getSale(db: SQLiteDatabase, saleId: number): Sale | null {
   };
 }
 
-export function getSaleLineItems(db: SQLiteDatabase, saleId: number): CartLine[] {
-  return db
-    .getAllSync<{
-      item_id: number;
-      name: string;
-      emoji: string;
-      quantity: number;
-      price_cents: number;
-      cost_cents: number;
-    }>(
-      `SELECT li.item_id, i.name, i.emoji, li.quantity, li.price_cents, li.cost_cents
-       FROM line_items li
-       JOIN items i ON i.id = li.item_id
-       WHERE li.sale_id = ?`,
-      saleId,
-    )
-    .map((row) => ({
-      itemId: row.item_id,
-      name: row.name,
-      emoji: row.emoji,
-      priceCents: row.price_cents,
-      costCents: row.cost_cents,
-      quantity: row.quantity,
-    }));
+export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Promise<CartLine[]> {
+  const rows = await db.getAllAsync<{
+    item_id: number;
+    name: string;
+    emoji: string;
+    quantity: number;
+    price_cents: number;
+    cost_cents: number;
+  }>(
+    `SELECT li.item_id, i.name, i.emoji, li.quantity, li.price_cents, li.cost_cents
+     FROM line_items li
+     JOIN items i ON i.id = li.item_id
+     WHERE li.sale_id = ?`,
+    saleId,
+  );
+
+  return rows.map((row) => ({
+    itemId: row.item_id,
+    name: row.name,
+    emoji: row.emoji,
+    priceCents: row.price_cents,
+    costCents: row.cost_cents,
+    quantity: row.quantity,
+  }));
 }
 
-export function deleteSale(db: SQLiteDatabase, saleId: number): void {
-  db.runSync('DELETE FROM line_items WHERE sale_id = ?', saleId);
-  db.runSync('DELETE FROM sales WHERE id = ?', saleId);
+export async function deleteSale(db: SQLiteDatabase, saleId: number): Promise<void> {
+  await db.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
+  await db.runAsync('DELETE FROM sales WHERE id = ?', saleId);
 }
 
-export function getMarketDayStats(db: SQLiteDatabase, marketDayId: number) {
-  const row = db.getFirstSync<{
+export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number) {
+  const row = await db.getFirstAsync<{
     total_cents: number;
     item_count: number;
     cash_cents: number;

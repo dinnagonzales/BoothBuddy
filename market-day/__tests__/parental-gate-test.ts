@@ -1,4 +1,4 @@
-import { createMemorySecretStore, createParentalGate } from '@/lib/parental-gate';
+import { createMemorySecretStore, createParentalGate, PARENTAL_CODE_LENGTH_ERROR } from '@/lib/parental-gate';
 
 test('parental gate does not verify when no code is set', async () => {
   const gate = createParentalGate(createMemorySecretStore());
@@ -44,4 +44,11 @@ test('parental gate is not configured until a code is set', async () => {
   await gate.setCode('1234');
 
   expect(await gate.isConfigured()).toBe(true);
+});
+
+test('parental gate rejects codes that are not exactly 4 digits', async () => {
+  const gate = createParentalGate(createMemorySecretStore());
+
+  await expect(gate.setCode('123')).rejects.toThrow(PARENTAL_CODE_LENGTH_ERROR);
+  await expect(gate.setCode('12345')).rejects.toThrow(PARENTAL_CODE_LENGTH_ERROR);
 });

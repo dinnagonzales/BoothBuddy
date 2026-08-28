@@ -1,0 +1,99 @@
+import { useRef } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+
+import { colors } from '@/constants/theme';
+
+type PinInputProps = {
+  label: string;
+  value: string;
+  length: number;
+  onChange: (value: string) => void;
+};
+
+export function PinInput({ label, value, length, onChange }: PinInputProps) {
+  const inputRef = useRef<TextInput>(null);
+
+  const focus = () => {
+    inputRef.current?.focus();
+  };
+
+  const handleChange = (text: string) => {
+    onChange(text.replace(/[^\d]/g, '').slice(0, length));
+  };
+
+  return (
+    <View style={styles.group}>
+      <Text style={styles.label}>{label}</Text>
+      <Pressable style={styles.row} onPress={focus} accessibilityRole="none">
+        {Array.from({ length }, (_, index) => {
+          const filled = index < value.length;
+          return (
+            <Pressable
+              key={index}
+              style={[styles.box, filled && styles.boxFilled]}
+              onPress={focus}
+              accessibilityLabel={`${label} digit ${index + 1}`}
+              accessibilityState={{ selected: filled }}>
+              {filled ? <View style={styles.dot} /> : null}
+            </Pressable>
+          );
+        })}
+      </Pressable>
+      <TextInput
+        ref={inputRef}
+        value={value}
+        onChangeText={handleChange}
+        keyboardType="number-pad"
+        maxLength={length}
+        secureTextEntry
+        caretHidden
+        textContentType="oneTimeCode"
+        autoComplete="one-time-code"
+        accessibilityLabel={label}
+        style={styles.hiddenInput}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  group: {
+    gap: 8,
+  },
+  label: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 12,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  box: {
+    flex: 1,
+    aspectRatio: 1,
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  boxFilled: {
+    borderColor: colors.purple,
+  },
+  dot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: colors.purple,
+  },
+  hiddenInput: {
+    position: 'absolute',
+    opacity: 0,
+    width: 1,
+    height: 1,
+  },
+});

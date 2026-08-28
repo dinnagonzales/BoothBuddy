@@ -24,27 +24,38 @@ export default function SettingsScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      let cancelled = false;
       setUnlocked(false);
-      const marketDay = getActiveMarketDay(db);
-      setMarketDayName(marketDay?.name ?? null);
-      if (marketDay) {
-        setStats(getMarketDayStats(db, marketDay.id));
-      }
+
+      void (async () => {
+        const marketDay = await getActiveMarketDay(db);
+        if (cancelled) return;
+        setMarketDayName(marketDay?.name ?? null);
+        if (marketDay) {
+          setStats(await getMarketDayStats(db, marketDay.id));
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
     }, [db]),
   );
 
   const restartDemoDay = () => {
-    const label = `Demo Market Day – ${new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })}`;
-    startMarketDay(db, label);
-    const marketDay = getActiveMarketDay(db);
-    setMarketDayName(marketDay?.name ?? null);
-    if (marketDay) {
-      setStats(getMarketDayStats(db, marketDay.id));
-    }
+    void (async () => {
+      const label = `Demo Market Day – ${new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })}`;
+      await startMarketDay(db, label);
+      const marketDay = await getActiveMarketDay(db);
+      setMarketDayName(marketDay?.name ?? null);
+      if (marketDay) {
+        setStats(await getMarketDayStats(db, marketDay.id));
+      }
+    })();
   };
 
   return (
