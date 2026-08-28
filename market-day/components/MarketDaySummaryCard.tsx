@@ -2,23 +2,34 @@ import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 
 import { colors } from '@/constants/theme';
-import { formatMarketDayDate } from '@/lib/market-day';
+import { formatMarketDayDate, paymentMethodLabel } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 
 type MarketDaySummaryCardProps = {
   name: string;
   startedAt: string;
   totalCents: number;
+  itemCount: number;
   saleCount: number;
+  cashCents: number;
+  venmoCents: number;
 };
+
+function countLabel(count: number, singular: string, plural: string): string {
+  return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
+}
 
 export function MarketDaySummaryCard({
   name,
   startedAt,
   totalCents,
+  itemCount,
   saleCount,
+  cashCents,
+  venmoCents,
 }: MarketDaySummaryCardProps) {
-  const saleLabel = saleCount === 1 ? '1 sale' : `${saleCount} sales`;
+  const itemLabel = countLabel(itemCount, 'item', 'items');
+  const saleLabel = countLabel(saleCount, 'sale', 'sales');
 
   return (
     <View style={styles.card}>
@@ -35,7 +46,11 @@ export function MarketDaySummaryCard({
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.amount}>{formatMoney(totalCents)}</Text>
         <Text style={styles.sub}>
-          {formatMarketDayDate(startedAt)} · {saleLabel}
+          {formatMarketDayDate(startedAt)} · {itemLabel} · {saleLabel}
+        </Text>
+        <Text style={styles.sub}>
+          {formatMoney(cashCents)} cash · {formatMoney(venmoCents)}{' '}
+          {paymentMethodLabel('venmo_zelle')}
         </Text>
       </View>
     </View>
@@ -70,5 +85,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     opacity: 0.9,
     marginTop: 2,
+    textAlign: 'center',
   },
 });

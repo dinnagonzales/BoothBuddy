@@ -117,7 +117,10 @@ export default function SettingsScreen() {
           name={activeDay.name}
           startedAt={activeDay.startedAt}
           totalCents={stats.totalCents}
+          itemCount={stats.itemCount}
           saleCount={sales.length}
+          cashCents={stats.cashCents}
+          venmoCents={stats.venmoCents}
         />
 
         <SectionLabel>Sales</SectionLabel>
