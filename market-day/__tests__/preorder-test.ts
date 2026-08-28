@@ -117,7 +117,7 @@ test('pending preorders are excluded from Running Tab export', async () => {
     isPreorder: true,
   });
 
-  expect(await catalog.listRunningTabExportRows('2026-08-20', '2026-08-20')).toHaveLength(0);
+  expect(await catalog.listSalesExportRows('2026-08-20', '2026-08-20')).toHaveLength(0);
 
   jest.useRealTimers();
 });

@@ -28,10 +28,6 @@ export function suggestMarketDayName(now = new Date()): string {
   return `Market Day – ${formatted}`;
 }
 
-export function defaultMarketDayName(): string {
-  return 'Market Day';
-}
-
 export function startOfLocalDay(date = new Date()): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }

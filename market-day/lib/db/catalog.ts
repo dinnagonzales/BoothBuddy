@@ -12,7 +12,6 @@ import {
   completePreorder,
   createSale,
   exportMarketDay,
-  exportRunningTabSales,
   getActiveMarketDay,
   getAllItems,
   getAllTimeSales,
@@ -27,7 +26,7 @@ import {
   getRemovedMenuItems,
   getRunningTabItems,
   getPreorderSales,
-  getRunningTabExportRows,
+  getSalesExportRows,
   getSaleByNumber,
   getSaleLineItems,
   markAvailable,
@@ -36,7 +35,6 @@ import {
   addToMenu as addItemToMenu,
   removeFromMenu,
   removeSaleByNumber,
-  runningTabNeedsReexport,
   startMarketDay,
   undoCloseMostRecentMarketDay,
   unarchiveItem,
@@ -208,14 +206,8 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     async deleteMarketDay(id) {
       await deleteMarketDayFromDb(db, id);
     },
-    async listRunningTabExportRows(startDate, endDate) {
-      return getRunningTabExportRows(db, startDate, endDate);
-    },
-    async exportRunningTabSales(startDate, endDate) {
-      await exportRunningTabSales(db, startDate, endDate);
-    },
-    async runningTabNeedsReexport() {
-      return runningTabNeedsReexport(db);
+    async listSalesExportRows(startDate, endDate) {
+      return getSalesExportRows(db, startDate, endDate);
     },
   };
 }

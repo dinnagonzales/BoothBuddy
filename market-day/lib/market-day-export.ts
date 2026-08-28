@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { Platform } from 'react-native';
 
-import { exportMarketDay, exportRunningTabSales, getMarketDayById, getMarketDayExportRows, getRunningTabExportRows } from '@/lib/db/queries';
+import { exportMarketDay, getMarketDayById, getMarketDayExportRows, getSalesExportRows } from '@/lib/db/queries';
 import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
 
 const CSV_HEADERS = [
@@ -80,8 +80,8 @@ export function marketDayExportFilename(marketDayName: string): string {
   return `${slug || 'market-day'}-sales.csv`;
 }
 
-export function runningTabExportFilename(startDate: string, endDate: string): string {
-  return `quick-sales-${startDate}-to-${endDate}.csv`;
+export function salesExportFilename(startDate: string, endDate: string): string {
+  return `sales-${startDate}-to-${endDate}.csv`;
 }
 
 async function shareCsvFile(csv: string, filename: string): Promise<void> {
@@ -129,19 +129,18 @@ export async function shareMarketDayCsv(
   await exportMarketDay(db, marketDayId);
 }
 
-export async function shareRunningTabCsv(
+export async function shareSalesCsv(
   db: SQLiteDatabase,
   startDate: string,
   endDate: string,
 ): Promise<void> {
-  const rows = await getRunningTabExportRows(db, startDate, endDate);
+  const rows = await getSalesExportRows(db, startDate, endDate);
   if (rows.length === 0) {
-    throw new Error('No off-day sales to export in that date range');
+    throw new Error('No sales to export in that date range');
   }
 
   const csv = buildMarketDayCsv(rows);
-  const filename = runningTabExportFilename(startDate, endDate);
+  const filename = salesExportFilename(startDate, endDate);
 
   await shareCsvFile(csv, filename);
-  await exportRunningTabSales(db, startDate, endDate);
 }

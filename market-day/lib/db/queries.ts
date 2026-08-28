@@ -663,19 +663,8 @@ export async function removeSaleByNumber(db: SQLiteDatabase, saleNumber: number)
   const sale = await getSaleByNumber(db, saleNumber);
   if (!sale) return;
 
-  const exportedRow = await db.getFirstAsync<{ exported_at: string | null }>(
-    'SELECT exported_at FROM sales WHERE id = ?',
-    sale.id,
-  );
-
   await deleteSale(db, sale.id);
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
-  if (sale.marketDayId === null && exportedRow?.exported_at) {
-    await db.runAsync(
-      `INSERT INTO app_state (key, value) VALUES ('running_tab_needs_reexport', '1')
-       ON CONFLICT(key) DO UPDATE SET value = '1'`,
-    );
-  }
 }
 
 export async function updateSalePaymentMethod(
@@ -713,7 +702,6 @@ export async function updateSale(
     sale.id,
   );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
-  await flagRunningTabReexportIfExported(db, sale.marketDayId, sale.id);
 }
 
 export async function completePreorder(
@@ -746,7 +734,6 @@ export async function completePreorder(
     sale.id,
   );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
-  await flagRunningTabReexportIfExported(db, sale.marketDayId, sale.id);
 }
 
 export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[]> {
@@ -1063,31 +1050,7 @@ export async function getMarketDayExportRows(
   }));
 }
 
-async function flagRunningTabReexportIfExported(
-  db: SQLiteDatabase,
-  marketDayId: number | null,
-  saleId: number,
-): Promise<void> {
-  if (marketDayId != null) return;
-  const row = await db.getFirstAsync<{ exported_at: string | null }>(
-    'SELECT exported_at FROM sales WHERE id = ?',
-    saleId,
-  );
-  if (!row?.exported_at) return;
-  await db.runAsync(
-    `INSERT INTO app_state (key, value) VALUES ('running_tab_needs_reexport', '1')
-     ON CONFLICT(key) DO UPDATE SET value = '1'`,
-  );
-}
-
-export async function runningTabNeedsReexport(db: SQLiteDatabase): Promise<boolean> {
-  const row = await db.getFirstAsync<{ value: string }>(
-    `SELECT value FROM app_state WHERE key = 'running_tab_needs_reexport'`,
-  );
-  return row?.value === '1';
-}
-
-export async function getRunningTabExportRows(
+export async function getSalesExportRows(
   db: SQLiteDatabase,
   startDate: string,
   endDate: string,
@@ -1099,19 +1062,20 @@ export async function getRunningTabExportRows(
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
     name: string | null;
+    market_day_name: string | null;
     item_name: string;
     quantity: number;
     price_cents: number;
     cost_cents: number;
   }>(
     `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.name,
+            md.name AS market_day_name,
             i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
-     WHERE s.market_day_id IS NULL
-       AND s.is_preorder = 0
-       AND s.exported_at IS NULL
+     LEFT JOIN market_days md ON md.id = s.market_day_id
+     WHERE s.is_preorder = 0
        AND date(s.created_at) >= date(?)
        AND date(s.created_at) <= date(?)
      ORDER BY s.sale_number ASC, li.id ASC`,
@@ -1122,7 +1086,7 @@ export async function getRunningTabExportRows(
   return rows.map((row) => ({
     saleNumber: row.sale_number,
     createdAt: row.created_at,
-    marketDayName: '',
+    marketDayName: row.market_day_name ?? '',
     itemName: row.item_name,
     quantity: row.quantity,
     priceCents: row.price_cents,
@@ -1132,23 +1096,4 @@ export async function getRunningTabExportRows(
     cashReceivedCents: row.cash_received_cents,
     customerName: row.name,
   }));
-}
-
-export async function exportRunningTabSales(
-  db: SQLiteDatabase,
-  startDate: string,
-  endDate: string,
-): Promise<void> {
-  await db.runAsync(
-    `UPDATE sales
-     SET exported_at = datetime('now')
-     WHERE market_day_id IS NULL
-       AND is_preorder = 0
-       AND exported_at IS NULL
-       AND date(created_at) >= date(?)
-       AND date(created_at) <= date(?)`,
-    startDate,
-    endDate,
-  );
-  await db.runAsync(`DELETE FROM app_state WHERE key = 'running_tab_needs_reexport'`);
 }

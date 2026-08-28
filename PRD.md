@@ -37,17 +37,17 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 ### First launch (admin setup wizard)
 
 1. Admin opens app → guided setup: set parental code → add at least one Item.
-2. Kid can browse Home (Items menu) but **Sell something!** stays disabled until admin starts a Market Day.
+2. Kid can browse Home (Items menu) but **Make a Sale** stays disabled until admin starts a Market Day.
 
 ### Start a Market Day (admin)
 
 1. Admin taps gear → enters parental code.
-2. **Start Market Day** → name it (default suggested, e.g. "Market Day – Sep 18, 2026").
-3. Kid's **Sell something!** becomes enabled.
+2. **Start Market Day** → enter a **Market Name** (required); date defaults to today.
+3. Kid's **Make a Sale** becomes enabled.
 
 ### Log a sale (seller — primary flow)
 
-1. **Home** — read-only **Items** list (icon, name, price) + **Sell something!** (disabled if no Active Market Day).
+1. **Home** — read-only **Items** list (icon, name, price) + **Make a Sale** (disabled if no Active Market Day).
 2. **Pick Items** — scrollable list with **+** buttons; cart pinned at bottom with **− / +** per line, running total, **Checkout**.
 3. **Payment** — total; **Cash** or **Venmo/Zelle** (mutually exclusive).
    - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each replaces amount), **− / +** steppers ($1 increments), numeric input, **Change** displayed.

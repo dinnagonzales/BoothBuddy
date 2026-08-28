@@ -6,7 +6,6 @@ import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 
 import { colors } from '@/constants/theme';
 import {
-  defaultMarketDayName,
   formatMarketDayDate,
   marketDayStartedAtIso,
   startOfLocalDay,
@@ -18,7 +17,7 @@ type StartMarketDayFormProps = {
 };
 
 export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayFormProps) {
-  const [name, setName] = useState(defaultMarketDayName);
+  const [name, setName] = useState('');
   const [date, setDate] = useState(() => startOfLocalDay());
   const [showPicker, setShowPicker] = useState(false);
 
@@ -43,30 +42,39 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.field}>
-        <Text style={styles.label}>Market Day</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="Spring Fair 2026"
-          placeholderTextColor={colors.inkSoft}
-          style={styles.input}
-          autoCapitalize="words"
-          editable={!busy}
-        />
-      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Start Market Day</Text>
+        <Text style={styles.cardIntro}>Name today&apos;s shop, then pick the date.</Text>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>Date</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Market Day date, ${formatMarketDayDate(marketDayStartedAtIso(date))}`}
-          disabled={busy}
-          onPress={() => setShowPicker(true)}
-          style={({ pressed }) => [styles.dateButton, pressed && !busy && styles.dateButtonPressed]}>
-          <Text style={styles.dateValue}>{formatMarketDayDate(marketDayStartedAtIso(date))}</Text>
-          <Text style={styles.dateChevron}>▾</Text>
-        </Pressable>
+        <View style={styles.field}>
+          <Text style={styles.label}>Market Name</Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Spring Fair 2026"
+            placeholderTextColor={colors.inkSoft}
+            style={styles.input}
+            autoCapitalize="words"
+            editable={!busy}
+          />
+          <Text style={styles.hint}>Required — shows in settings and exports</Text>
+        </View>
+
+        <View style={styles.fieldDivider} />
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Date</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Market Day date, ${formatMarketDayDate(marketDayStartedAtIso(date))}`}
+            disabled={busy}
+            onPress={() => setShowPicker(true)}
+            style={({ pressed }) => [styles.dateButton, pressed && !busy && styles.dateButtonPressed]}>
+            <Text style={styles.dateValue}>{formatMarketDayDate(marketDayStartedAtIso(date))}</Text>
+            <Text style={styles.dateChevron}>▾</Text>
+          </Pressable>
+          <Text style={styles.hint}>When this shop day happened</Text>
+        </View>
       </View>
 
       {showPicker ? (
@@ -110,10 +118,36 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
 const styles = StyleSheet.create({
   wrap: {
     width: '100%',
-    gap: 14,
+    gap: 16,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 20,
+    gap: 16,
+  },
+  cardTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 18,
+    color: colors.ink,
+    textAlign: 'center',
+  },
+  cardIntro: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: -8,
   },
   field: {
     gap: 6,
+  },
+  fieldDivider: {
+    height: 1,
+    backgroundColor: '#F0EAFB',
   },
   label: {
     fontFamily: 'Nunito_800ExtraBold',
@@ -122,9 +156,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.inkSoft,
   },
+  hint: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: colors.inkSoft,
+    lineHeight: 16,
+  },
   input: {
-    backgroundColor: colors.white,
+    backgroundColor: '#F8F5FF',
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#F0EAFB',
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontFamily: 'Nunito_700Bold',
@@ -135,8 +177,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.white,
+    backgroundColor: '#F8F5FF',
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#F0EAFB',
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -168,7 +212,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: colors.purpleDark,
     paddingBottom: 4,
-    marginTop: 4,
   },
   startButtonDisabled: {
     opacity: 0.45,

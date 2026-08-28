@@ -131,12 +131,10 @@ export type Catalog = {
   getMarketDayById(id: number): Promise<MarketDay | null>;
   canReopenMarketDay(id: number): Promise<boolean>;
   deleteMarketDay(id: number): Promise<void>;
-  listRunningTabExportRows(startDate: string, endDate: string): Promise<RunningTabExportRow[]>;
-  exportRunningTabSales(startDate: string, endDate: string): Promise<void>;
-  runningTabNeedsReexport(): Promise<boolean>;
+  listSalesExportRows(startDate: string, endDate: string): Promise<SalesExportRow[]>;
 };
 
-export type RunningTabExportRow = {
+export type SalesExportRow = {
   saleNumber: number;
   createdAt: string;
   marketDayName: string;
@@ -206,7 +204,6 @@ export function createCatalog(): Catalog {
   let nextItemId = 1;
   let nextMarketDayId = 1;
   let nextSaleNumber = 1;
-  let runningTabNeedsReexportFlag = false;
 
   function getActiveMarketDayRecord() {
     return marketDays.find((day) => day.closedAt === null) ?? null;
@@ -289,24 +286,25 @@ export function createCatalog(): Catalog {
     return day >= startDate && day <= endDate;
   }
 
-  function runningTabSalesInRange(startDate: string, endDate: string, exported: boolean | null) {
-    return sales.filter((sale) => {
-      if (sale.marketDayId !== null || sale.isPreorder) return false;
-      if (exported === true && sale.exportedAt === null) return false;
-      if (exported === false && sale.exportedAt !== null) return false;
-      return isDateInRange(sale.createdAt, startDate, endDate);
-    });
+  function salesInRange(startDate: string, endDate: string) {
+    return sales.filter(
+      (sale) => !sale.isPreorder && isDateInRange(sale.createdAt, startDate, endDate),
+    );
   }
 
-  function toRunningTabExportRows(saleList: StoredSale[]): RunningTabExportRow[] {
-    const rows: RunningTabExportRow[] = [];
+  function toSalesExportRows(saleList: StoredSale[]): SalesExportRow[] {
+    const rows: SalesExportRow[] = [];
     for (const sale of saleList) {
+      const marketDayName =
+        sale.marketDayId == null
+          ? ''
+          : (marketDays.find((day) => day.id === sale.marketDayId)?.name ?? '');
       const saleTotalCents = cartTotal(sale.lines);
       for (const line of sale.lines) {
         rows.push({
           saleNumber: sale.saleNumber,
           createdAt: sale.createdAt,
-          marketDayName: '',
+          marketDayName,
           itemName: line.name,
           quantity: line.quantity,
           priceCents: line.priceCents,
@@ -660,8 +658,6 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === removed.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
-      } else if (removed.marketDayId === null && removed.exportedAt) {
-        runningTabNeedsReexportFlag = true;
       }
     },
     async getSale(saleNumber) {
@@ -689,8 +685,6 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
-      } else if (sale.marketDayId === null && sale.exportedAt) {
-        runningTabNeedsReexportFlag = true;
       }
     },
     async updateSale(saleNumber, updates) {
@@ -714,8 +708,6 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
-      } else if (sale.marketDayId === null && sale.exportedAt) {
-        runningTabNeedsReexportFlag = true;
       }
     },
     async completePreorder(saleNumber, params) {
@@ -740,8 +732,6 @@ export function createCatalog(): Catalog {
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
-      } else if (sale.marketDayId === null && sale.exportedAt) {
-        runningTabNeedsReexportFlag = true;
       }
     },
     async marketDayNeedsReexport(marketDayId) {
@@ -802,18 +792,8 @@ export function createCatalog(): Catalog {
         marketDays.splice(index, 1);
       }
     },
-    async listRunningTabExportRows(startDate, endDate) {
-      return toRunningTabExportRows(runningTabSalesInRange(startDate, endDate, false));
-    },
-    async exportRunningTabSales(startDate, endDate) {
-      const now = new Date().toISOString();
-      for (const sale of runningTabSalesInRange(startDate, endDate, false)) {
-        sale.exportedAt = now;
-      }
-      runningTabNeedsReexportFlag = false;
-    },
-    async runningTabNeedsReexport() {
-      return runningTabNeedsReexportFlag;
+    async listSalesExportRows(startDate, endDate) {
+      return toSalesExportRows(salesInRange(startDate, endDate));
     },
   };
 }

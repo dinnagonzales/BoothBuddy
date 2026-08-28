@@ -115,7 +115,7 @@ test('Quick Sale can include optional name and notes', async () => {
   });
 });
 
-test('exportRunningTabSales marks off-day sales in the date range as exported', async () => {
+test('listSalesExportRows includes all completed sales in the date range', async () => {
   jest.useFakeTimers();
 
   const catalog = createCatalog();
@@ -127,7 +127,9 @@ test('exportRunningTabSales marks off-day sales in the date range as exported', 
   });
 
   jest.setSystemTime(new Date('2026-08-10T15:00:00.000Z'));
-  await catalog.recordQuickSale({
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.recordSale({
+    marketDayId: marketDay.id,
     lines: [
       {
         itemId: dragon.id,
@@ -158,10 +160,13 @@ test('exportRunningTabSales marks off-day sales in the date range as exported', 
     cashReceivedCents: null,
   });
 
-  await catalog.exportRunningTabSales('2026-08-20', '2026-08-20');
-
-  expect(await catalog.listRunningTabExportRows('2026-08-10', '2026-08-10')).toHaveLength(1);
-  expect(await catalog.listRunningTabExportRows('2026-08-20', '2026-08-20')).toHaveLength(0);
+  expect(await catalog.listSalesExportRows('2026-08-10', '2026-08-10')).toHaveLength(1);
+  expect(await catalog.listSalesExportRows('2026-08-20', '2026-08-20')).toHaveLength(1);
+  expect(await catalog.listSalesExportRows('2026-08-10', '2026-08-20')).toHaveLength(2);
+  expect((await catalog.listSalesExportRows('2026-08-10', '2026-08-10'))[0].marketDayName).toBe(
+    'Spring Fair 2026',
+  );
+  expect((await catalog.listSalesExportRows('2026-08-20', '2026-08-20'))[0].marketDayName).toBe('');
 
   jest.useRealTimers();
 });

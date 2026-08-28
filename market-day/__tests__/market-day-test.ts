@@ -3,7 +3,6 @@ import {
   ActiveMarketDayExistsError,
   NoActiveMarketDayError,
   NothingToUndoCloseError,
-  defaultMarketDayName,
   formatMarketDayDate,
   marketDayIdForSale,
   marketDayStartedAtIso,
@@ -76,10 +75,6 @@ test('suggested Market Day name uses today’s date', () => {
   const name = suggestMarketDayName(new Date('2026-09-18T12:00:00'));
 
   expect(name).toBe('Market Day – Sep 18, 2026');
-});
-
-test('default Market Day name is separate from the date', () => {
-  expect(defaultMarketDayName()).toBe('Market Day');
 });
 
 test('admin can start a Market Day with a custom name and date', async () => {

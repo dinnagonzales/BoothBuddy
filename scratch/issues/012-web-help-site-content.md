@@ -85,7 +85,7 @@ Market Day is your pretend shop on a phone or tablet.
 
 1. A grown-up starts a **Market Day** (opens the shop).
 2. You see the **Menu** — everything you can sell today.
-3. Tap **🛒 Sell something!** to ring up a customer.
+3. Tap **Make a Sale** to ring up a customer.
 4. Take **payment**, then celebrate — **Sold!** 🎉
 
 **For grown-ups**
@@ -104,7 +104,7 @@ You set up items, start and end Market Days, and check sales behind a **4-digit 
 **For sellers**
 
 1. Open Market Day. You should see the **Menu** on the home screen.
-2. Tap **🛒 Sell something!**  
+2. Tap **Make a Sale**  
    *Tip: You can also tap a menu item to start with that in your cart.*
 3. At the top you’ll see **CART: Invoice #___**. That’s this order’s number.
 4. Tap **+** next to things the customer wants.
@@ -194,7 +194,7 @@ This opens the shop so kids can sell.
 1. On the home screen, tap **⚙️**.
 2. Enter your **4-digit Pass Code**. Tap **Unlock**.
 3. If it says **No market day yet**, fill in:
-   - **Market Day** — a name for today (defaults to “Market Day”)
+   - **Market Name** — required; name today’s shop (e.g. Spring Fair 2026)
    - **Date** — tap to pick; defaults to today
 4. Tap **▶️ Start Market Day**.
 5. The shop is open! All your items are on **Today’s Menu** automatically.
@@ -342,7 +342,7 @@ Kids see a simpler view (no profit) from the **Market Day banner** on the home s
 1. Open the app. You’ll see **Grown-up setup**.
 2. Pick a **4-digit Pass Code**. Type it again. Tap **Save Pass Code**.
 3. Add your first item: emoji, name, cost, price. Tap **Save Item and finish**.
-4. You’re on **Home**! The kid can browse the menu, but **Sell something!** stays off until you **Start Market Day**.
+4. You’re on **Home**! The kid can browse the menu, but **Make a Sale** stays off until you **Start Market Day**.
 
 The **⚙️ gear** always asks for the Pass Code — even after setup.
 
@@ -380,7 +380,7 @@ The **⚙️ gear** always asks for the Pass Code — even after setup.
 
 ## `/faq/cant-sell` — Why can’t I sell?
 
-The **🛒 Sell something!** button is gray when no **Market Day** is open.
+The **Make a Sale** button is gray when no **Market Day** is open.
 
 **What to do:** Ask a grown-up to tap **⚙️**, enter the Pass Code, and tap **▶️ Start Market Day**.
 
@@ -422,7 +422,7 @@ The **⚙️** on the home screen is for **grown-ups**.
 
 Tap it → enter the **Pass Code** → open settings, inventory, and today’s sales with profit.
 
-If you’re a kid selling things, you usually don’t need the gear — use **🛒 Sell something!** instead.
+If you’re a kid selling things, you usually don’t need the gear — use **Make a Sale** instead.
 
 ---
 
@@ -511,7 +511,7 @@ This works only for the **most recently** closed day, and only until you **expor
 
 **Seller — all day**
 
-- [ ] **Sell something!** → cart → **Checkout** → pay → **Sold!**
+- [ ] **Make a Sale** → cart → **Checkout** → pay → **Sold!**
 
 **Grown-up — evening**
 

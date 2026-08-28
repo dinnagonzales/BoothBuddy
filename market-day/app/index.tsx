@@ -172,10 +172,8 @@ export default function HomeScreen() {
             </Pressable>
           ) : null}
 
-          <Text style={styles.menuLabel}>🍭 Menu</Text>
-          <Text style={styles.menuHint}>
-            Quick price check — tap &quot;Sell something&quot; below to log a sale
-          </Text>
+          <Text style={styles.menuLabel}>🍭 Available Items</Text>
+
 
           <FlatList
             data={items}
@@ -213,7 +211,7 @@ export default function HomeScreen() {
 
           <View style={styles.sellButtonWrap}>
             {!canSell ? (
-              <Text style={styles.sellHint}>Ask a grown-up to start a Market Day in ⚙️ settings.</Text>
+              <Text style={styles.sellHint}>No active Market Day — start one in ⚙️ settings.</Text>
             ) : null}
             <Pressable
               accessibilityRole="button"
@@ -225,7 +223,7 @@ export default function HomeScreen() {
                 pressed && canSell ? styles.sellButtonOuterPressed : null,
               ]}>
               <View style={styles.sellButtonInner}>
-                <Text style={styles.sellButtonLabel}>🛒 Sell something!</Text>
+                <Text style={styles.sellButtonLabel}>Make a Sale</Text>
               </View>
             </Pressable>
           </View>
@@ -343,7 +341,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: colors.inkSoft,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   menuHint: {
     fontFamily: 'Nunito_400Regular',
@@ -423,11 +421,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 8,
+    bottom: 40,
   },
   sellButtonOuter: {
     borderRadius: 22,
-    backgroundColor: colors.purpleDark,
+    backgroundColor: colors.greenDark,
     paddingBottom: 6,
   },
   sellButtonOuterPressed: {
@@ -435,7 +433,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sellButtonInner: {
-    backgroundColor: colors.purple,
+    backgroundColor: colors.green,
     borderRadius: 22,
     paddingVertical: 22,
     alignItems: 'center',

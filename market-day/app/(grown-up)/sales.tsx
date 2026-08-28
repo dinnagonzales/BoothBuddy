@@ -18,8 +18,8 @@ import { AdminSalesList } from '@/components/AdminSalesList';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { colors } from '@/constants/theme';
-import { getAllTimeSales, getAllTimeStats, runningTabNeedsReexport } from '@/lib/db/queries';
-import { shareRunningTabCsv } from '@/lib/market-day-export';
+import { getAllTimeSales, getAllTimeStats } from '@/lib/db/queries';
+import { shareSalesCsv } from '@/lib/market-day-export';
 import { formatMarketDayDate, startOfLocalDay, toExportDate } from '@/lib/market-day';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import type { AllTimeSaleSummary } from '@/lib/types';
@@ -35,21 +35,18 @@ export default function SalesScreen() {
     venmoCents: 0,
   });
   const [sales, setSales] = useState<AllTimeSaleSummary[]>([]);
-  const [needsReexport, setNeedsReexport] = useState(false);
   const [startDate, setStartDate] = useState(() => startOfLocalDay());
   const [endDate, setEndDate] = useState(() => startOfLocalDay());
   const [activePicker, setActivePicker] = useState<'start' | 'end' | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const refresh = useCallback(async () => {
-    const [allTimeStats, allTimeSales, reexport] = await Promise.all([
+    const [allTimeStats, allTimeSales] = await Promise.all([
       getAllTimeStats(db),
       getAllTimeSales(db),
-      runningTabNeedsReexport(db),
     ]);
     setStats(allTimeStats);
     setSales(allTimeSales);
-    setNeedsReexport(reexport);
   }, [db]);
 
   useFocusEffect(
@@ -79,12 +76,12 @@ export default function SalesScreen() {
       try {
         const start = toExportDate(startDate);
         const end = toExportDate(endDate);
-        await shareRunningTabCsv(db, start, end);
+        await shareSalesCsv(db, start, end);
         await refresh();
       } catch (error) {
         Alert.alert(
           'Export failed',
-          error instanceof Error ? error.message : 'Could not export off-day sales.',
+          error instanceof Error ? error.message : 'Could not export sales.',
         );
       } finally {
         setExporting(false);
@@ -105,17 +102,8 @@ export default function SalesScreen() {
           venmoCents={stats.venmoCents}
         />
 
-        {needsReexport ? (
-          <View style={styles.reexportBanner}>
-            <Text style={styles.reexportTitle}>Re-export recommended</Text>
-            <Text style={styles.reexportBody}>
-              An off-day sale was edited after export. Export again so your CSV matches the app.
-            </Text>
-          </View>
-        ) : null}
-
         <View style={styles.exportSection}>
-          <SectionLabel>Export off-day sales</SectionLabel>
+          <SectionLabel>Export sales</SectionLabel>
           <View style={styles.exportCard}>
             <View style={styles.dateField}>
               <Text style={styles.dateLabel}>From</Text>
@@ -153,7 +141,7 @@ export default function SalesScreen() {
                 pressed && !exporting ? styles.exportButtonPressed : null,
               ]}>
               <Text style={styles.exportButtonLabel}>
-                {exporting ? 'Exporting…' : 'Export off-day sales as CSV'}
+                {exporting ? 'Exporting…' : 'Export sales as CSV'}
               </Text>
             </Pressable>
           </View>
@@ -184,27 +172,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 16,
-  },
-  reexportBanner: {
-    backgroundColor: '#FFF4D6',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#F5DFA0',
-  },
-  reexportTitle: {
-    fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 13,
-    color: colors.ink,
-    marginBottom: 4,
-  },
-  reexportBody: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 12,
-    color: colors.inkSoft,
-    lineHeight: 17,
   },
   exportSection: {
     marginBottom: 12,

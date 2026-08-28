@@ -17,7 +17,7 @@ Off-day checkout launched from the + button next to the gear on Home. Same cart 
 _Avoid_: Log a sale, porch mode, off-books sale
 
 **Home**:
-The seller's landing screen and return point after every Sale. During an **Active Market Day**, shows the **Items** list from today's **Menu** (icon, name, price; **sold out** Items show a clear indicator). Plus a **Sell something!** button to start checkout. The top bar also has a gear icon (grown-up settings) and a + button (**Quick Sale**). Does not show sales totals — those are admin-only.
+The seller's landing screen and return point after every Sale. During an **Active Market Day**, shows the **Items** list from today's **Menu** (icon, name, price; **sold out** Items show a clear indicator). Plus a **Make a Sale** button to start checkout. The top bar also has a gear icon (grown-up settings) and a + button (**Quick Sale**). Does not show sales totals — those are admin-only.
 _Avoid_: Dashboard, today view
 
 **Item**:
@@ -96,7 +96,7 @@ Cash received minus the Sale total, shown to the seller during Cash checkout so 
 _Avoid_: Money back, difference
 
 **Active Market Day**:
-The one Market Day currently open for selling. Exactly zero or one may be active at a time. The admin must start a Market Day before the seller can log sales — without one, **Sell something!** is disabled.
+The one Market Day currently open for selling. Exactly zero or one may be active at a time. The admin must start a Market Day before the seller can log sales — without one, **Make a Sale** is disabled.
 _Avoid_: Current session, open event
 
 **Closed Market Day**:
