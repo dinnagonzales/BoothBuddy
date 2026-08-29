@@ -59,7 +59,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 ### Log a preorder (seller)
 
 1. Tap **+ Pre-order** on Home (top bar, next to gear).
-2. Same cart flow as seller checkout, but always a **Preorder**: **Sale name** and **Sale notes** required above the cart; screen title **Pre-order**.
+2. Same cart flow as seller checkout, but always a **Preorder**: **Sale name**, **Sale notes**, and **Complete date** required above the cart; screen title **Pre-order**.
 3. Uses the global non-archived catalog (not today's **Menu**), whether or not an **Active Market Day** is running.
 4. **Payment** — **Pay on pickup** only at creation; sale saves to **Running Tab** (`marketDayId` null) and appears in the **Preorders tab** until **Mark complete**.
 5. **Celebration** — "Preorder saved!" + **Invoice #N**; dismiss → **Home**.
@@ -67,8 +67,9 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 ### Fulfill preorders (admin)
 
 1. **Preorders tab** — **Prepare** summary at top shows total quantity per item across all open orders.
-2. **Export preorders for printing** — share sheet → printable checklist with prep summary and one block per order (`[ ]` lines to cross off).
-3. Tap an order to record payment and **Mark complete**; sale moves to **Sales tab**.
+2. **Overdue** section lists orders past their **Complete date**; **Upcoming** lists the rest (sorted by complete date).
+3. **Export preorders for printing** — share sheet → printable checklist with prep summary and one block per order (`[ ]` lines to cross off).
+4. Tap an order to record payment and **Mark complete**; sale moves to **Sales tab**.
 
 ### Log a Running Tab sale (off-day)
 
@@ -88,7 +89,7 @@ Behind gear icon + parental gate (numeric code). Shows:
 - Running Tab summary.
 - Item management (name, cost, price, emoji icon, optional photo).
 - Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.
-- **Admin edit** any Sale (payment method, optional name/notes, remove whole sale); line-item quantity edit deferred — use remove + re-log for wrong items.
+- **Admin edit** any Sale (payment method, optional name/notes, complete date for preorders, remove whole sale); line-item quantity edit deferred — use remove + re-log for wrong items.
 - Export (see below).
 
 ---
@@ -99,7 +100,7 @@ Behind gear icon + parental gate (numeric code). Shows:
 
 **Market Day:** id, name, startedAt, closedAt, exportedAt
 
-**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), name (optional, admin-only), notes (optional, admin-only)
+**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), name (optional, admin-only), notes (optional, admin-only), completeDate (required for preorders — pickup-ready date)
 
 **Line item:** itemId, quantity, priceAtSale, costAtSale
 

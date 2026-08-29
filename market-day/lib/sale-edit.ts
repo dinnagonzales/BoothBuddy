@@ -42,8 +42,17 @@ export function paymentMethodCompletesPreorder(paymentMethod: PaymentMethod): bo
   return paymentMethod === 'cash' || paymentMethod === 'venmo_zelle';
 }
 
-export function preorderMetadataValid(name: string, notes: string): boolean {
-  return name.trim().length > 0 && notes.trim().length > 0;
+export function preorderMetadataValid(
+  name: string,
+  notes: string,
+  completeDate: string | null,
+): boolean {
+  return (
+    name.trim().length > 0 &&
+    notes.trim().length > 0 &&
+    completeDate != null &&
+    completeDate.trim().length > 0
+  );
 }
 
 export function cashReceivedForEditedSale(

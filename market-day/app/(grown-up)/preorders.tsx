@@ -3,10 +3,11 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AdminSalesList } from '@/components/AdminSalesList';
+import { PreorderSalesList } from '@/components/PreorderSalesList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { colors } from '@/constants/theme';
 import { getPreorderPrepSummary, getPreorderSales, type PreorderPrepItem } from '@/lib/db/queries';
+import { isCompleteDateOverdue, startOfLocalDay } from '@/lib/market-day';
 import { sharePreorderPrintout } from '@/lib/market-day-export';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import { formatMoney } from '@/lib/money';
@@ -43,6 +44,12 @@ export default function PreordersScreen() {
   );
 
   const totalCents = sales.reduce((sum, sale) => sum + sale.totalCents, 0);
+  const overdueSales = sales.filter(
+    (sale) => sale.completeDate != null && isCompleteDateOverdue(sale.completeDate, startOfLocalDay()),
+  );
+  const upcomingSales = sales.filter(
+    (sale) => sale.completeDate == null || !isCompleteDateOverdue(sale.completeDate, startOfLocalDay()),
+  );
 
   const handleExport = () => {
     void (async () => {
@@ -103,17 +110,42 @@ export default function PreordersScreen() {
           </Pressable>
         </View>
 
-        <SectionLabel>Open preorders</SectionLabel>
-        <AdminSalesList
-          sales={sales}
-          savedSaleNumber={savedSaleNumber}
-          onSalePress={(saleNumber) =>
-            router.push({
-              pathname: '/sale/[saleNumber]',
-              params: { saleNumber: String(saleNumber), returnTo: 'preorders' },
-            })
-          }
-        />
+        {overdueSales.length > 0 ? (
+          <>
+            <SectionLabel>Overdue</SectionLabel>
+            <PreorderSalesList
+              sales={overdueSales}
+              overdue
+              savedSaleNumber={savedSaleNumber}
+              onSalePress={(saleNumber) =>
+                router.push({
+                  pathname: '/sale/[saleNumber]',
+                  params: { saleNumber: String(saleNumber), returnTo: 'preorders' },
+                })
+              }
+            />
+          </>
+        ) : null}
+
+        <SectionLabel>{overdueSales.length > 0 ? 'Upcoming' : 'Open preorders'}</SectionLabel>
+        {upcomingSales.length > 0 ? (
+          <PreorderSalesList
+            sales={upcomingSales}
+            savedSaleNumber={savedSaleNumber}
+            onSalePress={(saleNumber) =>
+              router.push({
+                pathname: '/sale/[saleNumber]',
+                params: { saleNumber: String(saleNumber), returnTo: 'preorders' },
+              })
+            }
+          />
+        ) : (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>
+              {overdueSales.length > 0 ? 'No upcoming preorders' : 'No open preorders yet'}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -189,5 +221,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     color: colors.white,
+  },
+  emptyCard: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 14,
+    color: colors.inkSoft,
+    textAlign: 'center',
   },
 });

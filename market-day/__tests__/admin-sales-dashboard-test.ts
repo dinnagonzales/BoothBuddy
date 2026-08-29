@@ -143,6 +143,8 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
     totalCents: 400,
     paymentMethod: 'cash',
     name: null,
+    notes: null,
+    completeDate: null,
     createdAt: expect.any(String),
   });
   expect(sales[1]).toEqual({
@@ -150,6 +152,8 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
     totalCents: 800,
     paymentMethod: 'venmo_zelle',
     name: null,
+    notes: null,
+    completeDate: null,
     createdAt: expect.any(String),
   });
 });

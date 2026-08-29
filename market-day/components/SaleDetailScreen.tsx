@@ -1,6 +1,10 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 
 import { ScreenHeader } from '@/components/Screen';
 import { Card, cn } from '@/components/ui';
@@ -12,7 +16,15 @@ import {
   removeSaleByNumber,
   updateSale,
 } from '@/lib/db/queries';
-import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
+import {
+  defaultCompleteDate,
+  formatCompleteDate,
+  formatSaleTime,
+  localDayFromExportDate,
+  paymentMethodLabel,
+  startOfLocalDay,
+  toExportDate,
+} from '@/lib/market-day';
 import {
   paymentMethodCompletesPreorder,
   preorderMetadataValid,
@@ -27,6 +39,7 @@ type SaleDetail = {
   paymentMethod: PaymentMethod;
   name: string | null;
   notes: string | null;
+  completeDate: string | null;
   isPreorder: boolean;
   createdAt: string;
   lines: CartLine[];
@@ -54,6 +67,8 @@ export function SaleDetailScreen({
   const [draftPaymentMethod, setDraftPaymentMethod] = useState<PaymentMethod | null>(null);
   const [draftName, setDraftName] = useState('');
   const [draftNotes, setDraftNotes] = useState('');
+  const [draftCompleteDate, setDraftCompleteDate] = useState(defaultCompleteDate());
+  const [showCompleteDatePicker, setShowCompleteDatePicker] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const loadSale = useCallback(async () => {
@@ -63,6 +78,7 @@ export function SaleDetailScreen({
       setDraftPaymentMethod(null);
       setDraftName('');
       setDraftNotes('');
+      setDraftCompleteDate(defaultCompleteDate());
       return;
     }
     const lines = await getSaleLineItems(db, header.id);
@@ -72,6 +88,7 @@ export function SaleDetailScreen({
       paymentMethod: header.paymentMethod,
       name: header.name,
       notes: header.notes,
+      completeDate: header.completeDate,
       isPreorder: header.isPreorder,
       createdAt: header.createdAt,
       lines,
@@ -81,6 +98,7 @@ export function SaleDetailScreen({
     );
     setDraftName(header.name ?? '');
     setDraftNotes(header.notes ?? '');
+    setDraftCompleteDate(header.completeDate ?? defaultCompleteDate());
   }, [db, saleNumber]);
 
   useEffect(() => {
@@ -95,7 +113,9 @@ export function SaleDetailScreen({
   const hasMetadataChanges =
     sale != null &&
     !readOnly &&
-    (draftName.trim() !== (sale.name ?? '') || draftNotes.trim() !== (sale.notes ?? ''));
+    (draftName.trim() !== (sale.name ?? '') ||
+      draftNotes.trim() !== (sale.notes ?? '') ||
+      draftCompleteDate !== (sale.completeDate ?? defaultCompleteDate()));
 
   const hasChanges =
     sale != null &&
@@ -107,7 +127,16 @@ export function SaleDetailScreen({
       notes: draftNotes,
     }, readOnly);
 
-  const preorderMetaValid = preorderMetadataValid(draftName, draftNotes);
+  const preorderMetaValid = preorderMetadataValid(draftName, draftNotes, draftCompleteDate);
+
+  const handleCompleteDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowCompleteDatePicker(false);
+    }
+    if (selected) {
+      setDraftCompleteDate(toExportDate(startOfLocalDay(selected)));
+    }
+  };
 
   const canMarkComplete =
     sale?.isPreorder === true &&
@@ -123,7 +152,11 @@ export function SaleDetailScreen({
       void (async () => {
         setBusy(true);
         try {
-          await updateSale(db, saleNumber, { name: draftName, notes: draftNotes });
+          await updateSale(db, saleNumber, {
+            name: draftName,
+            notes: draftNotes,
+            completeDate: draftCompleteDate,
+          });
           await loadSale();
           onSaved?.(saleNumber);
         } finally {
@@ -161,6 +194,7 @@ export function SaleDetailScreen({
           paymentMethod: draftPaymentMethod,
           name: draftName,
           notes: draftNotes,
+          completeDate: draftCompleteDate,
         });
         onCompleted?.(saleNumber);
       } finally {
@@ -217,6 +251,9 @@ export function SaleDetailScreen({
           <Text style={styles.summaryMeta}>{formatSaleTime(sale.createdAt)}</Text>
           {readOnly && sale.name ? <Text style={styles.summaryName}>{sale.name}</Text> : null}
           {readOnly && sale.notes ? <Text style={styles.summaryNotes}>{sale.notes}</Text> : null}
+          {readOnly && sale.completeDate ? (
+            <Text style={styles.summaryNotes}>Complete: {formatCompleteDate(sale.completeDate)}</Text>
+          ) : null}
         </View>
 
         {!readOnly ? (
@@ -252,6 +289,40 @@ export function SaleDetailScreen({
               ]}
               multiline
             />
+
+            {sale.isPreorder ? (
+              <>
+                <Text style={styles.sectionLabel}>Complete date (required)</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Complete date, ${formatCompleteDate(draftCompleteDate)}`}
+                  disabled={busy}
+                  onPress={() => setShowCompleteDatePicker(true)}
+                  style={({ pressed }) => [
+                    styles.dateButton,
+                    pressed && !busy && styles.dateButtonPressed,
+                  ]}>
+                  <Text style={styles.dateValue}>{formatCompleteDate(draftCompleteDate)}</Text>
+                  <Text style={styles.dateChevron}>▾</Text>
+                </Pressable>
+                {showCompleteDatePicker ? (
+                  <DateTimePicker
+                    value={localDayFromExportDate(draftCompleteDate)}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleCompleteDateChange}
+                  />
+                ) : null}
+                {Platform.OS === 'ios' && showCompleteDatePicker ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setShowCompleteDatePicker(false)}
+                    style={styles.donePicker}>
+                    <Text style={styles.donePickerLabel}>Done</Text>
+                  </Pressable>
+                ) : null}
+              </>
+            ) : null}
           </>
         ) : null}
 
@@ -518,6 +589,40 @@ const styles = StyleSheet.create({
   notesInput: {
     minHeight: 88,
     textAlignVertical: 'top',
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  dateButtonPressed: {
+    opacity: 0.88,
+  },
+  dateValue: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: colors.ink,
+  },
+  dateChevron: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 14,
+    color: colors.purpleDark,
+  },
+  donePicker: {
+    alignSelf: 'flex-end',
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    marginBottom: 8,
+  },
+  donePickerLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 13,
+    color: colors.purpleDark,
   },
   sectionLabel: {
     fontFamily: 'Nunito_800ExtraBold',

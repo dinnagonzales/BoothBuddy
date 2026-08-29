@@ -50,6 +50,8 @@ test('admin can remove a mis-logged Sale', async () => {
       totalCents: 800,
       paymentMethod: 'venmo_zelle',
       name: null,
+      notes: null,
+      completeDate: null,
       createdAt: expect.any(String),
     },
   ]);
@@ -99,6 +101,8 @@ test('admin can change payment method on a Sale', async () => {
       totalCents: 400,
       paymentMethod: 'venmo_zelle',
       name: null,
+      notes: null,
+      completeDate: null,
       createdAt: expect.any(String),
     },
   ]);
@@ -220,6 +224,8 @@ test('admin can add optional name and notes to a Sale', async () => {
       totalCents: 400,
       paymentMethod: 'cash',
       name: 'Emma',
+      notes: null,
+      completeDate: null,
       createdAt: expect.any(String),
     },
   ]);

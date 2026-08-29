@@ -174,6 +174,7 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         paymentMethod: sale.paymentMethod,
         name: sale.name,
         notes: sale.notes,
+        completeDate: sale.completeDate,
         isPreorder: sale.isPreorder,
         createdAt: sale.createdAt,
         lines,

@@ -45,6 +45,23 @@ export function toExportDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function localDayFromExportDate(exportDate: string): Date {
+  const [year, month, day] = exportDate.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function formatCompleteDate(exportDate: string): string {
+  return formatMarketDayDate(localDayFromExportDate(exportDate).toISOString());
+}
+
+export function defaultCompleteDate(now = new Date()): string {
+  return toExportDate(startOfLocalDay(now));
+}
+
+export function isCompleteDateOverdue(completeDate: string, today = startOfLocalDay()): boolean {
+  return completeDate < toExportDate(today);
+}
+
 export class ActiveMarketDayExistsError extends Error {
   constructor() {
     super('An Active Market Day already exists');

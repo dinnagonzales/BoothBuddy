@@ -29,7 +29,7 @@ const chipShadow = Platform.select({
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, isQuickSale, isPreorder } =
+  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder } =
     useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
@@ -64,7 +64,7 @@ export default function PaymentScreen() {
   const cashCoversTotal = cashReceivedCents >= totalCents;
   const canComplete =
     paymentCanComplete(paymentMethod, cashReceivedCents, totalCents) &&
-    (!preorderCheckout || preorderMetadataValid(saleName, saleNotes));
+    (!preorderCheckout || preorderMetadataValid(saleName, saleNotes, saleCompleteDate));
 
   const completeSale = () => {
     if (!canComplete) return;
@@ -93,6 +93,7 @@ export default function PaymentScreen() {
         cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
         name: saleName,
         notes: saleNotes,
+        completeDate: saleCompleteDate,
         isPreorder: preorderCheckout,
       });
 

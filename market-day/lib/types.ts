@@ -37,6 +37,7 @@ export type Sale = {
   cashReceivedCents: number | null;
   name: string | null;
   notes: string | null;
+  completeDate: string | null;
   isPreorder: boolean;
   createdAt: string;
 };
@@ -46,6 +47,8 @@ export type SaleSummary = {
   totalCents: number;
   paymentMethod: PaymentMethod;
   name: string | null;
+  notes: string | null;
+  completeDate: string | null;
   createdAt: string;
 };
 

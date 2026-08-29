@@ -85,6 +85,10 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   if (!hasSaleNotes) {
     await db.execAsync('ALTER TABLE sales ADD COLUMN notes TEXT');
   }
+  const hasCompleteDate = salesColumns.some((column) => column.name === 'complete_date');
+  if (!hasCompleteDate) {
+    await db.execAsync('ALTER TABLE sales ADD COLUMN complete_date TEXT');
+  }
 
   const salesTableSql = await db.getFirstAsync<{ sql: string | null }>(
     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'sales'",

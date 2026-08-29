@@ -13,7 +13,7 @@ The always-open bucket for sales that are not part of an Active Market Day — p
 _Avoid_: Orphan bucket, misc tab, default session
 
 **+ Pre-order**:
-Preorder checkout launched from the **+ Pre-order** button next to the gear on Home. Same cart flow as the seller — **Sale number** shown as **Invoice #N** in the header — with required **Sale name** and **Sale notes** above the cart (no checkbox; entering via this button is always a preorder). Saves to the Running Tab (`marketDayId` null), whether or not an Active Market Day is running. Payment at creation is always **Pay on pickup** only. Dismissing celebration returns to Home.
+Preorder checkout launched from the **+ Pre-order** button next to the gear on Home. Same cart flow as the seller — **Sale number** shown as **Invoice #N** in the header — with required **Sale name**, **Sale notes**, and **Complete date** above the cart (no checkbox; entering via this button is always a preorder). Saves to the Running Tab (`marketDayId` null), whether or not an Active Market Day is running. Payment at creation is always **Pay on pickup** only. Dismissing celebration returns to Home.
 _Avoid_: Quick Sale, log a sale, porch mode
 
 **Home**:
@@ -45,10 +45,13 @@ Optional free-text label on a Sale (e.g. customer name, tab name). Required for 
 _Avoid_: Invoice title, customer ID
 
 **Sale notes**:
-Optional free-text note on a Sale (e.g. pickup time, running-tab context). Required for **+ Pre-order**; optional for off-day **Make a Sale** (no active Market Day). Can also be set or changed later via admin edit. Stored in the app; not shown on kid-facing screens.
+Optional free-text note on a Sale (e.g. special requests, running-tab context). Required for **+ Pre-order**; optional for off-day **Make a Sale** (no active Market Day). Can also be set or changed later via admin edit. Stored in the app; not shown on kid-facing screens.
+
+**Complete date**:
+The date a **Preorder** should be ready for pickup. Required when placing a **+ Pre-order**; defaults to today but can be changed with a date picker. Shown on the **Preorders tab** under each order's notes. Orders past their complete date appear in the **Overdue** section. Can be edited later via admin edit on the **Preorders tab**.
 
 **Preorder**:
-A Sale created via **+ Pre-order**. **Sale name** and **Sale notes** are required. Payment at creation is always **Pay on pickup** — no money collected yet. Gets a **Sale number** immediately and appears only in the **Preorders tab**, not the **Sales tab** stats or list. Always saves with no Market Day (`marketDayId` null), even during an Active Market Day. **Mark complete** records Cash or Venmo/Zelle payment and moves the Sale into the **Sales tab**.
+A Sale created via **+ Pre-order**. **Sale name**, **Sale notes**, and **Complete date** are required. Payment at creation is always **Pay on pickup** — no money collected yet. Gets a **Sale number** immediately and appears only in the **Preorders tab**, not the **Sales tab** stats or list. Always saves with no Market Day (`marketDayId` null), even during an Active Market Day. Open preorders are sorted by complete date; overdue orders are grouped at the top. **Mark complete** records Cash or Venmo/Zelle payment and moves the Sale into the **Sales tab**.
 _Avoid_: Pending order, reservation, hold
 
 **Pay on pickup**:
@@ -80,7 +83,7 @@ A seller action on the celebration overlay that reopens the cart with the just-c
 _Avoid_: Undo, edit sale, oops
 
 **Admin edit**:
-The admin's ability to open and change any Sale from grown-up settings — payment method, optional name and notes, or remove the whole mis-logged Sale. If composition needs to change beyond payment or metadata, remove the Sale and re-log from scratch (kid **Fix** on celebration, or admin remove + new checkout). If the Sale's Market Day or Running Tab chunk has already been exported, the bucket is flagged as out of date and re-export is recommended.
+The admin's ability to open and change any Sale from grown-up settings — payment method, optional name and notes, complete date (preorders), or remove the whole mis-logged Sale. If composition needs to change beyond payment or metadata, remove the Sale and re-log from scratch (kid **Fix** on celebration, or admin remove + new checkout). If the Sale's Market Day or Running Tab chunk has already been exported, the bucket is flagged as out of date and re-export is recommended.
 _Avoid_: Void, correction, adjustment
 
 **Payment method**:
@@ -108,7 +111,7 @@ The admin's manual, on-demand action of generating export files for Excel reconc
 _Avoid_: Download, sync, report
 
 **Preorders tab**:
-The grown-up tab listing open **Preorders** — Sales with the preorder flag still set. **Prepare** summary at top aggregates quantities per item across all open orders. **Export preorders for printing** shares a checklist file (prep summary + one block per order with `[ ]` lines). Tap a row (**#N** or **name**) to open **Admin edit** and **Mark complete**. Pending preorders do not appear in the **Sales tab** or off-day CSV export.
+The grown-up tab listing open **Preorders** — Sales with the preorder flag still set. **Prepare** summary at top aggregates quantities per item across all open orders. **Overdue** section lists orders past their **Complete date**; **Upcoming** lists the rest. Orders are sorted by complete date within each section. Each row shows name (or **#N**), notes, complete date, and total. **Export preorders for printing** shares a checklist file (prep summary + one block per order with `[ ]` lines). Tap a row to open **Admin edit** and **Mark complete**. Pending preorders do not appear in the **Sales tab** or off-day CSV export.
 _Avoid_: Pending orders, open orders, queue
 
 **Sales tab**:

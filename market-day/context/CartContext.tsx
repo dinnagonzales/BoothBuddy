@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 
 import type { CartLine, PaymentMethod } from '@/lib/types';
+import { defaultCompleteDate } from '@/lib/market-day';
 
 type CartContextValue = {
   lines: CartLine[];
@@ -10,6 +11,7 @@ type CartContextValue = {
   invoiceNumber: number | null;
   saleName: string;
   saleNotes: string;
+  saleCompleteDate: string;
   isQuickSale: boolean;
   isPreorder: boolean;
   setLines: (lines: CartLine[]) => void;
@@ -19,6 +21,7 @@ type CartContextValue = {
   setInvoiceNumber: (saleNumber: number | null) => void;
   setSaleName: (name: string) => void;
   setSaleNotes: (notes: string) => void;
+  setSaleCompleteDate: (completeDate: string) => void;
   setIsQuickSale: (value: boolean) => void;
   setIsPreorder: (value: boolean) => void;
   addItem: (line: Omit<CartLine, 'quantity'>) => void;
@@ -38,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   const [saleName, setSaleName] = useState('');
   const [saleNotes, setSaleNotes] = useState('');
+  const [saleCompleteDate, setSaleCompleteDate] = useState(defaultCompleteDate);
   const [isQuickSale, setIsQuickSale] = useState(false);
   const [isPreorder, setIsPreorder] = useState(false);
 
@@ -82,6 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       invoiceNumber,
       saleName,
       saleNotes,
+      saleCompleteDate,
       isQuickSale,
       isPreorder,
       setLines,
@@ -91,6 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setInvoiceNumber,
       setSaleName,
       setSaleNotes,
+      setSaleCompleteDate,
       setIsQuickSale,
       setIsPreorder,
       addItem,
@@ -103,13 +109,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setInvoiceNumber(null);
         setSaleName('');
         setSaleNotes('');
+        setSaleCompleteDate(defaultCompleteDate());
         setIsQuickSale(false);
         setIsPreorder(false);
       },
       itemCount,
       totalCents,
     };
-  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, isQuickSale, isPreorder]);
+  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

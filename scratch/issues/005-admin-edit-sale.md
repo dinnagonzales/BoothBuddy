@@ -12,7 +12,7 @@ From the **Sale** list on the **Settings** tab, the **Admin** taps a **Sale** to
 
 - **Remove order** — deletes the whole mis-logged transaction. *(shipped)*
 - **Payment method** — switch Cash vs Venmo/Zelle. *(shipped)*
-- **Name and notes (optional)** — free-text metadata for customer/tab labels and preorder or running-tab context. *(shipped)*
+- **Name, notes, and complete date (optional for sales; required for preorders)** — free-text metadata for customer/tab labels, special requests, and pickup-ready date. *(shipped)*
 - **Edit quantity** — pencil icon per line item opens a stepper; **only one line item in edit mode at a time**. *(not yet shipped)*
 
 Out of scope: adding items to an existing order, per-item delete-only, changing cash received, restructuring beyond quantity. If composition needs to change beyond quantity, remove the order and re-log from scratch.
@@ -27,7 +27,7 @@ If that **Market Day** (or **Running Tab** chunk) was already exported, flag the
 - [ ] PIN required before edit mode unlocks
 - [x] Admin can remove the whole **Sale**
 - [x] Admin can change **Payment method**
-- [x] Admin can add optional **name** and **notes** on a **Sale**
+- [x] Admin can add optional **name** and **notes** on a **Sale**; **complete date** required for preorders
 - [ ] Admin can change quantity on one line item at a time (stepper)
 - [ ] Saved quantity edits re-snapshot price and cost on that line item
 - [x] Dashboard totals update after edit or remove

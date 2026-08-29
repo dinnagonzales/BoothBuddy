@@ -58,6 +58,7 @@ export type SaleDetail = {
   paymentMethod: PaymentMethod;
   name: string | null;
   notes: string | null;
+  completeDate: string | null;
   isPreorder: boolean;
   createdAt: string;
   lines: CartLine[];
@@ -100,6 +101,7 @@ export type Catalog = {
     cashReceivedCents: number | null;
     name?: string | null;
     notes?: string | null;
+    completeDate?: string | null;
     isPreorder?: boolean;
   }): Promise<{ saleNumber: number }>;
   getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
@@ -116,6 +118,7 @@ export type Catalog = {
       paymentMethod?: PaymentMethod;
       name?: string | null;
       notes?: string | null;
+      completeDate?: string | null;
     },
   ): Promise<void>;
   completePreorder(
@@ -124,6 +127,7 @@ export type Catalog = {
       paymentMethod: PaymentMethod;
       name?: string | null;
       notes?: string | null;
+      completeDate?: string | null;
     },
   ): Promise<void>;
   marketDayNeedsReexport(marketDayId: number): Promise<boolean>;
@@ -174,6 +178,7 @@ type StoredSale = {
   cashReceivedCents: number | null;
   name: string | null;
   notes: string | null;
+  completeDate: string | null;
   isPreorder: boolean;
   createdAt: string;
   exportedAt: string | null;
@@ -253,14 +258,16 @@ export function createCatalog(): Catalog {
       cashReceivedCents: number | null;
       name?: string | null;
       notes?: string | null;
+      completeDate?: string | null;
       isPreorder?: boolean;
     },
   ) {
     const saleNumber = nextSaleNumber++;
     const name = normalizeOptionalText(params.name);
     const notes = normalizeOptionalText(params.notes);
-    if (params.isPreorder === true && (!name || !notes)) {
-      throw new Error('Preorder requires name and notes');
+    const completeDate = normalizeOptionalText(params.completeDate);
+    if (params.isPreorder === true && (!name || !notes || !completeDate)) {
+      throw new Error('Preorder requires name, notes, and complete date');
     }
     sales.push({
       saleNumber,
@@ -270,6 +277,7 @@ export function createCatalog(): Catalog {
       cashReceivedCents: params.cashReceivedCents,
       name,
       notes,
+      completeDate,
       isPreorder: params.isPreorder === true,
       createdAt: new Date().toISOString(),
       exportedAt: null,
@@ -605,6 +613,8 @@ export function createCatalog(): Catalog {
           totalCents: cartTotal(sale.lines),
           paymentMethod: sale.paymentMethod,
           name: sale.name,
+          notes: null,
+          completeDate: null,
           createdAt: sale.createdAt,
         }));
     },
@@ -641,6 +651,8 @@ export function createCatalog(): Catalog {
           totalCents: cartTotal(sale.lines),
           paymentMethod: sale.paymentMethod,
           name: sale.name,
+          notes: null,
+          completeDate: null,
           createdAt: sale.createdAt,
           marketDayName: marketDays.find((day) => day.id === sale.marketDayId)?.name ?? null,
         }));
@@ -649,14 +661,21 @@ export function createCatalog(): Catalog {
       return sales
         .filter((sale) => sale.isPreorder)
         .sort((a, b) => {
-          const byDate = b.createdAt.localeCompare(a.createdAt);
-          return byDate !== 0 ? byDate : b.saleNumber - a.saleNumber;
+          if (!a.completeDate && !b.completeDate) {
+            return a.saleNumber - b.saleNumber;
+          }
+          if (!a.completeDate) return 1;
+          if (!b.completeDate) return -1;
+          const byDate = a.completeDate.localeCompare(b.completeDate);
+          return byDate !== 0 ? byDate : a.saleNumber - b.saleNumber;
         })
         .map((sale) => ({
           saleNumber: sale.saleNumber,
           totalCents: cartTotal(sale.lines),
           paymentMethod: sale.paymentMethod,
           name: sale.name,
+          notes: sale.notes,
+          completeDate: sale.completeDate,
           createdAt: sale.createdAt,
         }));
     },
@@ -678,6 +697,7 @@ export function createCatalog(): Catalog {
         paymentMethod: sale.paymentMethod,
         name: sale.name,
         notes: sale.notes,
+        completeDate: sale.completeDate,
         isPreorder: sale.isPreorder,
         createdAt: sale.createdAt,
         lines: sale.lines.map((line) => ({ ...line })),
@@ -713,6 +733,9 @@ export function createCatalog(): Catalog {
       if (updates.notes !== undefined) {
         sale.notes = normalizeOptionalText(updates.notes);
       }
+      if (updates.completeDate !== undefined) {
+        sale.completeDate = normalizeOptionalText(updates.completeDate);
+      }
 
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
@@ -733,6 +756,9 @@ export function createCatalog(): Catalog {
       }
       if (params.notes !== undefined) {
         sale.notes = normalizeOptionalText(params.notes);
+      }
+      if (params.completeDate !== undefined) {
+        sale.completeDate = normalizeOptionalText(params.completeDate);
       }
       if (!sale.name || !sale.notes) return;
 

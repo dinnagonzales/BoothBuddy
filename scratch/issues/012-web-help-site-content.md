@@ -68,7 +68,8 @@ Kids never see **cost** (what you paid) or **profit**.
 | **Cart** | What the customer is buying right now |
 | **Invoice #** | The order number for this sale (#1, #2, #3…) |
 | **Sale name** | Optional grown-up label for a sale (e.g. customer name) — shown instead of #N in settings when set |
-| **Sale notes** | Optional grown-up note on a sale (e.g. preorder pickup) — not shown to sellers |
+| **Sale notes** | Optional grown-up note on a sale (e.g. special requests) — not shown to sellers |
+| **Complete date** | When a preorder should be ready for pickup — required for **+ Pre-order** |
 | **Pass Code** | 4-digit grown-up password for ⚙️ settings |
 | **Sold out** | Still on the menu, but you can’t add it to a sale |
 | **Preorder** | A sale for later pickup — pay when they pick up |
@@ -203,7 +204,7 @@ See [Change a sale later](./faq/edit-sale-later).
 Use this when someone wants to order now and pay when they pick up.
 
 1. On the home screen, tap **+ Pre-order** (top right, green button).
-2. Fill in **Name** and **Notes** — both required (e.g. customer name and pickup time).
+2. Fill in **Name**, **Notes**, and **Complete date** — all required (e.g. customer name, special requests, and when they'll pick up).
 3. Tap **+** to add items to the cart.
 4. Tap **Checkout →**.
 5. Payment is **Pay on pickup** — no money collected yet.
@@ -221,8 +222,10 @@ Open preorders waiting for pickup.
 
 1. **⚙️** → **Pass Code** → tap **📋 Preorders** at the bottom.
 2. **Prepare** — at the top, see how many of each item to make across all open orders (e.g. **🐉 Dragon × 3**).
-3. **Export preorders for printing** — tap the button to get a checklist file. Print it and cross off each `[ ]` line as you fulfill orders.
-4. Tap an order to record how the customer paid and **Mark complete**. It then moves to the **Sales** tab.
+3. **Overdue** — orders past their **Complete date** appear first (highlighted). **Upcoming** lists the rest, sorted by complete date.
+4. Each order shows the customer **name** (or **#N**), **notes**, and **Complete date**.
+5. **Export preorders for printing** — tap the button to get a checklist file. Print it and cross off each `[ ]` line as you fulfill orders.
+6. Tap an order to record how the customer paid and **Mark complete**. It then moves to the **Sales** tab.
 
 Pending preorders do **not** appear in the **Sales** tab or in CSV export until marked complete.
 
@@ -517,10 +520,10 @@ No change math — the full total is paid digitally.
 
 1. **⚙️** → Pass Code → **Settings** (active day) or **Past Events → tap a day**.
 2. Under **Sales**, tap the sale.
-3. Change **payment method**, add optional **name** or **notes**, or **Remove sale**.
+3. Change **payment method**, add optional **name** or **notes**, edit **Complete date** (preorders), or **Remove sale**.
 4. Tap **Save changes**.
 
-**Name** and **notes** are optional — leave them blank for a normal walk-up sale. They help later with running tabs and preorders.
+**Name** and **notes** are optional for normal sales — leave them blank for a walk-up sale. **+ Pre-order** requires name, notes, and complete date at checkout.
 
 *(Coming later: edit item quantities on a saved sale.)*
 

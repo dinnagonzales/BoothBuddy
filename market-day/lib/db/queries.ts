@@ -496,6 +496,7 @@ function mapSaleRow(row: {
   cash_received_cents: number | null;
   name: string | null;
   notes: string | null;
+  complete_date: string | null;
   is_preorder: number;
   created_at: string;
 }): Sale {
@@ -508,6 +509,7 @@ function mapSaleRow(row: {
     cashReceivedCents: row.cash_received_cents,
     name: row.name,
     notes: row.notes,
+    completeDate: row.complete_date,
     isPreorder: row.is_preorder === 1,
     createdAt: row.created_at,
   };
@@ -522,6 +524,7 @@ export async function createSale(
     cashReceivedCents: number | null;
     name?: string | null;
     notes?: string | null;
+    completeDate?: string | null;
     isPreorder?: boolean;
   },
 ): Promise<Sale> {
@@ -529,15 +532,16 @@ export async function createSale(
   const nextNumber = await getNextSaleNumber(db);
   const name = normalizeOptionalText(params.name);
   const notes = normalizeOptionalText(params.notes);
+  const completeDate = normalizeOptionalText(params.completeDate);
   const isPreorder = params.isPreorder === true ? 1 : 0;
 
-  if (isPreorder === 1 && (!name || !notes)) {
-    throw new Error('Preorder requires name and notes');
+  if (isPreorder === 1 && (!name || !notes || !completeDate)) {
+    throw new Error('Preorder requires name, notes, and complete date');
   }
 
   const result = await db.runAsync(
-    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, name, notes, is_preorder)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, name, notes, complete_date, is_preorder)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     nextNumber,
     params.marketDayId,
     totalCents,
@@ -545,6 +549,7 @@ export async function createSale(
     params.cashReceivedCents,
     name,
     notes,
+    completeDate,
     isPreorder,
   );
 
@@ -571,6 +576,7 @@ export async function createSale(
     cashReceivedCents: params.cashReceivedCents,
     name,
     notes,
+    completeDate,
     isPreorder: isPreorder === 1,
     createdAt: new Date().toISOString(),
   };
@@ -586,6 +592,7 @@ export async function getSale(db: SQLiteDatabase, saleId: number): Promise<Sale 
     cash_received_cents: number | null;
     name: string | null;
     notes: string | null;
+    complete_date: string | null;
     is_preorder: number;
     created_at: string;
   }>('SELECT * FROM sales WHERE id = ?', saleId);
@@ -650,6 +657,7 @@ export async function getSaleByNumber(
     cash_received_cents: number | null;
     name: string | null;
     notes: string | null;
+    complete_date: string | null;
     is_preorder: number;
     created_at: string;
   }>('SELECT * FROM sales WHERE sale_number = ?', saleNumber);
@@ -682,6 +690,7 @@ export async function updateSale(
     paymentMethod?: PaymentMethod;
     name?: string | null;
     notes?: string | null;
+    completeDate?: string | null;
   },
 ): Promise<void> {
   const sale = await getSaleByNumber(db, saleNumber);
@@ -690,15 +699,20 @@ export async function updateSale(
   const paymentMethod = updates.paymentMethod ?? sale.paymentMethod;
   const name = updates.name !== undefined ? normalizeOptionalText(updates.name) : sale.name;
   const notes = updates.notes !== undefined ? normalizeOptionalText(updates.notes) : sale.notes;
+  const completeDate =
+    updates.completeDate !== undefined
+      ? normalizeOptionalText(updates.completeDate)
+      : sale.completeDate;
   const cashReceivedCents =
     paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
 
   await db.runAsync(
-    `UPDATE sales SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ? WHERE id = ?`,
+    `UPDATE sales SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ?, complete_date = ? WHERE id = ?`,
     paymentMethod,
     cashReceivedCents,
     name,
     notes,
+    completeDate,
     sale.id,
   );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
@@ -711,6 +725,7 @@ export async function completePreorder(
     paymentMethod: PaymentMethod;
     name?: string | null;
     notes?: string | null;
+    completeDate?: string | null;
   },
 ): Promise<void> {
   const sale = await getSaleByNumber(db, saleNumber);
@@ -719,18 +734,23 @@ export async function completePreorder(
 
   const name = params.name !== undefined ? normalizeOptionalText(params.name) : sale.name;
   const notes = params.notes !== undefined ? normalizeOptionalText(params.notes) : sale.notes;
+  const completeDate =
+    params.completeDate !== undefined
+      ? normalizeOptionalText(params.completeDate)
+      : sale.completeDate;
   if (!name || !notes) return;
   const cashReceivedCents =
     params.paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
 
   await db.runAsync(
     `UPDATE sales
-     SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ?, is_preorder = 0
+     SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ?, complete_date = ?, is_preorder = 0
      WHERE id = ?`,
     params.paymentMethod,
     cashReceivedCents,
     name,
     notes,
+    completeDate,
     sale.id,
   );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
@@ -742,12 +762,17 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     total_cents: number;
     payment_method: PaymentMethod;
     name: string | null;
+    notes: string | null;
+    complete_date: string | null;
     created_at: string;
   }>(
-    `SELECT sale_number, total_cents, payment_method, name, created_at
+    `SELECT sale_number, total_cents, payment_method, name, notes, complete_date, created_at
      FROM sales
      WHERE is_preorder = 1
-     ORDER BY created_at DESC, sale_number DESC`,
+     ORDER BY
+       CASE WHEN complete_date IS NULL THEN 1 ELSE 0 END,
+       complete_date ASC,
+       sale_number ASC`,
   );
 
   return rows.map((row) => ({
@@ -755,6 +780,8 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     totalCents: row.total_cents,
     paymentMethod: row.payment_method,
     name: row.name,
+    notes: row.notes,
+    completeDate: row.complete_date,
     createdAt: row.created_at,
   }));
 }
@@ -871,6 +898,8 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
     totalCents: row.total_cents,
     paymentMethod: row.payment_method,
     name: row.name,
+    notes: null,
+    completeDate: null,
     createdAt: row.created_at,
     marketDayName: row.market_day_name,
   }));
@@ -899,6 +928,8 @@ export async function getMarketDaySales(
     totalCents: row.total_cents,
     paymentMethod: row.payment_method,
     name: row.name,
+    notes: null,
+    completeDate: null,
     createdAt: row.created_at,
   }));
 }

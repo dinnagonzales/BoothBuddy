@@ -26,6 +26,7 @@ test('Quick Sale preorder saves with pay on pickup and stays out of Sales tab', 
     cashReceivedCents: null,
     name: 'Emma',
     notes: 'Saturday pickup',
+    completeDate: '2026-08-30',
     isPreorder: true,
   });
 
@@ -34,6 +35,7 @@ test('Quick Sale preorder saves with pay on pickup and stays out of Sales tab', 
     paymentMethod: 'pay_on_pickup',
     name: 'Emma',
     notes: 'Saturday pickup',
+    completeDate: '2026-08-30',
     isPreorder: true,
   });
 
@@ -70,6 +72,7 @@ test('marking a preorder complete moves it to Sales tab', async () => {
     cashReceivedCents: null,
     name: 'Emma',
     notes: 'Saturday pickup',
+    completeDate: '2026-08-30',
     isPreorder: true,
   });
 
@@ -114,6 +117,7 @@ test('pending preorders are excluded from Running Tab export', async () => {
     cashReceivedCents: null,
     name: 'Emma',
     notes: 'Saturday pickup',
+    completeDate: '2026-08-30',
     isPreorder: true,
   });
 
@@ -153,8 +157,9 @@ test('preorder requires name and notes', async () => {
       cashReceivedCents: null,
       isPreorder: true,
     }),
-  ).rejects.toThrow('Preorder requires name and notes');
+  ).rejects.toThrow('Preorder requires name, notes, and complete date');
 
-  expect(preorderMetadataValid('Emma', '')).toBe(false);
-  expect(preorderMetadataValid('Emma', 'Saturday')).toBe(true);
+  expect(preorderMetadataValid('Emma', '', '2026-08-30')).toBe(false);
+  expect(preorderMetadataValid('Emma', 'Saturday', '')).toBe(false);
+  expect(preorderMetadataValid('Emma', 'Saturday', '2026-08-30')).toBe(true);
 });
