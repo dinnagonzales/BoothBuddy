@@ -3,8 +3,18 @@ import * as Sharing from 'expo-sharing';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { Platform } from 'react-native';
 
-import { exportMarketDay, getMarketDayById, getMarketDayExportRows, getSalesExportRows } from '@/lib/db/queries';
+import {
+  exportMarketDay,
+  getMarketDayById,
+  getMarketDayExportRows,
+  getPreorderExportRows,
+  getPreorderPrepSummary,
+  getSalesExportRows,
+  type PreorderExportRow,
+  type PreorderPrepItem,
+} from '@/lib/db/queries';
 import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
+import { formatMoney } from '@/lib/money';
 
 const CSV_HEADERS = [
   'Sale Number',
@@ -84,9 +94,59 @@ export function salesExportFilename(startDate: string, endDate: string): string 
   return `sales-${startDate}-to-${endDate}.csv`;
 }
 
-async function shareCsvFile(csv: string, filename: string): Promise<void> {
+export function preorderExportFilename(): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return `preorders-${today}.txt`;
+}
+
+function formatLineMoney(cents: number): string {
+  return formatMoney(cents).replace('$', '');
+}
+
+export function buildPreorderPrintout(
+  prepSummary: PreorderPrepItem[],
+  rows: PreorderExportRow[],
+): string {
+  const lines: string[] = ['MARKET DAY — PREORDERS', ''];
+
+  lines.push('PREP SUMMARY');
+  if (prepSummary.length === 0) {
+    lines.push('  (none)');
+  } else {
+    for (const item of prepSummary) {
+      lines.push(`  ${item.quantity}x ${item.emoji} ${item.name}`);
+    }
+  }
+  lines.push('');
+
+  const orders = new Map<number, PreorderExportRow[]>();
+  for (const row of rows) {
+    const existing = orders.get(row.saleNumber) ?? [];
+    existing.push(row);
+    orders.set(row.saleNumber, existing);
+  }
+
+  lines.push(`ORDERS (${orders.size})`);
+  lines.push('');
+
+  for (const [saleNumber, orderRows] of orders) {
+    const header = orderRows[0];
+    const titleParts = [`#${saleNumber}`, header.customerName, header.notes].filter(Boolean);
+    lines.push(titleParts.join(' · '));
+    for (const row of orderRows) {
+      const lineTotal = row.priceCents * row.quantity;
+      lines.push(`  [ ] ${row.quantity}x ${row.emoji} ${row.itemName} ($${formatLineMoney(lineTotal)})`);
+    }
+    lines.push(`  Total: ${formatMoney(header.saleTotalCents)}`);
+    lines.push('');
+  }
+
+  return `${lines.join('\n')}\n`;
+}
+
+async function shareTextFile(text: string, filename: string, mimeType: string): Promise<void> {
   if (Platform.OS === 'web') {
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([text], { type: `${mimeType};charset=utf-8;` });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -97,7 +157,7 @@ async function shareCsvFile(csv: string, filename: string): Promise<void> {
   }
 
   const fileUri = `${FileSystem.cacheDirectory}${filename}`;
-  await FileSystem.writeAsStringAsync(fileUri, csv, {
+  await FileSystem.writeAsStringAsync(fileUri, text, {
     encoding: FileSystem.EncodingType.UTF8,
   });
 
@@ -106,9 +166,13 @@ async function shareCsvFile(csv: string, filename: string): Promise<void> {
   }
 
   await Sharing.shareAsync(fileUri, {
-    mimeType: 'text/csv',
-    UTI: 'public.comma-separated-values-text',
+    mimeType,
+    UTI: mimeType === 'text/plain' ? 'public.plain-text' : 'public.comma-separated-values-text',
   });
+}
+
+async function shareCsvFile(csv: string, filename: string): Promise<void> {
+  await shareTextFile(csv, filename, 'text/csv');
 }
 
 export async function shareMarketDayCsv(
@@ -143,4 +207,17 @@ export async function shareSalesCsv(
   const filename = salesExportFilename(startDate, endDate);
 
   await shareCsvFile(csv, filename);
+}
+
+export async function sharePreorderPrintout(db: SQLiteDatabase): Promise<void> {
+  const [prepSummary, rows] = await Promise.all([
+    getPreorderPrepSummary(db),
+    getPreorderExportRows(db),
+  ]);
+  if (rows.length === 0) {
+    throw new Error('No preorders to export');
+  }
+
+  const text = buildPreorderPrintout(prepSummary, rows);
+  await shareTextFile(text, preorderExportFilename(), 'text/plain');
 }

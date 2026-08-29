@@ -104,11 +104,11 @@ A Market Day that has been ended by the admin. Sales are read-only for the selle
 _Avoid_: Completed session, archived day
 
 **Export**:
-The admin's manual, on-demand action of generating a CSV for Excel reconciliation. Each Closed Market Day exports separately from its past-event screen. Off-day (Running Tab) sales export from the Sales tab via a date range picker. Export locks undo-close for that Market Day. Edits after export are allowed but flag the bucket as out of date until re-exported.
+The admin's manual, on-demand action of generating export files for Excel reconciliation or printing. Each Closed Market Day exports as CSV from its past-event screen. Off-day (Running Tab) sales export as CSV from the Sales tab via a date range picker. Open **Preorders** export as a printable text file from the **Preorders tab** — prep summary plus per-order checklist. Export locks undo-close for that Market Day. Edits after export are allowed but flag the bucket as out of date until re-exported.
 _Avoid_: Download, sync, report
 
 **Preorders tab**:
-The grown-up tab listing open **Preorders** — Sales with the preorder flag still set. Tap a row (**#N** or **name**) to open **Admin edit** and **Mark complete**. Pending preorders do not appear in the **Sales tab** or off-day export.
+The grown-up tab listing open **Preorders** — Sales with the preorder flag still set. **Prepare** summary at top aggregates quantities per item across all open orders. **Export preorders for printing** shares a checklist file (prep summary + one block per order with `[ ]` lines). Tap a row (**#N** or **name**) to open **Admin edit** and **Mark complete**. Pending preorders do not appear in the **Sales tab** or off-day CSV export.
 _Avoid_: Pending orders, open orders, queue
 
 **Sales tab**:

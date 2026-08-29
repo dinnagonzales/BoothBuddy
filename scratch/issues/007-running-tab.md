@@ -14,13 +14,14 @@ When no **Active Market Day** is open, **Make a Sale** still works. Checkout use
 
 ### + Pre-order
 
-The **+ Pre-order** button next to ⚙️ on **Home** launches preorder checkout — always **Running Tab** (`marketDayId` null), whether or not an **Active Market Day** is running. Required **Sale name** and **Sale notes** above the cart; payment at creation is **Pay on pickup** only. Pending preorders appear in the **Preorders tab** until **Mark complete**. Uses the global non-archived catalog (not today's **Menu**). After **Celebration**, dismiss returns to **Home**.
+The **+ Pre-order** button next to ⚙️ on **Home** launches preorder checkout — always **Running Tab** (`marketDayId` null), whether or not an **Active Market Day** is running. Required **Sale name** and **Sale notes** above the cart; payment at creation is **Pay on pickup** only. Pending preorders appear in the **Preorders tab** until **Mark complete**. The **Preorders tab** shows a **Prepare** summary (total quantity per item) and **Export preorders for printing** (checklist with prep summary + per-order `[ ]` lines). Uses the global non-archived catalog (not today's **Menu**). After **Celebration**, dismiss returns to **Home**.
 
 ## Acceptance criteria
 
 - [x] **Make a Sale** with no **Active Market Day** → **Running Tab** (`marketDayId` null) with optional name/notes
 - [x] **+ Pre-order** on **Home** → preorder checkout → **Running Tab** (`marketDayId` null); name/notes required
 - [x] **+ Pre-order** during an **Active Market Day** still saves to **Running Tab**, not today's day
+- [x] **Preorders tab** shows **Prepare** summary (quantities per item) and printable export
 - [ ] Off-day **Sales** appear in the **Sales** tab (all-time stats and list; no **Market Day** name on row)
 - [ ] Date-range picker on **Sales** tab before off-day export
 - [ ] Export marks included **Sales** as exported

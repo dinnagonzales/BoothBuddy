@@ -33,6 +33,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/see-todays-sales` | See today’s sales | Seller |
 | `/fix-a-sale` | Fix a sale | Seller |
 | `/preorder` | How to take a preorder | Seller |
+| `/preorders` | Preorders tab (prepare & print) | Grown-up |
 | `/start-market-day` | How to start a Market Day | Grown-up |
 | `/menu` | Today’s menu | Grown-up |
 | `/inventory` | How to add inventory | Grown-up |
@@ -209,6 +210,21 @@ Use this when someone wants to order now and pay when they pick up.
 6. **Preorder saved!** 🎉 The grown-up marks it complete when the customer pays.
 
 **Note:** Preorders always save separately from today's **Market Day**, even during a fair.
+
+---
+
+## `/preorders` — Preorders tab (prepare & print)
+
+**For grown-ups**
+
+Open preorders waiting for pickup.
+
+1. **⚙️** → **Pass Code** → tap **📋 Preorders** at the bottom.
+2. **Prepare** — at the top, see how many of each item to make across all open orders (e.g. **🐉 Dragon × 3**).
+3. **Export preorders for printing** — tap the button to get a checklist file. Print it and cross off each `[ ]` line as you fulfill orders.
+4. Tap an order to record how the customer paid and **Mark complete**. It then moves to the **Sales** tab.
+
+Pending preorders do **not** appear in the **Sales** tab or in CSV export until marked complete.
 
 ---
 
@@ -397,6 +413,7 @@ The **⚙️ gear** always asks for the Pass Code — even after setup.
 - [I forgot the Pass Code](./faq/forgot-pass-code)
 - [What is Archive?](./faq/archive)
 - [Change a sale later](./faq/edit-sale-later)
+- [Prepare and print preorders](./preorders)
 - [Can I run two Market Days?](./faq/one-market-day)
 - [I ended the day by mistake](./faq/undo-close)
 

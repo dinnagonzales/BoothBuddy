@@ -64,6 +64,12 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 4. **Payment** — **Pay on pickup** only at creation; sale saves to **Running Tab** (`marketDayId` null) and appears in the **Preorders tab** until **Mark complete**.
 5. **Celebration** — "Preorder saved!" + **Invoice #N**; dismiss → **Home**.
 
+### Fulfill preorders (admin)
+
+1. **Preorders tab** — **Prepare** summary at top shows total quantity per item across all open orders.
+2. **Export preorders for printing** — share sheet → printable checklist with prep summary and one block per order (`[ ]` lines to cross off).
+3. Tap an order to record payment and **Mark complete**; sale moves to **Sales tab**.
+
 ### Log a Running Tab sale (off-day)
 
 Off-day sales come from **Make a Sale** when no **Active Market Day** is open (optional name/notes), or from **+ Pre-order** (always). Both save with `marketDayId` null. During an active **Market Day**, only **+ Pre-order** bypasses the day — **Make a Sale** still attaches to that day.
@@ -113,7 +119,8 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 
 - **Market Day:** one CSV per Closed Market Day; name in filename and rows.
 - **Running Tab:** date range picker → CSV for sales in range; marks sales exported.
-- Columns include: sale number, date/time, market day name (if any), items (name, qty, price, cost), total, payment method, cash received, profit, customer name (when set on the sale).
+- **Preorders:** printable text file from the **Preorders tab** — prep summary (total quantities per item) plus one block per open order with checkbox lines for crossing off at pickup. Share sheet (Mail, AirDrop, Files).
+- Columns (CSV) include: sale number, date/time, market day name (if any), items (name, qty, price, cost), total, payment method, cash received, profit, customer name (when set on the sale).
 - Export locks undo-close for Market Days.
 - Edits after export flag bucket **out of date — re-export recommended**.
 

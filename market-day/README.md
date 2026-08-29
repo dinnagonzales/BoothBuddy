@@ -25,10 +25,10 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Past Events** — closed days on Settings empty state; detail view with export + Reopen
 - **Start Market Day** — name + date form in grown-up settings (date defaults to today)
 - **Sales tab** — all-time sales across Market Days + Running Tab export
-- **Preorders tab** — open preorders; mark complete from admin edit
+- **Preorders tab** — prep summary (what to make), printable export, open preorders; mark complete from admin edit
 - **Inventory** — item CRUD, archive, delete (when no past sales)
 - **Sale detail (admin)** — edit payment method, optional name/notes, remove sale
-- **CSV export** — closed Market Day + Running Tab date range → share sheet
+- **Export** — closed Market Day + Running Tab date range (CSV) + preorder printout (text) → share sheet
 - **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`)
 - **SQLite** — local-first data on device
 

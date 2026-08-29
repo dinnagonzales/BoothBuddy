@@ -1097,3 +1097,80 @@ export async function getSalesExportRows(
     customerName: row.name,
   }));
 }
+
+export type PreorderPrepItem = {
+  itemId: number;
+  name: string;
+  emoji: string;
+  quantity: number;
+};
+
+export async function getPreorderPrepSummary(db: SQLiteDatabase): Promise<PreorderPrepItem[]> {
+  const rows = await db.getAllAsync<{
+    item_id: number;
+    name: string;
+    emoji: string;
+    quantity: number;
+  }>(
+    `SELECT li.item_id, i.name, i.emoji, SUM(li.quantity) AS quantity
+     FROM sales s
+     JOIN line_items li ON li.sale_id = s.id
+     JOIN items i ON i.id = li.item_id
+     WHERE s.is_preorder = 1
+     GROUP BY li.item_id, i.name, i.emoji
+     ORDER BY i.name ASC`,
+  );
+
+  return rows.map((row) => ({
+    itemId: row.item_id,
+    name: row.name,
+    emoji: row.emoji,
+    quantity: row.quantity,
+  }));
+}
+
+export type PreorderExportRow = {
+  saleNumber: number;
+  createdAt: string;
+  customerName: string;
+  notes: string;
+  itemName: string;
+  emoji: string;
+  quantity: number;
+  priceCents: number;
+  saleTotalCents: number;
+};
+
+export async function getPreorderExportRows(db: SQLiteDatabase): Promise<PreorderExportRow[]> {
+  const rows = await db.getAllAsync<{
+    sale_number: number;
+    created_at: string;
+    name: string | null;
+    notes: string | null;
+    item_name: string;
+    emoji: string;
+    quantity: number;
+    price_cents: number;
+    total_cents: number;
+  }>(
+    `SELECT s.sale_number, s.created_at, s.name, s.notes,
+            i.name AS item_name, i.emoji, li.quantity, li.price_cents, s.total_cents
+     FROM sales s
+     JOIN line_items li ON li.sale_id = s.id
+     JOIN items i ON i.id = li.item_id
+     WHERE s.is_preorder = 1
+     ORDER BY s.created_at ASC, s.sale_number ASC, li.id ASC`,
+  );
+
+  return rows.map((row) => ({
+    saleNumber: row.sale_number,
+    createdAt: row.created_at,
+    customerName: row.name ?? '',
+    notes: row.notes ?? '',
+    itemName: row.item_name,
+    emoji: row.emoji,
+    quantity: row.quantity,
+    priceCents: row.price_cents,
+    saleTotalCents: row.total_cents,
+  }));
+}
