@@ -8,7 +8,7 @@ import { Card } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
-import { getCheckoutItems, getNextSaleNumber, getRunningTabItems, getSale } from '@/lib/db/queries';
+import { getActiveMarketDay, getCheckoutItems, getNextSaleNumber, getRunningTabItems, getSale } from '@/lib/db/queries';
 import { formatMoney } from '@/lib/money';
 import { preorderMetadataValid } from '@/lib/sale-edit';
 import type { Item } from '@/lib/types';
@@ -31,12 +31,11 @@ export default function SellScreen() {
     isQuickSale,
     saleName,
     saleNotes,
-    isPreorder,
     setSaleName,
     setSaleNotes,
-    setIsPreorder,
   } = useCart();
   const [items, setItems] = useState<Item[]>([]);
+  const [hasActiveMarket, setHasActiveMarket] = useState<boolean | null>(null);
   const [loaded, setLoaded] = useState(false);
   const leavingForPayment = useRef(false);
 
@@ -91,8 +90,9 @@ export default function SellScreen() {
 
       void (async () => {
         const loader = isQuickSale ? getRunningTabItems : getCheckoutItems;
-        const nextItems = await loader(db);
+        const [marketDay, nextItems] = await Promise.all([getActiveMarketDay(db), loader(db)]);
         if (cancelled) return;
+        setHasActiveMarket(marketDay != null);
         setItems(nextItems);
         setLoaded(true);
       })();
@@ -115,11 +115,14 @@ export default function SellScreen() {
     invoiceNumber != null
       ? `CART: Invoice #${invoiceNumber}`
       : isQuickSale
-        ? 'Quick Sale'
+        ? 'Pre-order'
         : 'What sold?';
 
-  const preorderMetaValid = !isPreorder || preorderMetadataValid(saleName, saleNotes);
-  const canCheckout = itemCount > 0 && (!isQuickSale || !isPreorder || preorderMetaValid);
+  const showSaleMeta = isQuickSale || hasActiveMarket === false;
+  const metaRequired = isQuickSale;
+
+  const preorderMetaValid = preorderMetadataValid(saleName, saleNotes);
+  const canCheckout = itemCount > 0 && (!metaRequired || preorderMetaValid);
 
   return (
     <Screen>
@@ -153,20 +156,10 @@ export default function SellScreen() {
           />
 
           <View style={styles.cartContainer}>
-            {isQuickSale ? (
+            {showSaleMeta ? (
               <Card style={styles.metaCard}>
-                <Pressable
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: isPreorder }}
-                  onPress={() => setIsPreorder(!isPreorder)}
-                  style={styles.preorderRow}>
-                  <Text style={styles.preorderLabel}>Preorder</Text>
-                  <View style={[styles.preorderBox, isPreorder ? styles.preorderBoxChecked : null]}>
-                    {isPreorder ? <Text style={styles.preorderCheck}>✓</Text> : null}
-                  </View>
-                </Pressable>
                 <Text style={styles.metaLabel}>
-                  Name {isPreorder ? '(required)' : '(optional)'}
+                  Name {metaRequired ? '(required)' : '(optional)'}
                 </Text>
                 <TextInput
                   value={saleName}
@@ -176,12 +169,14 @@ export default function SellScreen() {
                   style={styles.metaInput}
                 />
                 <Text style={styles.metaLabel}>
-                  Notes {isPreorder ? '(required)' : '(optional)'}
+                  Notes {metaRequired ? '(required)' : '(optional)'}
                 </Text>
                 <TextInput
                   value={saleNotes}
                   onChangeText={setSaleNotes}
-                  placeholder="Pickup time, special requests, etc."
+                  placeholder={
+                    metaRequired ? 'Pickup time, special requests, etc.' : 'Who bought it, where, etc.'
+                  }
                   placeholderTextColor={colors.inkSoft}
                   style={[styles.metaInput, styles.notesInput]}
                   multiline
@@ -263,37 +258,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 6,
     borderRadius: radii.cart,
-  },
-  preorderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 10,
-    marginBottom: 4,
-  },
-  preorderBox: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.white,
-  },
-  preorderBoxChecked: {
-    backgroundColor: colors.purple,
-  },
-  preorderCheck: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 14,
-    color: colors.white,
-    lineHeight: 16,
-  },
-  preorderLabel: {
-    fontFamily: fonts.body.extraBold,
-    fontSize: 14,
-    color: colors.ink,
   },
   metaLabel: {
     fontFamily: fonts.body.extraBold,

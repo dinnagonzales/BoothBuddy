@@ -51,7 +51,6 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
           <TextInput
             value={name}
             onChangeText={setName}
-            placeholder="Spring Fair 2026"
             placeholderTextColor={colors.inkSoft}
             style={styles.input}
             autoCapitalize="words"

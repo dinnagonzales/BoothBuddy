@@ -410,7 +410,16 @@ export function createCatalog(): Catalog {
     },
     async listForCheckout(): Promise<SellerItem[]> {
       const active = getActiveMarketDayRecord();
-      if (!active) return [];
+      if (!active) {
+        return items
+          .filter((item) => !item.archived)
+          .map(({ id, name, emoji, priceCents }) => ({
+            id,
+            name,
+            emoji,
+            priceCents,
+          }));
+      }
       return listMenuItemsForMarketDay(active.id)
         .filter((item) => !item.soldOut)
         .map(({ id, name, emoji, priceCents }) => ({

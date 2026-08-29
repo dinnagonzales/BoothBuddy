@@ -9,15 +9,15 @@ One discrete selling event — one fair, one booth, one stretch of time. The adm
 _Avoid_: Session, event, day (calendar sense)
 
 **Running Tab**:
-The always-open bucket for sales that are not part of an Active Market Day — porch sales, one-offs, anything logged via Quick Sale. Never closed; accumulates over time. Running Tab sales have no Market Day and appear in the Sales tab with the rest of all-time history once complete. Pending **Preorders** stay in the **Preorders tab** until **Mark complete**. Checkout uses the global non-archived catalog, not the active Market Day's Menu. Off-day export uses a date range picker on the Sales tab; exported sales are marked exported and flag re-export if later edited. Pending preorders are excluded from export.
+The always-open bucket for sales that are not part of an Active Market Day — porch sales, one-offs, and completed off-day **Make a Sale** checkouts. Never closed; accumulates over time. Running Tab sales have no Market Day and appear in the Sales tab with the rest of all-time history once complete. Pending **Preorders** stay in the **Preorders tab** until **Mark complete**. Off-day **Make a Sale** uses the global non-archived catalog; **+ Pre-order** always uses the global catalog (not the active Market Day's Menu). Off-day export uses a date range picker on the Sales tab; exported sales are marked exported and flag re-export if later edited. Pending preorders are excluded from export.
 _Avoid_: Orphan bucket, misc tab, default session
 
-**Quick Sale**:
-Off-day checkout launched from the + button next to the gear on Home. Same cart flow as the seller — **Sale number** shown as **Invoice #N** in the header — with optional **Sale name**, **Sale notes**, and a **Preorder** checkbox above the cart. Saves to the Running Tab (no Market Day), whether or not an Active Market Day is running. A normal Quick Sale uses Cash or Venmo/Zelle payment; a **Preorder** uses **Pay on pickup** only. Dismissing celebration returns to Home.
-_Avoid_: Log a sale, porch mode, off-books sale
+**+ Pre-order**:
+Preorder checkout launched from the **+ Pre-order** button next to the gear on Home. Same cart flow as the seller — **Sale number** shown as **Invoice #N** in the header — with required **Sale name** and **Sale notes** above the cart (no checkbox; entering via this button is always a preorder). Saves to the Running Tab (`marketDayId` null), whether or not an Active Market Day is running. Payment at creation is always **Pay on pickup** only. Dismissing celebration returns to Home.
+_Avoid_: Quick Sale, log a sale, porch mode
 
 **Home**:
-The seller's landing screen and return point after every Sale. During an **Active Market Day**, shows the **Items** list from today's **Menu** (icon, name, price; **sold out** Items show a clear indicator). Plus a **Make a Sale** button to start checkout. The top bar also has a gear icon (grown-up settings) and a + button (**Quick Sale**). Does not show sales totals — those are admin-only.
+The seller's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog). **Make a Sale** is always available. When a day is active, a **Market Day** banner appears at the top. The top bar has a gear icon (grown-up settings) and **+ Pre-order**. Does not show sales totals — those are admin-only.
 _Avoid_: Dashboard, today view
 
 **Item**:
@@ -41,14 +41,14 @@ One checkout: line items, total, and payment method. Each Sale receives a global
 _Avoid_: Transaction, order, receipt, invoice
 
 **Sale name**:
-Optional free-text label on a Sale (e.g. customer name, tab name). For Running Tab checkout, the admin can enter it above the cart before completing the sale; it can also be set or changed later via admin edit. Shown in the grown-up sales list and CSV export as **Customer Name** when set. Does not replace the Sale number.
+Optional free-text label on a Sale (e.g. customer name, tab name). Required for **+ Pre-order**; optional for off-day **Make a Sale** (no active Market Day). Can also be set or changed later via admin edit. Shown in the grown-up sales list and CSV export as **Customer Name** when set. Does not replace the Sale number.
 _Avoid_: Invoice title, customer ID
 
 **Sale notes**:
-Optional free-text note on a Sale (e.g. pickup time, running-tab context). For Running Tab checkout, the admin can enter it above the cart before completing the sale; it can also be set or changed later via admin edit. Stored in the app; not shown on kid-facing screens.
+Optional free-text note on a Sale (e.g. pickup time, running-tab context). Required for **+ Pre-order**; optional for off-day **Make a Sale** (no active Market Day). Can also be set or changed later via admin edit. Stored in the app; not shown on kid-facing screens.
 
 **Preorder**:
-A Sale created via **Quick Sale** with the Preorder checkbox on. **Sale name** and **Sale notes** are required. Payment at creation is always **Pay on pickup** — no money collected yet. Gets a **Sale number** immediately and appears only in the **Preorders tab**, not the **Sales tab** stats or list. **Mark complete** records Cash or Venmo/Zelle payment and moves the Sale into the **Sales tab**.
+A Sale created via **+ Pre-order**. **Sale name** and **Sale notes** are required. Payment at creation is always **Pay on pickup** — no money collected yet. Gets a **Sale number** immediately and appears only in the **Preorders tab**, not the **Sales tab** stats or list. Always saves with no Market Day (`marketDayId` null), even during an Active Market Day. **Mark complete** records Cash or Venmo/Zelle payment and moves the Sale into the **Sales tab**.
 _Avoid_: Pending order, reservation, hold
 
 **Pay on pickup**:
@@ -96,7 +96,7 @@ Cash received minus the Sale total, shown to the seller during Cash checkout so 
 _Avoid_: Money back, difference
 
 **Active Market Day**:
-The one Market Day currently open for selling. Exactly zero or one may be active at a time. The admin must start a Market Day before the seller can log sales — without one, **Make a Sale** is disabled.
+The one Market Day currently open for selling. Exactly zero or one may be active at a time. When active, **Make a Sale** attaches new sales to that Market Day and Home shows today's **Menu**. When none is active, **Make a Sale** still works — sales save to the **Running Tab** with optional name/notes. Starting a Market Day is optional for porch sales but recommended for fairs.
 _Avoid_: Current session, open event
 
 **Closed Market Day**:

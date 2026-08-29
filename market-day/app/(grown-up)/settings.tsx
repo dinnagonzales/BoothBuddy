@@ -37,7 +37,7 @@ export default function SettingsScreen() {
     venmoCents: 0,
   });
   const [sales, setSales] = useState<SaleSummary[]>([]);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(true);
   const [savedSaleNumber, setSavedSaleNumber] = useState<number | null>(null);
   const [starting, setStarting] = useState(false);
 

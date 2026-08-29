@@ -37,26 +37,36 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 ### First launch (admin setup wizard)
 
 1. Admin opens app → guided setup: set parental code → add at least one Item.
-2. Kid can browse Home (Items menu) but **Make a Sale** stays disabled until admin starts a Market Day.
+2. Kid can browse Home (Items menu). **Make a Sale** is always available.
 
 ### Start a Market Day (admin)
 
 1. Admin taps gear → enters parental code.
 2. **Start Market Day** → enter a **Market Name** (required); date defaults to today.
-3. Kid's **Make a Sale** becomes enabled.
+3. While active, a **Market Day** banner appears on Home and **Make a Sale** attaches new sales to that day.
 
 ### Log a sale (seller — primary flow)
 
-1. **Home** — read-only **Items** list (icon, name, price) + **Make a Sale** (disabled if no Active Market Day).
+1. **Home** — **Items** list (icon, name, price) + **Make a Sale** (always enabled). Optional **Market Day** banner when a day is active.
 2. **Pick Items** — scrollable list with **+** buttons; cart pinned at bottom with **− / +** per line, running total, **Checkout**.
+   - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
+   - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
 3. **Payment** — total; **Cash** or **Venmo/Zelle** (mutually exclusive).
    - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each replaces amount), **− / +** steppers ($1 increments), numeric input, **Change** displayed.
    - **Venmo/Zelle:** checkbox only; assumed paid in full.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
-### Log a Running Tab sale (admin)
+### Log a preorder (seller)
 
-Same checkout flow as seller, launched from grown-up settings → **Log a sale**. Routed to Running Tab (not Active Market Day).
+1. Tap **+ Pre-order** on Home (top bar, next to gear).
+2. Same cart flow as seller checkout, but always a **Preorder**: **Sale name** and **Sale notes** required above the cart; screen title **Pre-order**.
+3. Uses the global non-archived catalog (not today's **Menu**), whether or not an **Active Market Day** is running.
+4. **Payment** — **Pay on pickup** only at creation; sale saves to **Running Tab** (`marketDayId` null) and appears in the **Preorders tab** until **Mark complete**.
+5. **Celebration** — "Preorder saved!" + **Invoice #N**; dismiss → **Home**.
+
+### Log a Running Tab sale (off-day)
+
+Off-day sales come from **Make a Sale** when no **Active Market Day** is open (optional name/notes), or from **+ Pre-order** (always). Both save with `marketDayId` null. During an active **Market Day**, only **+ Pre-order** bypasses the day — **Make a Sale** still attaches to that day.
 
 ### End a Market Day (admin)
 
@@ -128,7 +138,17 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 | Kid sees totals? | **No** — admin-only |
 | Sale reference? | Global **Sale number**, admin/export only |
 
+## Visual design
+
+Typography and layout follow [mocks/screens.html](./mocks/screens.html):
+
+- **Fredoka** — headings, prices, buttons
+- **Nunito** — body copy, section labels
+- **Palette** — purple/lavender screen (`#F3E9FF`), ink/cream accents (see `market-day/constants/theme.ts`)
+- **Tokens** — radii, spacing, and touch targets in `market-day/constants/visual.ts` (tested in `visual-polish-test.ts`)
+
+Screens polished for the Sep 18 fair: Home, sell, payment, celebration, grown-up settings. Final **HITL** pass: kid + admin iPad review at the booth.
+
 ## Out of scope for v0.2
 
-- Visual design system (see [mocks/screens.html](./mocks/screens.html)).
 - Technical implementation (storage, hosting, stack).

@@ -53,16 +53,16 @@ function HeroCard({ children }: { children: ReactNode }) {
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { addItem, setIsQuickSale } = useCart();
+  const { addItem, setIsQuickSale, setIsPreorder } = useCart();
   const { unlocked, unlock } = useGrownUpSession();
   const [setupReady, setSetupReady] = useState<boolean | null>(null);
   const [items, setItems] = useState<HomeItem[]>([]);
-  const [canSell, setCanSell] = useState(false);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
   const [passCodeOpen, setPassCodeOpen] = useState(false);
 
-  const openQuickSale = () => {
+  const openPreorder = () => {
     setIsQuickSale(true);
+    setIsPreorder(true);
     router.push('/sell');
   };
 
@@ -87,13 +87,11 @@ export default function HomeScreen() {
             setItems(await getHomeItems(db));
             const marketDay = await getActiveMarketDay(db);
             if (marketDay) {
-              setCanSell(true);
               setActiveMarket({
                 name: marketDay.name,
                 dateLabel: formatMarketDayDate(marketDay.startedAt),
               });
             } else {
-              setCanSell(false);
               setActiveMarket(null);
             }
           }
@@ -109,7 +107,7 @@ export default function HomeScreen() {
   );
 
   const openSellWithItem = (item: HomeItem) => {
-    if (!canSell || item.soldOut) return;
+    if (item.soldOut) return;
     addItem({
       itemId: item.id,
       name: item.name,
@@ -151,10 +149,10 @@ export default function HomeScreen() {
             </Pressable>
             <Text style={styles.title}>🎪 Market Day</Text>
             <Pressable
-              accessibilityLabel="Quick Sale"
-              style={styles.quickSaleButton}
-              onPress={openQuickSale}>
-              <Text style={styles.quickSaleIcon}>+</Text>
+              accessibilityLabel="Pre-order"
+              style={styles.preorderButton}
+              onPress={openPreorder}>
+              <Text style={styles.preorderButtonLabel}>+ Pre-order</Text>
             </Pressable>
           </View>
 
@@ -174,31 +172,17 @@ export default function HomeScreen() {
           ) : null}
 
           <View style={styles.sellButtonWrap}>
-            {canSell ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push('/sell')}
-                style={({ pressed }) => [
-                  styles.sellButtonOuter,
-                  pressed ? styles.sellButtonOuterPressed : null,
-                ]}>
-                <View style={styles.sellButtonInner}>
-                  <Text style={styles.sellButtonLabel}>Make a Sale</Text>
-                </View>
-              </Pressable>
-            ) : (
-              <Pressable
-                accessibilityRole="button"
-                onPress={openSettings}
-                style={({ pressed }) => [
-                  styles.sellButtonOuter,
-                  pressed ? styles.sellButtonOuterPressed : null,
-                ]}>
-                <View style={styles.sellButtonInner}>
-                  <Text style={styles.sellButtonLabel}>Start Market Day</Text>
-                </View>
-              </Pressable>
-            )}
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/sell')}
+              style={({ pressed }) => [
+                styles.sellButtonOuter,
+                pressed ? styles.sellButtonOuterPressed : null,
+              ]}>
+              <View style={styles.sellButtonInner}>
+                <Text style={styles.sellButtonLabel}>Make a Sale</Text>
+              </View>
+            </Pressable>
           </View>
 
           <Text style={styles.menuLabel}>🍭 Available Items</Text>
@@ -217,12 +201,12 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <Pressable
                 accessibilityRole="button"
-                disabled={!canSell || item.soldOut}
+                disabled={item.soldOut}
                 onPress={() => openSellWithItem(item)}
                 style={({ pressed }) => [
                   styles.menuRow,
                   item.soldOut ? styles.menuRowSoldOut : null,
-                  pressed && canSell && !item.soldOut ? styles.menuRowPressed : null,
+                  pressed && !item.soldOut ? styles.menuRowPressed : null,
                 ]}>
                 <Text style={styles.menuEmoji}>{item.emoji}</Text>
                 <View style={styles.menuNameWrap}>
@@ -289,19 +273,20 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: 'center',
   },
-  quickSaleButton: {
-    width: 38,
+  preorderButton: {
     height: 38,
     borderRadius: 19,
-    backgroundColor: colors.green,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.green,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quickSaleIcon: {
+  preorderButtonLabel: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 24,
-    color: colors.white,
-    lineHeight: 26,
+    fontSize: 13,
+    color: colors.green,
   },
   gearButton: {
     width: 38,

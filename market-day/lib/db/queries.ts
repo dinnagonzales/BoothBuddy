@@ -135,7 +135,7 @@ export async function getHomeItems(db: SQLiteDatabase): Promise<Array<Item & { s
 
 export async function getCheckoutItems(db: SQLiteDatabase): Promise<Item[]> {
   const active = await getActiveMarketDay(db);
-  if (!active) return [];
+  if (!active) return getActiveItems(db);
 
   await ensureActiveMarketDayMenu(db);
 

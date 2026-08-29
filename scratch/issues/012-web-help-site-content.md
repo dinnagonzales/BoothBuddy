@@ -32,6 +32,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/invoice-numbers` | What are invoice numbers? | Seller |
 | `/see-todays-sales` | See today’s sales | Seller |
 | `/fix-a-sale` | Fix a sale | Seller |
+| `/preorder` | How to take a preorder | Seller |
 | `/start-market-day` | How to start a Market Day | Grown-up |
 | `/menu` | Today’s menu | Grown-up |
 | `/inventory` | How to add inventory | Grown-up |
@@ -69,7 +70,8 @@ Kids never see **cost** (what you paid) or **profit**.
 | **Sale notes** | Optional grown-up note on a sale (e.g. preorder pickup) — not shown to sellers |
 | **Pass Code** | 4-digit grown-up password for ⚙️ settings |
 | **Sold out** | Still on the menu, but you can’t add it to a sale |
-| **Archive** | Put an item away — hidden from the menu, but old sales still remember it |
+| **Preorder** | A sale for later pickup — pay when they pick up |
+| **+ Pre-order** | Button on Home to start a preorder |
 
 ---
 
@@ -83,18 +85,18 @@ Kids never see **cost** (what you paid) or **profit**.
 
 Market Day is your pretend shop on a phone or tablet.
 
-1. A grown-up starts a **Market Day** (opens the shop).
-2. You see the **Menu** — everything you can sell today.
-3. Tap **Make a Sale** to ring up a customer.
-4. Take **payment**, then celebrate — **Sold!** 🎉
+1. Tap **Make a Sale** to ring up a customer anytime.
+2. When a grown-up has started a **Market Day**, you see today's **Menu** and a colorful banner at the top — those sales count for that day.
+3. Take **payment**, then celebrate — **Sold!** 🎉
+4. For orders to pick up later, tap **+ Pre-order** (top right).
 
 **For grown-ups**
 
-You set up items, start and end Market Days, and check sales behind a **4-digit Pass Code**. Tap **⚙️** on the home screen and enter the code.
+You set up items, start and end Market Days, and check sales behind a **4-digit Pass Code**. Tap **⚙️** on the home screen and enter the code. Starting a Market Day is optional for porch sales but helps organize fair-day totals.
 
 **Quick links**
 
-- Sellers → [How to sell](./sell), [Invoice numbers](./invoice-numbers)
+- Sellers → [How to sell](./sell), [Preorders](./preorder), [Invoice numbers](./invoice-numbers)
 - Grown-ups → [Start a Market Day](./start-market-day), [Add inventory](./inventory)
 
 ---
@@ -103,7 +105,7 @@ You set up items, start and end Market Days, and check sales behind a **4-digit 
 
 **For sellers**
 
-1. Open Market Day. You should see the **Menu** on the home screen.
+1. Open Market Day on the home screen.
 2. Tap **Make a Sale**  
    *Tip: You can also tap a menu item to start with that in your cart.*
 3. At the top you’ll see **CART: Invoice #___**. That’s this order’s number.
@@ -112,9 +114,17 @@ You set up items, start and end Market Days, and check sales behind a **4-digit 
 6. Check the **Total**.
 7. Tap **Checkout →**.
 
-**If the button is gray**
+**When a Market Day is open**
 
-The shop isn’t open yet. Ask a grown-up to start a Market Day in **⚙️ settings**.
+You sell from today's **Menu**. Sold-out items can't be added.
+
+**When no Market Day is open**
+
+**Make a Sale** still works. A grown-up can optionally fill in **Name** and **Notes** above the cart (e.g. porch-sale context). Payment is Cash or Venmo/Zelle as usual.
+
+**If an item is gray**
+
+It might be **Sold out** for today. Pick something else or ask a grown-up.
 
 ---
 
@@ -182,6 +192,23 @@ This is **look only** — you can’t change sales here. To fix something right 
 **For grown-ups (later in the day)**
 
 See [Change a sale later](./faq/edit-sale-later).
+
+---
+
+## `/preorder` — How to take a preorder
+
+**For sellers**
+
+Use this when someone wants to order now and pay when they pick up.
+
+1. On the home screen, tap **+ Pre-order** (top right, green button).
+2. Fill in **Name** and **Notes** — both required (e.g. customer name and pickup time).
+3. Tap **+** to add items to the cart.
+4. Tap **Checkout →**.
+5. Payment is **Pay on pickup** — no money collected yet.
+6. **Preorder saved!** 🎉 The grown-up marks it complete when the customer pays.
+
+**Note:** Preorders always save separately from today's **Market Day**, even during a fair.
 
 ---
 
@@ -342,7 +369,7 @@ Kids see a simpler view (no profit) from the **Market Day banner** on the home s
 1. Open the app. You’ll see **Grown-up setup**.
 2. Pick a **4-digit Pass Code**. Type it again. Tap **Save Pass Code**.
 3. Add your first item: emoji, name, cost, price. Tap **Save Item and finish**.
-4. You’re on **Home**! The kid can browse the menu, but **Make a Sale** stays off until you **Start Market Day**.
+4. You're on **Home**! The kid can browse items and **Make a Sale** anytime. Start a **Market Day** in **⚙️ settings** when you're ready to track a fair day.
 
 The **⚙️ gear** always asks for the Pass Code — even after setup.
 
@@ -356,12 +383,13 @@ The **⚙️ gear** always asks for the Pass Code — even after setup.
 
 **For sellers**
 
-- [Why can’t I sell?](./faq/cant-sell)
+- [Why can't I add this item?](./faq/cant-sell)
 - [What does “Sold out” mean?](./faq/sold-out)
 - [What are invoice numbers?](../invoice-numbers)
 - [How does cash change work?](./faq/cash-change)
 - [Venmo / Zelle payments](./faq/venmo-zelle)
 - [Fix a sale](./fix-a-sale)
+- [Take a preorder](./preorder)
 
 **For grown-ups**
 
@@ -378,13 +406,13 @@ The **⚙️ gear** always asks for the Pass Code — even after setup.
 
 ---
 
-## `/faq/cant-sell` — Why can’t I sell?
+## `/faq/cant-sell` — Why can't I add this item?
 
-The **Make a Sale** button is gray when no **Market Day** is open.
+**Make a Sale** is always available. If you can't add something, it's usually **Sold out** for today.
 
-**What to do:** Ask a grown-up to tap **⚙️**, enter the Pass Code, and tap **▶️ Start Market Day**.
+**What to do:** Pick another item, or ask a grown-up to mark it available again in **Today's Menu** (**⚙️** → Pass Code → **Settings**).
 
-You might also see a message: *“Ask a grown-up to start a Market Day in ⚙️ settings.”*
+If there are no items on the list at all, ask a grown-up to add inventory in **📦 Inventory**.
 
 ---
 
@@ -503,7 +531,7 @@ This works only for the **most recently** closed day, and only until you **expor
 
 # Day-of checklist (optional `/checklist` page)
 
-**Grown-up — morning**
+**Grown-up — morning (optional for porch sales; recommended for fairs)**
 
 - [ ] ⚙️ → Pass Code → enter **Market Day** name + **Date** → **Start Market Day**
 - [ ] Check **Today’s Menu** (sold out / remove items)
@@ -534,7 +562,6 @@ Match app personality from mocks: friendly, colorful, kid-safe.
 
 ## Out of scope for help site (don’t document as available)
 
-- Running Tab (sales outside Market Day)
 - Item photos
 - Change Pass Code without full reset
 - Biometric unlock

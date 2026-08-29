@@ -8,7 +8,6 @@ import { Button, Card, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
-import { marketDayIdForSale } from '@/lib/market-day';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
 import { paymentCanComplete, preorderMetadataValid } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
@@ -78,11 +77,7 @@ export default function PaymentScreen() {
         marketDayId = null;
       } else {
         const marketDay = await getActiveMarketDay(db);
-        try {
-          marketDayId = marketDayIdForSale(marketDay);
-        } catch {
-          return;
-        }
+        marketDayId = marketDay?.id ?? null;
       }
 
       const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);

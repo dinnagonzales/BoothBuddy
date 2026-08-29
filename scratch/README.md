@@ -21,7 +21,7 @@ Lightweight tracker for Market Day MVP work. Not synced to GitHub or any externa
 | [006](issues/006-export-market-day-csv.md) | Export Closed Market Day (CSV + share sheet) | AFK | 002, 004 | done |
 | [007](issues/007-running-tab.md) | Running Tab: log sale + date-range export | AFK | 001, 003 | open |
 | [008](issues/008-item-photos.md) | Optional Item photos | AFK | 003 | open |
-| [009](issues/009-visual-polish.md) | Visual polish (mock fonts + spacing) | HITL | — | open |
+| [009](issues/009-visual-polish.md) | Visual polish (mock fonts + spacing) | HITL | — | open (HITL) |
 | [010](issues/010-app-store-submission.md) | App Store submission | HITL | 001–007 | open |
 | [011](issues/011-market-day-menu.md) | Market Day Menu (default all Items, remove, sold out) | AFK | 002, 003 | done |
 | [012](issues/012-web-help-site-content.md) | Web help site content (features + FAQ for kids) | HITL | — | open |
@@ -33,11 +33,12 @@ Lightweight tracker for Market Day MVP work. Not synced to GitHub or any externa
 3. **011** (after 002 + 003) — day-of booth menu before hardening checkout  
 4. **004** → **005** → **006**  
 5. **007** (after 003)  
-6. **008**, **009** anytime  
+6. **008**, **009** anytime (**009** code done — iPad sign-off left)  
 7. **010** when 001–007 are demo-ready  
 
 ## Already in scaffold (done)
 
-- Kid sell flow: Home Items menu → cart → payment → celebration → Fix  
+- Kid sell flow: Home Items menu → **Make a Sale** (always) or **+ Pre-order** → cart → payment → celebration → Fix  
 - SQLite schema  
 - HeroUI Native + Uniwind theme  
+- Visual polish — Fredoka/Nunito, mock-aligned spacing/radii (`constants/visual.ts`)
