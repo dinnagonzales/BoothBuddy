@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import DateTimePicker, {
@@ -7,7 +7,7 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 
 import { ScreenHeader } from '@/components/Screen';
-import { Card, cn } from '@/components/ui';
+import { Card, Checkbox, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import {
   completePreorder,
@@ -26,12 +26,20 @@ import {
   toExportDate,
 } from '@/lib/market-day';
 import {
+  cashChangeCents,
+  cashChangeStatusLabel,
+  paymentCanComplete,
   paymentMethodCompletesPreorder,
   preorderMetadataValid,
   saleHasUnsavedChanges,
 } from '@/lib/sale-edit';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, parseMoneyInput } from '@/lib/money';
 import type { CartLine, PaymentMethod } from '@/lib/types';
+
+function moneyInputFromCents(cents: number): string {
+  if (cents === 0) return '';
+  return (cents / 100).toFixed(2);
+}
 
 type SaleDetail = {
   saleNumber: number;
@@ -68,6 +76,9 @@ export function SaleDetailScreen({
   const [draftName, setDraftName] = useState('');
   const [draftNotes, setDraftNotes] = useState('');
   const [draftCompleteDate, setDraftCompleteDate] = useState(defaultCompleteDate());
+  const [draftCashReceivedCents, setDraftCashReceivedCents] = useState(0);
+  const [draftCashReceivedText, setDraftCashReceivedText] = useState('');
+  const [draftKeepChange, setDraftKeepChange] = useState(false);
   const [showCompleteDatePicker, setShowCompleteDatePicker] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -79,6 +90,7 @@ export function SaleDetailScreen({
       setDraftName('');
       setDraftNotes('');
       setDraftCompleteDate(defaultCompleteDate());
+      setDraftCashReceivedText('');
       return;
     }
     const lines = await getSaleLineItems(db, header.id);
@@ -99,16 +111,66 @@ export function SaleDetailScreen({
     setDraftName(header.name ?? '');
     setDraftNotes(header.notes ?? '');
     setDraftCompleteDate(header.completeDate ?? defaultCompleteDate());
+    const initialCashReceivedCents =
+      header.cashReceivedCents ??
+      (header.paymentMethod === 'cash' || header.paymentMethod === 'venmo_zelle'
+        ? header.totalCents
+        : 0);
+    setDraftCashReceivedCents(initialCashReceivedCents);
+    setDraftCashReceivedText(moneyInputFromCents(initialCashReceivedCents));
+    setDraftKeepChange(header.changeKept);
   }, [db, saleNumber]);
 
   useEffect(() => {
     void loadSale();
   }, [loadSale]);
 
+  const handleCashReceivedTextChange = (value: string) => {
+    setDraftCashReceivedText(value);
+    setDraftCashReceivedCents(parseMoneyInput(value));
+  };
+
   const changePaymentMethod = (paymentMethod: PaymentMethod) => {
     if (readOnly || !sale || busy || draftPaymentMethod === paymentMethod) return;
     setDraftPaymentMethod(paymentMethod);
+    if (paymentMethod === 'venmo_zelle') {
+      setDraftCashReceivedCents(sale.totalCents);
+      setDraftCashReceivedText(moneyInputFromCents(sale.totalCents));
+      setDraftKeepChange(false);
+    }
   };
+
+  const changeCents = useMemo(
+    () => (sale ? cashChangeCents(draftCashReceivedCents, sale.totalCents) : 0),
+    [draftCashReceivedCents, sale],
+  );
+
+  useEffect(() => {
+    if (changeCents === 0) {
+      setDraftKeepChange(false);
+    }
+  }, [changeCents]);
+
+  const amountDueCents = sale ? Math.max(sale.totalCents - draftCashReceivedCents, 0) : 0;
+  const cashCoversTotal = sale != null && draftCashReceivedCents >= sale.totalCents;
+  const preorderAwaitingPayment = sale?.isPreorder === true && sale.paymentMethod === 'pay_on_pickup';
+  const preorderPaymentLocked =
+    sale?.isPreorder === true &&
+    (sale.paymentMethod === 'cash' || sale.paymentMethod === 'venmo_zelle');
+  const activePreorderPayment = preorderPaymentLocked
+    ? sale!.paymentMethod
+    : draftPaymentMethod;
+  const showPreorderAmountEntry =
+    sale?.isPreorder === true &&
+    !readOnly &&
+    (preorderPaymentLocked || preorderAwaitingPayment);
+  const preorderAmountEditable = showPreorderAmountEntry && !preorderPaymentLocked;
+  const cashAmountColorStyle =
+    draftCashReceivedCents === 0
+      ? styles.cashAmountEmpty
+      : sale != null && draftCashReceivedCents < sale.totalCents
+        ? styles.cashAmountShort
+        : styles.cashAmountGood;
 
   const hasMetadataChanges =
     sale != null &&
@@ -142,8 +204,9 @@ export function SaleDetailScreen({
     sale?.isPreorder === true &&
     !readOnly &&
     preorderMetaValid &&
-    draftPaymentMethod != null &&
-    paymentMethodCompletesPreorder(draftPaymentMethod);
+    activePreorderPayment != null &&
+    paymentMethodCompletesPreorder(activePreorderPayment) &&
+    paymentCanComplete(activePreorderPayment, draftCashReceivedCents, sale.totalCents);
 
   const saveChanges = () => {
     if (readOnly || busy) return;
@@ -185,13 +248,15 @@ export function SaleDetailScreen({
   };
 
   const markComplete = () => {
-    if (!canMarkComplete || !draftPaymentMethod || busy) return;
+    if (!canMarkComplete || !activePreorderPayment || busy) return;
 
     void (async () => {
       setBusy(true);
       try {
         await completePreorder(db, saleNumber, {
-          paymentMethod: draftPaymentMethod,
+          paymentMethod: activePreorderPayment,
+          cashReceivedCents: draftCashReceivedCents,
+          changeKept: draftKeepChange,
           name: draftName,
           notes: draftNotes,
           completeDate: draftCompleteDate,
@@ -241,11 +306,20 @@ export function SaleDetailScreen({
       ? draftPaymentMethod
       : draftPaymentMethod ?? sale.paymentMethod;
   const selectedPayment = sale.isPreorder && !readOnly ? draftPaymentMethod : paymentMethod;
+  const preorderCompleteLabel =
+    activePreorderPayment === 'cash'
+      ? 'Mark paid with Cash → Sales'
+      : activePreorderPayment === 'venmo_zelle'
+        ? 'Mark paid with Venmo/Zelle → Sales'
+        : 'Mark complete → Sales';
 
   return (
     <View style={styles.screen}>
       <ScreenHeader title={`Sale #${sale.saleNumber}`} onBack={onBack} />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
         <View style={styles.summaryCard}>
           <Text style={styles.summaryAmount}>{formatMoney(sale.totalCents)}</Text>
           <Text style={styles.summaryMeta}>{formatSaleTime(sale.createdAt)}</Text>
@@ -347,58 +421,136 @@ export function SaleDetailScreen({
           </View>
         ) : sale.isPreorder ? (
           <>
-            <Text style={styles.preorderPaymentHint}>
-              Record how the customer paid to mark this preorder complete.
-            </Text>
-            <Card
-              className={cn(
-                'p-4 mb-2 border-[3px]',
-                selectedPayment === 'cash' ? 'border-success' : 'border-transparent',
-              )}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={busy}
-                className="flex-row justify-between items-center"
-                onPress={() => changePaymentMethod('cash')}>
-                <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
-                <View
-                  className={cn(
-                    'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
-                    selectedPayment === 'cash' ? 'bg-success' : 'bg-surface',
-                  )}>
-                  {selectedPayment === 'cash' ? (
-                    <Text className="text-white font-bold">✓</Text>
-                  ) : null}
-                </View>
-              </Pressable>
-            </Card>
-
-            <Card
-              className={cn(
-                'p-4 mb-2 border-[3px]',
-                selectedPayment === 'venmo_zelle' ? 'border-success' : 'border-transparent',
-              )}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={busy}
-                className="flex-row justify-between items-center"
-                onPress={() => changePaymentMethod('venmo_zelle')}>
-                <Text className="text-base font-semibold text-foreground">
-                  📱 {paymentMethodLabel('venmo_zelle')}
+            {preorderAwaitingPayment ? (
+              <>
+                <Text style={styles.preorderPaymentHint}>
+                  Record how the customer paid to mark this preorder complete.
                 </Text>
-                <View
+                <Card
                   className={cn(
-                    'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
-                    selectedPayment === 'venmo_zelle'
-                      ? 'border-success bg-success'
-                      : 'border-border bg-surface',
+                    'p-4 mb-2 border-[3px]',
+                    selectedPayment === 'cash' ? 'border-success' : 'border-transparent',
                   )}>
-                  {selectedPayment === 'venmo_zelle' ? (
-                    <Text className="text-white font-bold">✓</Text>
-                  ) : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={busy}
+                    className="flex-row justify-between items-center"
+                    onPress={() => changePaymentMethod('cash')}>
+                    <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
+                    <View
+                      className={cn(
+                        'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
+                        selectedPayment === 'cash' ? 'bg-success' : 'bg-surface',
+                      )}>
+                      {selectedPayment === 'cash' ? (
+                        <Text className="text-white font-bold">✓</Text>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                </Card>
+
+                <Card
+                  className={cn(
+                    'p-4 mb-2 border-[3px]',
+                    selectedPayment === 'venmo_zelle' ? 'border-success' : 'border-transparent',
+                  )}>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={busy}
+                    className="flex-row justify-between items-center"
+                    onPress={() => changePaymentMethod('venmo_zelle')}>
+                    <Text className="text-base font-semibold text-foreground">
+                      📱 {paymentMethodLabel('venmo_zelle')}
+                    </Text>
+                    <View
+                      className={cn(
+                        'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
+                        selectedPayment === 'venmo_zelle'
+                          ? 'border-success bg-success'
+                          : 'border-border bg-surface',
+                      )}>
+                      {selectedPayment === 'venmo_zelle' ? (
+                        <Text className="text-white font-bold">✓</Text>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                </Card>
+              </>
+            ) : preorderPaymentLocked ? (
+              <>
+                <Text style={styles.preorderPaymentHint}>
+                  Paid with {paymentMethodLabel(sale.paymentMethod)} at checkout.
+                </Text>
+                <View style={styles.readOnlyPayment}>
+                  <Text style={styles.readOnlyPaymentLabel}>
+                    {sale.paymentMethod === 'cash' ? '💵' : '📱'}{' '}
+                    {paymentMethodLabel(sale.paymentMethod)}
+                  </Text>
                 </View>
-              </Pressable>
-            </Card>
+              </>
+            ) : null}
+
+            {showPreorderAmountEntry ? (
+              <Card className="p-4 mb-3">
+                <Text style={styles.amountPaidLabel}>Amount Paid</Text>
+                {preorderAmountEditable ? (
+                  <View style={styles.cashAmountInputRow}>
+                    <Text style={[styles.cashAmountPrefix, cashAmountColorStyle]}>$</Text>
+                    <TextInput
+                      value={draftCashReceivedText}
+                      editable={!busy}
+                      onChangeText={handleCashReceivedTextChange}
+                      placeholder="0.00"
+                      placeholderTextColor={colors.inkSoft}
+                      keyboardType="decimal-pad"
+                      style={[styles.cashAmountInput, cashAmountColorStyle]}
+                    />
+                  </View>
+                ) : (
+                  <View style={styles.cashAmountWrap}>
+                    <Text style={[styles.cashAmount, cashAmountColorStyle]}>
+                      {formatMoney(draftCashReceivedCents)}
+                    </Text>
+                  </View>
+                )}
+
+                {preorderAmountEditable ? (
+                  <View style={styles.statusBar}>
+                    {cashCoversTotal ? (
+                      <Text
+                        style={[styles.changeText, draftKeepChange ? styles.keepChangeText : null]}>
+                        {cashChangeStatusLabel(changeCents, draftKeepChange, formatMoney)}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dueText}>Still {formatMoney(amountDueCents)} due</Text>
+                    )}
+                  </View>
+                ) : null}
+
+                {changeCents > 0 && preorderAmountEditable ? (
+                  <View style={styles.keepChangeWrap}>
+                    <Pressable
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: draftKeepChange }}
+                      accessibilityLabel="Keep change"
+                      disabled={busy}
+                      style={styles.keepChangeButton}
+                      onPress={() => setDraftKeepChange((value) => !value)}>
+                      <Text style={styles.keepChangeLabel}>Keep change?</Text>
+                      <View pointerEvents="none">
+                        <Checkbox
+                          isSelected={draftKeepChange}
+                          variant="secondary"
+                          background={null}
+                          className="h-[26px] w-[26px] bg-surface"
+                          style={styles.keepChangeCheckbox}
+                        />
+                      </View>
+                    </Pressable>
+                  </View>
+                ) : null}
+              </Card>
+            ) : null}
 
             <Pressable
               accessibilityRole="button"
@@ -427,7 +579,7 @@ export function SaleDetailScreen({
               ]}>
               <View style={styles.completeButtonInner}>
                 <Text style={styles.completeButtonLabel}>
-                  {busy ? 'Completing…' : 'Mark complete → Sales'}
+                  {busy ? 'Completing…' : preorderCompleteLabel}
                 </Text>
               </View>
             </Pressable>
@@ -744,5 +896,101 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: colors.redDark,
+  },
+  amountPaidLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  cashAmountInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FAF8FF',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 4,
+    gap: 4,
+  },
+  cashAmountPrefix: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 36,
+  },
+  cashAmountInput: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 36,
+    textAlign: 'left',
+    minWidth: 120,
+    padding: 0,
+  },
+  cashAmountWrap: {
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  cashAmount: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 36,
+    textAlign: 'center',
+  },
+  cashAmountEmpty: {
+    color: colors.inkSoft,
+  },
+  cashAmountShort: {
+    color: colors.redDark,
+  },
+  cashAmountGood: {
+    color: colors.greenDark,
+  },
+  statusBar: {
+    marginTop: 12,
+    backgroundColor: '#F3E9FF',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  dueText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 18,
+    color: colors.inkSoft,
+  },
+  changeText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 18,
+    color: colors.greenDark,
+  },
+  keepChangeText: {
+    color: colors.purpleDark,
+  },
+  keepChangeWrap: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  keepChangeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 2,
+    borderColor: colors.purple,
+    borderRadius: 18,
+    backgroundColor: colors.white,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  keepChangeLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: colors.purpleDark,
+  },
+  keepChangeCheckbox: {
+    borderWidth: 2,
+    borderColor: colors.purple,
   },
 });

@@ -119,6 +119,8 @@ export type Catalog = {
     saleNumber: number,
     updates: {
       paymentMethod?: PaymentMethod;
+      cashReceivedCents?: number | null;
+      changeKept?: boolean;
       name?: string | null;
       notes?: string | null;
       completeDate?: string | null;
@@ -128,6 +130,8 @@ export type Catalog = {
     saleNumber: number,
     params: {
       paymentMethod: PaymentMethod;
+      cashReceivedCents?: number | null;
+      changeKept?: boolean;
       name?: string | null;
       notes?: string | null;
       completeDate?: string | null;
@@ -751,6 +755,14 @@ export function createCatalog(): Catalog {
             : null;
         sale.changeKept = false;
       }
+      if (updates.cashReceivedCents !== undefined) {
+        sale.cashReceivedCents = updates.cashReceivedCents;
+      }
+      if (updates.changeKept !== undefined) {
+        const received = sale.cashReceivedCents ?? 0;
+        sale.changeKept =
+          updates.changeKept === true && received > cartTotal(sale.lines);
+      }
       if (updates.name !== undefined) {
         sale.name = normalizeOptionalText(updates.name);
       }
@@ -770,11 +782,19 @@ export function createCatalog(): Catalog {
       const sale = sales.find((entry) => entry.saleNumber === saleNumber);
       if (!sale?.isPreorder || params.paymentMethod === 'pay_on_pickup') return;
 
-      sale.paymentMethod = params.paymentMethod;
-      sale.cashReceivedCents =
-        params.paymentMethod === 'cash'
-          ? (sale.cashReceivedCents ?? cartTotal(sale.lines))
+      const totalCents = cartTotal(sale.lines);
+      const cashReceivedCents =
+        params.paymentMethod === 'cash' || params.paymentMethod === 'venmo_zelle'
+          ? (params.cashReceivedCents ?? totalCents)
           : null;
+      const changeKept =
+        params.changeKept === true &&
+        cashReceivedCents != null &&
+        cashReceivedCents > totalCents;
+
+      sale.paymentMethod = params.paymentMethod;
+      sale.cashReceivedCents = cashReceivedCents;
+      sale.changeKept = changeKept;
       if (params.name !== undefined) {
         sale.name = normalizeOptionalText(params.name);
       }

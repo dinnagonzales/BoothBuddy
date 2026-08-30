@@ -24,7 +24,10 @@ export function PreorderSalesList({
 
   return (
     <View style={styles.wrap}>
-      {sales.map((sale) => (
+      {sales.map((sale) => {
+        const isPaid = sale.paymentMethod !== 'pay_on_pickup';
+
+        return (
         <View key={sale.saleNumber} style={styles.saleBlock}>
           {savedSaleNumber === sale.saleNumber ? (
             <View style={styles.savedBanner}>
@@ -44,6 +47,9 @@ export function PreorderSalesList({
                 {sale.name ? sale.name : `#${sale.saleNumber}`}
               </Text>
               {sale.notes ? <Text style={styles.saleNotes}>{sale.notes}</Text> : null}
+              <Text style={[styles.paymentStatus, isPaid && styles.paymentStatusPaid]}>
+                • {isPaid ? 'Paid' : 'Pending Payment'}
+              </Text>
               {sale.completeDate ? (
                 <Text style={[styles.saleCompleteDate, overdue && styles.saleCompleteDateOverdue]}>
                   Complete: {formatCompleteDate(sale.completeDate)}
@@ -56,7 +62,8 @@ export function PreorderSalesList({
             </View>
           </Pressable>
         </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
@@ -115,6 +122,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.inkSoft,
     lineHeight: 16,
+  },
+  paymentStatus: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    color: colors.inkSoft,
+  },
+  paymentStatusPaid: {
+    color: colors.redDark,
   },
   saleCompleteDate: {
     fontFamily: 'Nunito_700Bold',

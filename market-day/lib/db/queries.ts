@@ -697,6 +697,8 @@ export async function updateSale(
   saleNumber: number,
   updates: {
     paymentMethod?: PaymentMethod;
+    cashReceivedCents?: number | null;
+    changeKept?: boolean;
     name?: string | null;
     notes?: string | null;
     completeDate?: string | null;
@@ -712,10 +714,25 @@ export async function updateSale(
     updates.completeDate !== undefined
       ? normalizeOptionalText(updates.completeDate)
       : sale.completeDate;
-  const cashReceivedCents =
-    paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
-  const changeKept =
-    paymentMethod === 'cash' && updates.paymentMethod === undefined ? sale.changeKept : false;
+
+  let cashReceivedCents: number | null;
+  let changeKept: boolean;
+
+  if (updates.cashReceivedCents !== undefined || updates.changeKept !== undefined) {
+    cashReceivedCents =
+      updates.cashReceivedCents !== undefined
+        ? updates.cashReceivedCents
+        : sale.cashReceivedCents;
+    const received = cashReceivedCents ?? 0;
+    changeKept = updates.changeKept === true && received > sale.totalCents;
+  } else if (updates.paymentMethod !== undefined) {
+    cashReceivedCents =
+      paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
+    changeKept = false;
+  } else {
+    cashReceivedCents = sale.cashReceivedCents;
+    changeKept = sale.changeKept;
+  }
 
   await db.runAsync(
     `UPDATE sales SET payment_method = ?, cash_received_cents = ?, change_kept = ?, name = ?, notes = ?, complete_date = ? WHERE id = ?`,
@@ -735,6 +752,8 @@ export async function completePreorder(
   saleNumber: number,
   params: {
     paymentMethod: PaymentMethod;
+    cashReceivedCents?: number | null;
+    changeKept?: boolean;
     name?: string | null;
     notes?: string | null;
     completeDate?: string | null;
@@ -752,14 +771,23 @@ export async function completePreorder(
       : sale.completeDate;
   if (!name || !notes) return;
   const cashReceivedCents =
-    params.paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
+    params.paymentMethod === 'cash' || params.paymentMethod === 'venmo_zelle'
+      ? (params.cashReceivedCents ?? sale.totalCents)
+      : null;
+  const changeKept =
+    params.changeKept === true &&
+    cashReceivedCents != null &&
+    cashReceivedCents > sale.totalCents
+      ? 1
+      : 0;
 
   await db.runAsync(
     `UPDATE sales
-     SET payment_method = ?, cash_received_cents = ?, change_kept = 0, name = ?, notes = ?, complete_date = ?, is_preorder = 0
+     SET payment_method = ?, cash_received_cents = ?, change_kept = ?, name = ?, notes = ?, complete_date = ?, is_preorder = 0
      WHERE id = ?`,
     params.paymentMethod,
     cashReceivedCents,
+    changeKept,
     name,
     notes,
     completeDate,
