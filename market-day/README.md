@@ -19,17 +19,18 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Home** — Items menu (no sales totals); optional Market Day banner; **Make a Sale** (always) + **+ Pre-order**
 - **Make a Sale** — always available; attaches to active Market Day when one is open; off-day sales save to Running Tab with optional name/notes
 - **+ Pre-order** — required name/notes/complete date, Pay on pickup, global catalog, always Running Tab (even during a fair)
-- **Sell flow** — menu **− / qty / +** steppers (**0** when not in cart), read-only cart (**Name(qty)** + **N items** total), payment (**Order Total**; amount-entry for Cash and Venmo/Zelle: **Amount Paid** → chips → change → **Keep change?**; payment-method selectors below; pay on pickup for preorders)
+- **Sell flow** — menu **− / qty / +** steppers (**0** when not in cart), read-only cart (**Name(qty)** + **N items** total), payment (**Order Total**; Venmo/Zelle pay-to card when configured; amount-entry for Cash and Venmo/Zelle: **Amount Paid** → chips → change → **Keep change?**; payment-method selectors below; pay on pickup for preorders)
 - **Celebration** — Edit this sale / Go to Dashboard; tap ✕ → Home
-- **Settings** — Active Market Day dashboard (sales, profit, Cash with tips breakdown, Venmo/Zelle; Today's Menu, sales list)
-- **Past Events** — closed days on Settings empty state; detail view with export + Reopen
-- **Start Market Day** — name + date form in grown-up settings (date defaults to today)
+- **Events tab** — Active Market Day dashboard (sales, profit, Cash with tips breakdown, Venmo/Zelle; Today's Menu, sales list)
+- **Settings tab** — business name/logo, change Pass Code, **Require Pass Code for Settings** toggle (default on), Zelle/Venmo payment info + optional QR uploads
+- **Past Events** — closed days on Events empty state; detail view with export + Reopen
+- **Start Market Day** — name + date form on Events (date defaults to today)
 - **Sales tab** — all-time sales across Market Days + Running Tab export
 - **Preorders tab** — prep summary (what to make), overdue/upcoming sections sorted by complete date, printable export, open preorders; mark complete from admin edit
 - **Inventory** — item CRUD, archive, delete (when no past sales)
 - **Sale detail (admin)** — edit payment method, optional name/notes/complete date (preorders), remove sale
 - **Export** — closed Market Day + Running Tab date range (CSV with **Change kept** column + tips summary footer) + preorder printout (text) → share sheet
-- **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`)
+- **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`); optional bypass in Settings
 - **SQLite** — local-first data on device
 
 ## UI

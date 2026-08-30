@@ -67,3 +67,15 @@ test('parental gate can clear a saved code', async () => {
   expect(await gate.isConfigured()).toBe(false);
   expect(await gate.verify('1234')).toBe(false);
 });
+
+test('parental gate accepts a new code after rotation', async () => {
+  const gate = createParentalGate(createMemorySecretStore());
+
+  await gate.setCode('1234');
+  expect(await gate.verify('1234')).toBe(true);
+
+  await gate.setCode('5678');
+
+  expect(await gate.verify('1234')).toBe(false);
+  expect(await gate.verify('5678')).toBe(true);
+});

@@ -19,6 +19,7 @@ import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { createSqliteCatalog } from '@/lib/db/catalog';
 import { getHomeItems, getActiveMarketDay } from '@/lib/db/queries';
+import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
@@ -69,6 +70,7 @@ export default function HomeScreen() {
   const [items, setItems] = useState<HomeItem[]>([]);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
   const [passCodeOpen, setPassCodeOpen] = useState(false);
+  const [passcodeGateEnabled, setPasscodeGateEnabled] = useState(true);
 
   const openPreorder = () => {
     setIsQuickSale(true);
@@ -77,6 +79,11 @@ export default function HomeScreen() {
   };
 
   const openSettings = () => {
+    if (!passcodeGateEnabled) {
+      unlock();
+      router.push('/settings');
+      return;
+    }
     if (unlocked) {
       router.push('/settings');
       return;
@@ -93,6 +100,7 @@ export default function HomeScreen() {
         .then(async (complete) => {
           if (cancelled) return;
           setSetupReady(complete);
+          setPasscodeGateEnabled(await getPasscodeGateEnabled(db));
           if (complete) {
             setItems(await getHomeItems(db));
             const marketDay = await getActiveMarketDay(db);

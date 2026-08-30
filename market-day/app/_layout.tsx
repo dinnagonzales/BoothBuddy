@@ -61,6 +61,7 @@ export default function RootLayout() {
                 <Stack.Screen name="inventory" />
                 <Stack.Screen name="preorders" />
                 <Stack.Screen name="sales" />
+                <Stack.Screen name="business" />
                 <Stack.Screen name="sale/[saleNumber]" />
                 <Stack.Screen name="past/[id]" />
                 <Stack.Screen

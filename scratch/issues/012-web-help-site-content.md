@@ -52,6 +52,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/faq/archive` | What is Archive? | Grown-up |
 | `/faq/cash-change` | How does cash change work? | Seller |
 | `/faq/venmo-zelle` | Venmo / Zelle payments | Seller |
+| `/faq/grown-up-settings` | Grown-up Settings tab | Grown-up |
 | `/faq/edit-sale-later` | Change a sale later | Grown-up |
 | `/faq/one-market-day` | Can I run two Market Days? | Grown-up |
 | `/faq/reopen` | I ended the day by mistake | Grown-up |
@@ -144,6 +145,8 @@ It might be **Sold out** for today. Pick something else or ask a grown-up.
    - If amount paid is more than the total, tap the centered **Keep change?** button (unchecked by default). The checkbox fills when selected; the line switches to **Keeping $X — no change back**.
 
 3. Pick how they paid — tap **💵 Cash** or **📱 Venmo / Zelle** in the cards below. **Venmo / Zelle** starts at **Exact amount** so you can bump it up if the customer adds a tip.
+
+4. When **Venmo / Zelle** is selected and a grown-up has set up payment info, a **Scan or send payment** card shows Zelle name, contact, and QR (if uploaded), plus Venmo handle and QR — so the customer can pay on their phone first.
 
 4. Tap **Complete sale ✓**.
 5. You did it! **Sold!** 🎉
@@ -413,6 +416,7 @@ The **⚙️ gear** always asks for the Pass Code — even after setup.
 
 **For grown-ups**
 
+- [Grown-up Settings tab](./faq/grown-up-settings)
 - [What is the Pass Code?](./faq/pass-code)
 - [I forgot the Pass Code](./faq/forgot-pass-code)
 - [What is Archive?](./faq/archive)
@@ -449,9 +453,11 @@ A grown-up can turn sold out off in **Today’s Menu** if more stock arrives.
 
 ## `/faq/pass-code` — What is the Pass Code?
 
-A **4-digit code** only grown-ups know. It unlocks **⚙️ settings**, **Inventory**, and sales details.
+A **4-digit code** only grown-ups know. When **Require Pass Code for Settings** is on (default), it unlocks **Events**, **Inventory**, **Preorders**, **Sales**, and **Settings**.
 
 Kids use the shop without the Pass Code. They never see **cost** or **profit**.
+
+Grown-ups can change the code or turn the gate off in **⚙️ → Settings** (changing the gate toggle requires the current code).
 
 ---
 
@@ -461,7 +467,7 @@ There is no “email my code” option. On the Pass Code screen, tap **Forgot Pa
 
 That **erases everything** and lets you set up again from scratch. Only do this if a grown-up says it’s okay — you’ll lose saved sales.
 
-*(Coming later: change Pass Code without resetting, and device unlock options.)*
+*(Coming later: device unlock / Face ID recovery without resetting.)*
 
 ---
 
@@ -509,9 +515,22 @@ Tap **Complete sale ✓** when the payment is right.
 ## `/faq/venmo-zelle` — Venmo / Zelle payments
 
 1. On the payment screen, tap **📱 Venmo / Zelle**.
-2. **Amount Paid** defaults to the exact order total — same card as cash (chips, **− / +**, **Keep change?**).
-3. The grown-up or customer handles the real payment on their phone. If they add a tip, tap **+** or a bill chip to match what they sent, then check **Keep change?** when the extra is a tip.
-4. Tap **Complete sale ✓** in Market Day to save the sale.
+2. If a grown-up set up payment info in **⚙️ → Settings**, a card shows who to pay — Zelle full name (check it in your bank app), email/phone, optional QR; Venmo `@username`, optional QR or a generated QR with the order amount.
+3. **Amount Paid** defaults to the exact order total — same card as cash (chips, **− / +**, **Keep change?**).
+4. After the customer pays on their phone, bump **Amount Paid** if they added a tip, then check **Keep change?** when the extra is a tip.
+5. Tap **Complete sale ✓** in Market Day to save the sale.
+
+Grown-ups configure Zelle/Venmo under **⚙️ → Pass Code → Settings** (bottom nav).
+
+---
+
+## `/faq/grown-up-settings` — Grown-up Settings tab
+
+1. **⚙️** → **Pass Code** → tap **⚙️ Settings** in the bottom nav (last tab).
+2. **Business** — shop name and optional logo.
+3. **Passcode** — change the 4-digit code (current code required). **Require Pass Code for Settings** is on by default; turning it off lets ⚙️ open Events without a code (changing this toggle also requires the Pass Code).
+4. **Payment** — Zelle full name, email/phone, optional QR screenshot; Venmo username, optional QR upload.
+5. Tap **Save changes** at the bottom (payment/business fields). Passcode and gate toggle save on their own.
 
 ---
 

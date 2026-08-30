@@ -4,10 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen, ScreenHeader } from '@/components/Screen';
+import { VenmoZellePaymentInfo } from '@/components/VenmoZellePaymentInfo';
 import { Button, Card, Checkbox, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
+import type { BusinessSettings } from '@/lib/business-settings';
+import { EMPTY_BUSINESS_SETTINGS } from '@/lib/business-settings';
+import { getBusinessSettings } from '@/lib/db/business-settings';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
 import { paymentCanComplete, preorderMetadataValid, cashChangeCents, cashChangeStatusLabel } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
@@ -34,7 +38,12 @@ export default function PaymentScreen() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
   const [keepChange, setKeepChange] = useState(false);
+  const [businessSettings, setBusinessSettings] = useState<BusinessSettings>(EMPTY_BUSINESS_SETTINGS);
   const preorderCheckout = isQuickSale && isPreorder && editingSaleId == null;
+
+  useEffect(() => {
+    void getBusinessSettings(db).then(setBusinessSettings);
+  }, [db]);
 
   useEffect(() => {
     if (preorderCheckout) {
@@ -149,6 +158,16 @@ export default function PaymentScreen() {
             <Text style={styles.totalLabel}>Order Total</Text>
             <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
           </View>
+
+          {paymentMethod === 'venmo_zelle' ? (
+            <VenmoZellePaymentInfo
+              settings={businessSettings}
+              totalCents={totalCents}
+              saleLabel={
+                invoiceNumber != null ? `Invoice #${invoiceNumber}` : undefined
+              }
+            />
+          ) : null}
 
           {showAmountEntry ? (
             <Card style={styles.cashEntry} className="p-4 mb-3">

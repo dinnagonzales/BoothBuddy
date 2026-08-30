@@ -10,6 +10,7 @@ import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getSale, getSaleLineItems } from '@/lib/db/queries';
+import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { cashReceivedForEditedSale } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
@@ -70,7 +71,8 @@ export default function CelebrationScreen() {
       if (!sale) return;
 
       if (isPreorder) {
-        if (unlocked) {
+        const gateEnabled = await getPasscodeGateEnabled(db);
+        if (!gateEnabled || unlocked) {
           openPreorderEdit(sale.saleNumber);
           return;
         }

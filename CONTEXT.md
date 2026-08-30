@@ -91,7 +91,7 @@ How the customer paid for a Sale — **Cash**, **Venmo/Zelle**, or **Pay on pick
 _Avoid_: Payment type, tender
 
 **Cash received**:
-For **Cash** and **Venmo/Zelle** sales, the amount the customer paid (including any tip). The **Amount Paid** row at the top of the amount-entry card shows **− / +** steppers flanking the running total (gray when $0, red when below **Order Total**, green when enough). Below that, use quick-tap bill chips ($1, $5, $10, $20, $100 — each tap adds), **Exact amount**, or **Clear**. **Venmo/Zelle** selects **Exact amount** by default. The app displays **Change** (amount paid minus Sale total) in a status bar below the chips.
+For **Cash** and **Venmo/Zelle** sales, the amount the customer paid (including any tip). The **Amount Paid** row at the top of the amount-entry card shows **− / +** steppers flanking the running total (gray when $0, red when below **Order Total**, green when enough). Below that, use quick-tap bill chips ($1, $5, $10, $20, $100 — each tap adds), **Exact amount**, or **Clear**. **Venmo/Zelle** selects **Exact amount** by default. When **Venmo/Zelle** is selected, a payment-info card shows Zelle name/contact/QR and Venmo handle/QR (configured in grown-up **Settings**) so the customer can pay before the seller records **Amount Paid**. The app displays **Change** (amount paid minus Sale total) in a status bar below the chips.
 _Avoid_: Amount tendered, paid
 
 **Change**:
@@ -135,9 +135,9 @@ The adult owner who sets up items and prices before a Market Day and exports sal
 _Avoid_: Parent, grown-up (UI label only), owner
 
 **Grown-up settings**:
-The admin-only area behind the gear icon. Protected by a parental gate (numeric code set by the admin). Four tabs: Settings (Active Market Day dashboard, Today's Menu, past events), Inventory (item catalog), **Preorders** (open preorders awaiting pickup), and Sales (completed all-time history and off-day export). Sales totals and history are not on the seller's Home.
+The admin-only area behind the gear icon. Protected by a parental gate (numeric code) when **Require Pass Code for Settings** is on (default). Five tabs: **Events** (Active Market Day dashboard, Today's Menu, past events), **Inventory** (item catalog), **Preorders** (open preorders awaiting pickup), **Sales** (completed all-time history and off-day export), and **Settings** (business name/logo, passcode change, optional gate bypass, Zelle/Venmo payment info for checkout). Sales totals and history are not on the seller's Home.
 _Avoid_: Admin panel, settings, back office
 
 **Parental gate**:
-A numeric code the admin enters to access grown-up settings. Set once by the admin; required every time the gear icon is tapped.
+A numeric code the admin enters to access the grown-up area when **Require Pass Code for Settings** is enabled. Set once during setup (or changed in **Settings**); required each time the gear icon is tapped unless the gate is turned off. Changing the gate toggle itself requires the current code.
 _Avoid_: PIN lock, parent lock, math challenge

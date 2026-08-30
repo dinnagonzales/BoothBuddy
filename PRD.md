@@ -53,6 +53,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
 3. **Payment** — **Order Total**; when **Cash** or **Venmo/Zelle** is selected, an amount-entry card (**Amount Paid** with **− / +** steppers — amount turns red below total, green when enough) → bill chips → **Change** or **Still $X due** → optional **Keep change?** when overpaid); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
    - **Cash** or **Venmo/Zelle:** **Amount Paid** row first, then quick-tap bills ($1, $5, $10, $20, $100 — each adds), **Exact amount**, **Clear**. **Venmo/Zelle** defaults to **Exact amount** on tap. When overpaid, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
+   - **Venmo/Zelle selected:** a **Scan or send payment** card appears (above amount-entry) when a grown-up has configured payment info in **Settings** — Zelle full name (for bank-app confirmation), email/phone, optional uploaded QR; Venmo `@handle`, optional uploaded QR, or auto-generated Venmo QR with order amount.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
 ### Log a preorder (seller)
@@ -80,12 +81,20 @@ Off-day sales come from **Make a Sale** when no **Active Market Day** is open (o
 2. **Undo close** available until export.
 3. After export, close is permanent (edits still allowed; bucket flagged for re-export).
 
-### Grown-up settings (admin)
+### Grown-up area (admin)
 
-Behind gear icon + parental gate (numeric code). Shows:
+Behind gear icon + parental gate (numeric code by default). Five bottom tabs:
 
-- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown (Cash total includes kept change, with a **$X + $Y (tips)** subline when tips exist), sale list with Sale numbers (and optional sale names when set). Same summary card on Past Events detail, Market Day kid dashboard (without profit), and Sales tab (all-time).
-- Running Tab summary.
+- **Events** — Active Market Day dashboard (totals, item count, Cash vs Venmo/Zelle breakdown with tips subline when applicable), Today's Menu, sales list; when no active day, start form + Past Events.
+- **Inventory** — item catalog (cost, price, archive).
+- **Preorders** — open preorders, prep summary, printable export.
+- **Sales** — all-time completed sales + Running Tab date-range export.
+- **Settings** — business profile (name, logo), **Passcode** (change 4-digit code; **Require Pass Code for Settings** toggle — on by default; turning off skips the gear gate; changing the toggle requires the current code), and **Payment** (Zelle full name, email/phone, optional QR upload; Venmo username, optional QR upload).
+
+Same summary card metrics on Past Events detail, Market Day kid dashboard (without profit), and Sales tab (all-time).
+
+Other grown-up capabilities (across tabs):
+
 - Item management (name, cost, price, emoji icon, optional photo).
 - Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.
 - **Admin edit** any Sale (payment method, optional name/notes, complete date for preorders, remove whole sale); line-item quantity edit deferred — use remove + re-log for wrong items.
@@ -111,6 +120,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 
 - Cash and Venmo/Zelle are mutually exclusive per Sale.
 - **Cash** and **Venmo/Zelle** share the same amount-entry UI: **Amount Paid** row (**− / +** flanking amount — gray when $0, red when below total, green when enough), then bill chips, change/due line, then **Keep change?** (centered outline + checkbox; only when amount paid exceeds total; always defaults unchecked). Amount paid stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips. **Venmo/Zelle** pre-fills **Exact amount** when selected.
+- **Venmo/Zelle checkout** shows configured pay-to info (Zelle name + contact + optional QR; Venmo handle + uploaded or generated QR with amount) so customers can scan or send payment before the seller confirms **Amount Paid**.
 
 ---
 
