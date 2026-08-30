@@ -51,9 +51,9 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 2. **Pick Items** — scrollable list with **+** buttons; cart pinned at bottom with **− / +** per line, running total, **Checkout**.
    - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
-3. **Payment** — total; **Cash** or **Venmo/Zelle** (mutually exclusive).
-   - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each adds to amount), **Exact amount**, **− / +** steppers ($1 increments), **Change** displayed; when change is due, optional **Keep Change?** checkbox (default off) records kept change for export.
-   - **Venmo/Zelle:** checkbox only; assumed paid in full.
+3. **Payment** — total; when **Cash** is selected, a cash-entry card (bill chips → amount received → **− / +** steppers → **Change** or **Still $X due** → optional **Keep change?** when change is due); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
+   - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each adds to amount), **Exact amount**, **Clear**, **− / +** steppers ($1 increments). When change is due, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
+   - **Venmo/Zelle:** selector only; assumed paid in full.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
 ### Log a preorder (seller)
@@ -111,7 +111,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 ## Payment
 
 - Cash and Venmo/Zelle are mutually exclusive per Sale.
-- Cash: cash received + change shown; cash received stored for export. **Keep Change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips.
+- **Cash** UI: bill chips at top of the cash-entry card, then amount received, **− / +** steppers, change/due line, then **Keep change?** (centered outline + checkbox; only when change is due; always defaults unchecked). Cash received stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips.
 - Venmo/Zelle: no additional input.
 
 ---

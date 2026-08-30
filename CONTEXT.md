@@ -91,15 +91,15 @@ How the customer paid for a Sale — **Cash**, **Venmo/Zelle**, or **Pay on pick
 _Avoid_: Payment type, tender
 
 **Cash received**:
-For Cash sales, the amount of money the customer handed the seller. Set via quick-tap buttons ($1, $5, $10, $20, $100 — each tap replaces the current amount), or adjusted with **−** / **+** steppers (in $1 increments) and numeric input. The app displays **Change** (cash received minus Sale total).
+For Cash sales, the amount of money the customer handed the seller. Set via quick-tap bill chips at the top of the cash-entry card ($1, $5, $10, $20, $100 — each tap adds to the running total), **Exact amount**, **Clear**, or **− / +** steppers below the displayed amount (in $1 increments). The app displays **Change** (cash received minus Sale total) in a status bar below the steppers.
 _Avoid_: Amount tendered, paid
 
 **Change**:
-Cash received minus the Sale total, shown to the seller during Cash checkout so they know what to hand back.
+Cash received minus the Sale total, shown in the cash-entry card below the **− / +** steppers so the seller knows what to hand back (or **Still $X due** when not enough yet).
 _Avoid_: Money back, difference
 
 **Keep change**:
-Optional seller action at Cash checkout when change is due. **Keep Change?** appears below the change line (unchecked by default). When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full **Cash received** is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
+Optional seller action at Cash checkout when change is due. A centered **Keep change?** outline control with checkbox appears below the change line (always unchecked by default — including when re-editing a sale). When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full **Cash received** is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:

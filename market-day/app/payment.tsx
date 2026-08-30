@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen, ScreenHeader } from '@/components/Screen';
-import { Button, Card, cn } from '@/components/ui';
+import { Button, Card, Checkbox, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -29,7 +29,7 @@ const chipShadow = Platform.select({
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, editingChangeKept, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder } =
+  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder } =
     useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
@@ -53,8 +53,7 @@ export default function PaymentScreen() {
     if (editingPaymentMethod === 'cash' && editingCashReceivedCents != null) {
       setCashReceivedCents(editingCashReceivedCents);
     }
-    setKeepChange(editingChangeKept);
-  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents, editingChangeKept]);
+  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents]);
 
   const changeCents = useMemo(
     () => cashChangeCents(cashReceivedCents, totalCents),
@@ -177,7 +176,15 @@ export default function PaymentScreen() {
                 </Pressable>
               </View>
 
-              <View style={styles.cashControlRow}>
+              <Text
+                style={[
+                  styles.cashAmount,
+                  cashReceivedCents === 0 ? styles.cashAmountEmpty : styles.cashAmountFilled,
+                ]}>
+                {formatMoney(cashReceivedCents)}
+              </Text>
+
+              <View style={styles.cashButtonRow}>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Subtract one dollar"
@@ -185,13 +192,6 @@ export default function PaymentScreen() {
                   onPress={() => setCashReceivedCents((value) => Math.max(value - 100, 0))}>
                   <Text style={styles.stepButtonLabel}>−</Text>
                 </Pressable>
-                <Text
-                  style={[
-                    styles.cashAmount,
-                    cashReceivedCents === 0 ? styles.cashAmountEmpty : styles.cashAmountFilled,
-                  ]}>
-                  {formatMoney(cashReceivedCents)}
-                </Text>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Add one dollar"
@@ -212,21 +212,25 @@ export default function PaymentScreen() {
               </View>
 
               {changeCents > 0 ? (
-                <Pressable
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: keepChange }}
-                  accessibilityLabel="Keep change"
-                  style={styles.keepChangeBlock}
-                  onPress={() => setKeepChange((value) => !value)}>
-                  <Text style={styles.keepChangeLabel}>Keep Change?</Text>
-                  <View
-                    className={cn(
-                      'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
-                      keepChange ? 'bg-success' : 'bg-surface',
-                    )}>
-                    {keepChange ? <Text className="text-white font-bold">✓</Text> : null}
-                  </View>
-                </Pressable>
+                <View style={styles.keepChangeWrap}>
+                  <Pressable
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: keepChange }}
+                    accessibilityLabel="Keep change"
+                    style={styles.keepChangeButton}
+                    onPress={() => setKeepChange((value) => !value)}>
+                    <Text style={styles.keepChangeLabel}>Keep change?</Text>
+                    <View pointerEvents="none">
+                      <Checkbox
+                        isSelected={keepChange}
+                        variant="secondary"
+                        background={null}
+                        className="h-[26px] w-[26px] bg-surface"
+                        style={styles.keepChangeCheckbox}
+                      />
+                    </View>
+                  </Pressable>
+                </View>
               ) : null}
             </Card>
           ) : null}
@@ -373,12 +377,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: colors.white,
   },
-  cashControlRow: {
+  cashButtonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 14,
+    gap: 24,
+    marginTop: 10,
   },
   minusButton: {
     width: 46,
@@ -405,7 +409,7 @@ const styles = StyleSheet.create({
   cashAmount: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 32,
-    minWidth: 100,
+    marginTop: 14,
     textAlign: 'center',
   },
   cashAmountEmpty: {
@@ -482,14 +486,28 @@ const styles = StyleSheet.create({
   keepChangeText: {
     color: colors.purpleDark,
   },
-  keepChangeBlock: {
-    marginTop: 12,
+  keepChangeWrap: {
+    marginTop: 14,
     alignItems: 'center',
-    gap: 8,
+  },
+  keepChangeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 2,
+    borderColor: colors.purple,
+    borderRadius: radii.completeBtn,
+    backgroundColor: colors.white,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   keepChangeLabel: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 15,
-    color: colors.ink,
+    fontSize: 16,
+    color: colors.purpleDark,
+  },
+  keepChangeCheckbox: {
+    borderWidth: 2,
+    borderColor: colors.purple,
   },
 });

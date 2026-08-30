@@ -138,18 +138,18 @@ It might be **Sold out** for today. Pick something else or ask a grown-up.
 **For sellers**
 
 1. See the big **Total** — that’s what the customer owes.
-2. Pick how they paid:
+2. **Cash** is selected by default. In the cash-entry card (above the payment-method cards):
 
-   **💵 Cash**
-   - Tap bill buttons ($1, $5, $10, $20, $100), **Exact amount**, or **+/− $1**.
-   - The app shows **Change** (money back) or **Still $X due** (not enough yet).
-   - If there is change, **Keep Change?** appears below (unchecked by default). Tap it if the customer says you can keep the extra — the line switches to **Keeping $X — no change back**.
+   - Tap bill chips ($1, $5, $10, $20, $100), **Exact amount**, or **Clear** at the top.
+   - The **amount received** shows below the chips.
+   - Use **− / +** under the amount for $1 tweaks.
+   - Read **Change** (money back) or **Still $X due** (not enough yet) in the status bar.
+   - If there is change, tap the centered **Keep change?** button (unchecked by default). The checkbox fills when selected; the line switches to **Keeping $X — no change back**.
 
-   **📱 Venmo / Zelle**
-   - Tap that option. No cash math needed.
+3. Pick how they paid — tap **💵 Cash** or **📱 Venmo / Zelle** in the cards below (Venmo needs no cash math).
 
-3. Tap **Complete sale ✓**.
-4. You did it! **Sold!** 🎉
+4. Tap **Complete sale ✓**.
+5. You did it! **Sold!** 🎉
 
 ---
 
@@ -492,18 +492,18 @@ Only grown-ups can archive items, from **📦 Inventory**.
 
 ## `/faq/cash-change` — How does cash change work?
 
-1. Tap **💵 Cash** on the payment screen.
-2. Tap money buttons to match what the customer gave you ($1, $5, $10, $20, $100).
-3. Or tap **Exact amount** if they paid the perfect total.
-4. Use **+/− $1** for small fixes.
+1. On the payment screen, **Cash** is selected by default and the cash-entry card is at the top.
+2. Tap bill chips to match what the customer gave you ($1, $5, $10, $20, $100) — each tap **adds** to the running total.
+3. Or tap **Exact amount** if they paid the perfect total, or **Clear** to start over.
+4. The **amount received** is shown below the chips; use **− / +** underneath for $1 tweaks.
 
-The app shows:
+The status bar shows:
 
 - **Change: $X** — give this much back
-- **Keeping $X — no change back** — you checked **Keep Change?** (customer said keep it)
+- **Keeping $X — no change back** — you checked **Keep change?** (customer said keep it)
 - **Still $X due** — they didn’t give enough yet
 
-When change is due, **Keep Change?** appears below (unchecked by default). Tap it only if the customer says you can keep the extra.
+When change is due, a centered **Keep change?** outline button with a checkbox appears below the status bar (always unchecked by default). Tap it only if the customer says you can keep the extra.
 
 Tap **Complete sale ✓** when the payment is right.
 

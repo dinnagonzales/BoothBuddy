@@ -59,17 +59,27 @@
   .pay-total{ text-align:center; margin:10px 0 16px; }
   .pay-total .t{ font-size:13px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; }
   .pay-total .v{ font-family:'Fredoka'; font-size:44px; font-weight:700; }
+  .cash-entry{ background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:12px; }
+  .tap-label{ text-align:center; font-size:11px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; }
   .pay-option{ background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:12px; border:3px solid transparent; }
   .pay-option.selected{ border-color:var(--green); }
   .pay-option .row{ display:flex; align-items:center; justify-content:space-between; }
   .pay-option .lbl{ font-family:'Fredoka'; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
-  .cash-controls{ margin-top:10px; display:flex; align-items:center; gap:8px; }
-  .step-btn{ width:36px; height:36px; border-radius:12px; border:2px solid #F0EAFB; background:#fff; font-family:'Fredoka'; font-size:20px; font-weight:600; color:var(--purple-dark); }
-  .cash-input{ flex:1; border:2px solid #F0EAFB; border-radius:12px; padding:8px 12px; font-family:'Fredoka'; font-size:18px; text-align:center; }
-  .quick-bills{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
-  .bill-btn{ flex:1; min-width:44px; background:#F3E9FF; border:none; border-radius:10px; padding:8px 4px; font-family:'Fredoka'; font-size:13px; font-weight:600; color:var(--purple-dark); }
-  .change-row{ margin-top:8px; text-align:center; font-family:'Fredoka'; font-size:18px; font-weight:600; color:var(--green-dark); }
-  .checkbox{ width:26px; height:26px; border-radius:8px; border:2px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff; background:var(--green); }
+  .cash-amount{ margin-top:12px; text-align:center; font-family:'Fredoka'; font-size:32px; font-weight:600; }
+  .cash-controls{ margin-top:8px; display:flex; align-items:center; justify-content:center; gap:24px; }
+  .step-btn{ width:46px; height:46px; border-radius:50%; border:none; font-family:'Fredoka'; font-size:24px; font-weight:600; color:#fff; }
+  .step-btn.minus{ background:var(--pink-dark); }
+  .step-btn.plus{ background:var(--green); }
+  .quick-bills{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+  .bill-btn{ background:var(--purple); color:#fff; border:none; border-radius:999px; padding:8px 14px; font-family:'Fredoka'; font-size:14px; font-weight:600; }
+  .bill-btn.exact{ background:var(--green); }
+  .change-row{ margin-top:14px; text-align:center; background:#F3E9FF; border-radius:16px; padding:16px; font-family:'Fredoka'; font-size:22px; font-weight:600; color:var(--green-dark); }
+  .keep-change-wrap{ margin-top:14px; display:flex; justify-content:center; }
+  .keep-change-btn{ display:flex; align-items:center; gap:12px; border:2px solid var(--purple); border-radius:18px; background:#fff; padding:12px 16px; font-family:'Fredoka'; font-size:16px; font-weight:600; color:var(--purple-dark); }
+  .checkbox{ width:26px; height:26px; border-radius:8px; border:2px solid var(--purple); display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff; background:#fff; }
+  .checkbox.checked{ border-color:var(--purple); background:var(--purple); }
+  .radio{ width:26px; height:26px; border-radius:50%; border:2px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff; background:var(--green); }
+  .radio.empty{ background:#fff; border-color:var(--green); color:transparent; }
   .complete-btn{ margin-top:auto; background:var(--purple); color:#fff; border:none; border-radius:18px; padding:16px; font-family:'Fredoka'; font-size:17px; font-weight:600; }
 
   .celebrate{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
@@ -136,29 +146,38 @@
       <div class="t">Total</div>
       <div class="v">$6.00</div>
     </div>
-    <div class="pay-option selected">
-      <div class="row">
-        <span class="lbl">💵 Cash</span>
-        <div class="checkbox">✓</div>
-      </div>
-      <div class="cash-controls">
-        <button class="step-btn">−</button>
-        <input class="cash-input" type="text" value="$20.00">
-        <button class="step-btn">+</button>
-      </div>
+    <div class="cash-entry">
+      <div class="tap-label">Tap to add</div>
       <div class="quick-bills">
+        <button class="bill-btn exact">Exact amount</button>
         <button class="bill-btn">$1</button>
         <button class="bill-btn">$5</button>
         <button class="bill-btn">$10</button>
         <button class="bill-btn">$20</button>
-        <button class="bill-btn">$100</button>
+      </div>
+      <div class="cash-amount">$20.00</div>
+      <div class="cash-controls">
+        <button class="step-btn minus">−</button>
+        <button class="step-btn plus">+</button>
       </div>
       <div class="change-row">Change: $14.00</div>
+      <div class="keep-change-wrap">
+        <div class="keep-change-btn">
+          <span>Keep change?</span>
+          <div class="checkbox"></div>
+        </div>
+      </div>
+    </div>
+    <div class="pay-option selected">
+      <div class="row">
+        <span class="lbl">💵 Cash</span>
+        <div class="radio">✓</div>
+      </div>
     </div>
     <div class="pay-option">
       <div class="row">
         <span class="lbl">📱 Venmo / Zelle</span>
-        <div class="checkbox" style="background:#fff; border-color:#E4DDF5;"></div>
+        <div class="radio empty"></div>
       </div>
     </div>
     <button class="complete-btn">Complete sale ✓</button>
