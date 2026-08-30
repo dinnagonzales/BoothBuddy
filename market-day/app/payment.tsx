@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { VenmoZellePaymentInfo } from '@/components/VenmoZellePaymentInfo';
@@ -154,22 +154,27 @@ export default function PaymentScreen() {
             onBack={() => router.back()}
           />
 
-          <View style={styles.totalBlock}>
-            <Text style={styles.totalLabel}>Order Total</Text>
-            <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
-          </View>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled">
+            <View style={styles.totalBlock}>
+              <Text style={styles.totalLabel}>Order Total</Text>
+              <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
+            </View>
 
-          {paymentMethod === 'venmo_zelle' ? (
-            <VenmoZellePaymentInfo
-              settings={businessSettings}
-              totalCents={totalCents}
-              saleLabel={
-                invoiceNumber != null ? `Invoice #${invoiceNumber}` : undefined
-              }
-            />
-          ) : null}
+            {paymentMethod === 'venmo_zelle' ? (
+              <VenmoZellePaymentInfo
+                settings={businessSettings}
+                totalCents={totalCents}
+                saleLabel={
+                  invoiceNumber != null ? `Invoice #${invoiceNumber}` : undefined
+                }
+              />
+            ) : null}
 
-          {showAmountEntry ? (
+            {showAmountEntry ? (
             <Card style={styles.cashEntry} className="p-4 mb-3">
               <Text style={styles.valuePaidLabel}>Amount Paid</Text>
               <View style={styles.cashControlRow}>
@@ -345,17 +350,20 @@ export default function PaymentScreen() {
               </Pressable>
             </Card>
           ) : null}
+          </ScrollView>
 
-          <Button
-            size="lg"
-            className="mt-auto mb-2"
-            style={styles.completeButton}
-            isDisabled={!canComplete}
-            onPress={completeSale}>
-            <Button.Label style={styles.completeButtonLabel}>
-              {preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
-            </Button.Label>
-          </Button>
+          <View style={styles.endDock}>
+            <Button
+              size="lg"
+              className="w-full"
+              style={styles.completeButton}
+              isDisabled={!canComplete}
+              onPress={completeSale}>
+              <Button.Label style={styles.completeButtonLabel}>
+                {preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
+              </Button.Label>
+            </Button>
+          </View>
         </View>
       </View>
     </Screen>
@@ -371,6 +379,16 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 440,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 12,
+  },
+  endDock: {
+    paddingTop: 10,
+    paddingBottom: 16,
   },
   totalBlock: {
     alignItems: 'center',

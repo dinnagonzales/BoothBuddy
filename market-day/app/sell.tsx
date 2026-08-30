@@ -152,13 +152,115 @@ export default function SellScreen() {
         <View style={styles.container}>
           <ScreenHeader title={screenTitle} onBack={() => router.back()} />
 
-          <SectionLabel>🍭 Menu · use − and + to adjust</SectionLabel>
-
           <FlatList
             data={items}
             keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{ gap: spacing.itemListGap, paddingBottom: 8 }}
-            style={{ flex: 1 }}
+            contentContainerStyle={styles.listContent}
+            style={styles.list}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              <View style={styles.menuLabel}>
+                <SectionLabel>🍭 Menu · use − and + to adjust</SectionLabel>
+              </View>
+            }
+            ListFooterComponent={
+              <View style={styles.cartContainer}>
+                {showSaleMeta ? (
+                  <Card style={styles.metaCard}>
+                    <Text style={styles.metaLabel}>
+                      Name {metaRequired ? '(required)' : '(optional)'}
+                    </Text>
+                    <TextInput
+                      value={saleName}
+                      onChangeText={setSaleName}
+                      placeholder="Customer or tab name"
+                      placeholderTextColor={colors.inkSoft}
+                      style={styles.metaInput}
+                    />
+                    <Text style={styles.metaLabel}>
+                      Notes {metaRequired ? '(required)' : '(optional)'}
+                    </Text>
+                    <TextInput
+                      value={saleNotes}
+                      onChangeText={setSaleNotes}
+                      placeholder={
+                        metaRequired
+                          ? 'Pickup time, special requests, etc.'
+                          : 'Who bought it, where, etc.'
+                      }
+                      placeholderTextColor={colors.inkSoft}
+                      style={[styles.metaInput, styles.notesInput]}
+                      multiline
+                    />
+                    {metaRequired ? (
+                      <>
+                        <Text style={styles.metaLabel}>Complete date (required)</Text>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Complete date, ${formatCompleteDate(saleCompleteDate)}`}
+                          onPress={() => setShowCompleteDatePicker(true)}
+                          style={({ pressed }) => [
+                            styles.dateButton,
+                            pressed && styles.dateButtonPressed,
+                          ]}>
+                          <Text style={styles.dateValue}>{formatCompleteDate(saleCompleteDate)}</Text>
+                          <Text style={styles.dateChevron}>▾</Text>
+                        </Pressable>
+                        {showCompleteDatePicker ? (
+                          <DateTimePicker
+                            value={localDayFromExportDate(saleCompleteDate)}
+                            mode="date"
+                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                            onChange={handleCompleteDateChange}
+                          />
+                        ) : null}
+                        {Platform.OS === 'ios' && showCompleteDatePicker ? (
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() => setShowCompleteDatePicker(false)}
+                            style={styles.donePicker}>
+                            <Text style={styles.donePickerLabel}>Done</Text>
+                          </Pressable>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </Card>
+                ) : null}
+                <Card style={styles.cartCard}>
+                  <Text style={styles.cartTitle}>Cart</Text>
+                  {lines.map((line) => (
+                    <View key={line.itemId} style={styles.cartLine}>
+                      <Text style={styles.cartLineName}>
+                        {line.name}({line.quantity})
+                      </Text>
+                      <Text style={styles.cartLinePrice}>
+                        {formatMoney(line.priceCents * line.quantity)}
+                      </Text>
+                    </View>
+                  ))}
+                  <View style={styles.cartTotalRow}>
+                    <Text style={styles.cartTotalLabel}>{itemCountLabel}</Text>
+                    <Text style={styles.cartTotalValue}>{formatMoney(totalCents)}</Text>
+                  </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={!canCheckout}
+                    onPress={() => {
+                      leavingForPayment.current = true;
+                      router.push('/payment');
+                    }}
+                    style={({ pressed }) => [
+                      styles.checkoutButtonOuter,
+                      !canCheckout ? styles.checkoutButtonDisabled : null,
+                      pressed && canCheckout ? styles.checkoutButtonOuterPressed : null,
+                    ]}>
+                    <View style={styles.checkoutButtonInner}>
+                      <Text style={styles.checkoutButtonLabel}>Checkout →</Text>
+                    </View>
+                  </Pressable>
+                </Card>
+              </View>
+            }
             renderItem={({ item }) => {
               const quantity = lines.find((line) => line.itemId === item.id)?.quantity ?? 0;
 
@@ -182,101 +284,6 @@ export default function SellScreen() {
               );
             }}
           />
-
-          <View style={styles.cartContainer}>
-            {showSaleMeta ? (
-              <Card style={styles.metaCard}>
-                <Text style={styles.metaLabel}>
-                  Name {metaRequired ? '(required)' : '(optional)'}
-                </Text>
-                <TextInput
-                  value={saleName}
-                  onChangeText={setSaleName}
-                  placeholder="Customer or tab name"
-                  placeholderTextColor={colors.inkSoft}
-                  style={styles.metaInput}
-                />
-                <Text style={styles.metaLabel}>
-                  Notes {metaRequired ? '(required)' : '(optional)'}
-                </Text>
-                <TextInput
-                  value={saleNotes}
-                  onChangeText={setSaleNotes}
-                  placeholder={
-                    metaRequired ? 'Pickup time, special requests, etc.' : 'Who bought it, where, etc.'
-                  }
-                  placeholderTextColor={colors.inkSoft}
-                  style={[styles.metaInput, styles.notesInput]}
-                  multiline
-                />
-                {metaRequired ? (
-                  <>
-                    <Text style={styles.metaLabel}>Complete date (required)</Text>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Complete date, ${formatCompleteDate(saleCompleteDate)}`}
-                      onPress={() => setShowCompleteDatePicker(true)}
-                      style={({ pressed }) => [
-                        styles.dateButton,
-                        pressed && styles.dateButtonPressed,
-                      ]}>
-                      <Text style={styles.dateValue}>{formatCompleteDate(saleCompleteDate)}</Text>
-                      <Text style={styles.dateChevron}>▾</Text>
-                    </Pressable>
-                    {showCompleteDatePicker ? (
-                      <DateTimePicker
-                        value={localDayFromExportDate(saleCompleteDate)}
-                        mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        onChange={handleCompleteDateChange}
-                      />
-                    ) : null}
-                    {Platform.OS === 'ios' && showCompleteDatePicker ? (
-                      <Pressable
-                        accessibilityRole="button"
-                        onPress={() => setShowCompleteDatePicker(false)}
-                        style={styles.donePicker}>
-                        <Text style={styles.donePickerLabel}>Done</Text>
-                      </Pressable>
-                    ) : null}
-                  </>
-                ) : null}
-              </Card>
-            ) : null}
-            <Card style={styles.cartCard}>
-              <Text style={styles.cartTitle}>Cart</Text>
-              {lines.map((line) => (
-                <View key={line.itemId} style={styles.cartLine}>
-                  <Text style={styles.cartLineName}>
-                    {line.name}({line.quantity})
-                  </Text>
-                  <Text style={styles.cartLinePrice}>
-                    {formatMoney(line.priceCents * line.quantity)}
-                  </Text>
-                </View>
-              ))}
-              <View style={styles.cartTotalRow}>
-                <Text style={styles.cartTotalLabel}>{itemCountLabel}</Text>
-                <Text style={styles.cartTotalValue}>{formatMoney(totalCents)}</Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                disabled={!canCheckout}
-                onPress={() => {
-                  leavingForPayment.current = true;
-                  router.push('/payment');
-                }}
-                style={({ pressed }) => [
-                  styles.checkoutButtonOuter,
-                  !canCheckout ? styles.checkoutButtonDisabled : null,
-                  pressed && canCheckout ? styles.checkoutButtonOuterPressed : null,
-                ]}>
-                <View style={styles.checkoutButtonInner}>
-                  <Text style={styles.checkoutButtonLabel}>Checkout →</Text>
-                </View>
-              </Pressable>
-            </Card>
-          </View>
         </View>
       </View>
     </Screen>
@@ -293,9 +300,18 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 440,
   },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    gap: spacing.itemListGap,
+    paddingBottom: 24,
+  },
+  menuLabel: {
+    marginBottom: 0,
+  },
   cartContainer: {
     marginTop: 24,
-    marginBottom: 24,
     gap: 12,
   },
   metaCard: {

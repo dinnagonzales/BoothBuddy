@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import { Card } from '@/components/ui';
@@ -14,6 +14,9 @@ import {
   hasZellePaymentInfo,
   venmoPayUrl,
 } from '@/lib/venmo-payment';
+
+const zelleLogo = require('@/assets/images/zelle.png');
+const venmoLogo = require('@/assets/images/venmo.png');
 
 type VenmoZellePaymentInfoProps = {
   settings: BusinessSettings;
@@ -51,7 +54,7 @@ export function VenmoZellePaymentInfo({
 
       {showZelle ? (
         <View style={[styles.section, showVenmo && styles.sectionDivider]}>
-          <Text style={styles.sectionTitle}>Zelle</Text>
+          <BrandLogo source={zelleLogo} label="Zelle" />
           {settings.zelleName ? (
             <Text style={styles.zelleNameLine}>{settings.zelleName}</Text>
           ) : null}
@@ -71,7 +74,7 @@ export function VenmoZellePaymentInfo({
 
       {showVenmo ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Venmo</Text>
+          <BrandLogo source={venmoLogo} label="Venmo" />
           {settings.venmoHandle ? (
             <Text style={styles.contactLine}>{formatVenmoHandle(settings.venmoHandle)}</Text>
           ) : null}
@@ -87,6 +90,17 @@ export function VenmoZellePaymentInfo({
         </View>
       ) : null}
     </Card>
+  );
+}
+
+function BrandLogo({ source, label }: { source: ImageSourcePropType; label: string }) {
+  return (
+    <Image
+      source={source}
+      style={styles.brandLogo}
+      resizeMode="contain"
+      accessibilityLabel={label}
+    />
   );
 }
 
@@ -120,10 +134,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E8E0F5',
   },
-  sectionTitle: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 16,
-    color: colors.ink,
+  brandLogo: {
+    width: 128,
+    height: 44,
   },
   zelleNameLine: {
     fontFamily: fonts.heading.semiBold,
