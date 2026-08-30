@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
   nav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: '#E4DDF5',
     paddingTop: 10,

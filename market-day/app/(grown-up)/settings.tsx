@@ -10,6 +10,7 @@ import { PastEventsList } from '@/components/PastEventsList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { StartMarketDayForm } from '@/components/StartMarketDayForm';
 import { TodaysMenu } from '@/components/TodaysMenu';
+import { Button } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import {
@@ -139,16 +140,19 @@ export default function SettingsScreen() {
     <View style={styles.screen}>
       <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <MarketDaySummaryCard
-          name={activeDay.name}
-          startedAt={activeDay.startedAt}
-          totalCents={stats.totalCents}
-          profitCents={stats.profitCents}
-          saleCount={sales.length}
-          cashCents={stats.cashCents}
-          venmoCents={stats.venmoCents}
-          tipsCents={stats.tipsCents}
-        />
+        <View style={styles.summarySection}>
+          <SectionLabel>Event Summary</SectionLabel>
+          <MarketDaySummaryCard
+            name={activeDay.name}
+            startedAt={activeDay.startedAt}
+            totalCents={stats.totalCents}
+            profitCents={stats.profitCents}
+            saleCount={sales.length}
+            cashCents={stats.cashCents}
+            venmoCents={stats.venmoCents}
+            tipsCents={stats.tipsCents}
+          />
+        </View>
 
         {activeDay.needsReexport ? (
           <View style={styles.reexportBanner}>
@@ -190,6 +194,14 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <View style={styles.endDock}>
+        <Button
+          size="lg"
+          variant="primary"
+          className="w-full"
+          style={styles.dashboardButton}
+          onPress={() => leaveGrownUpArea(router)}>
+          <Button.Label style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Button.Label>
+        </Button>
         <Pressable
           accessibilityRole="button"
           onPress={handleEndMarketDay}
@@ -207,7 +219,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.screen,
   },
   scrollContent: {
-    paddingBottom: 12,
+    paddingBottom: 132,
+  },
+  summarySection: {
+    marginBottom: 4,
+  },
+  dashboardButton: {
+    borderRadius: radii.completeBtn,
+  },
+  dashboardButtonLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 16,
+    color: colors.white,
   },
   reexportBanner: {
     backgroundColor: '#FFF4D6',
@@ -289,8 +312,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   endDock: {
+    gap: 10,
     paddingTop: 10,
-    paddingBottom: 4,
+    paddingBottom: 16,
   },
   endButton: {
     width: '100%',
