@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { PreorderSalesList } from '@/components/PreorderSalesList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { colors } from '@/constants/theme';
-import { getPreorderPrepSummary, getPreorderSales, type PreorderPrepItem } from '@/lib/db/queries';
+import { getPreorderPrepSummary, getPreorderSales, completePreorder, getSaleByNumber, type PreorderPrepItem } from '@/lib/db/queries';
 import { isCompleteDateOverdue, startOfLocalDay } from '@/lib/market-day';
 import { sharePreorderPrintout } from '@/lib/market-day-export';
 import { leaveGrownUpArea } from '@/lib/navigation';
@@ -20,6 +20,7 @@ export default function PreordersScreen() {
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [prepSummary, setPrepSummary] = useState<PreorderPrepItem[]>([]);
   const [savedSaleNumber, setSavedSaleNumber] = useState<number | null>(null);
+  const [deliveringSaleNumber, setDeliveringSaleNumber] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -65,6 +66,45 @@ export default function PreordersScreen() {
         setExporting(false);
       }
     })();
+  };
+
+  const handleMarkDelivered = (saleNumber: number) => {
+    const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+    const label = sale?.name?.trim() ? sale.name : `#${saleNumber}`;
+
+    Alert.alert(
+      'Mark delivered?',
+      `${label} will move to Sales.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Mark Delivered',
+          onPress: () => {
+            void (async () => {
+              setDeliveringSaleNumber(saleNumber);
+              try {
+                const header = await getSaleByNumber(db, saleNumber);
+                if (!header?.isPreorder || header.paymentMethod === 'pay_on_pickup') return;
+
+                await completePreorder(db, saleNumber, {
+                  paymentMethod: header.paymentMethod,
+                  cashReceivedCents: header.cashReceivedCents ?? header.totalCents,
+                  changeKept: header.changeKept,
+                });
+                await refresh();
+              } catch (error) {
+                Alert.alert(
+                  'Could not mark delivered',
+                  error instanceof Error ? error.message : 'Something went wrong.',
+                );
+              } finally {
+                setDeliveringSaleNumber(null);
+              }
+            })();
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -117,12 +157,14 @@ export default function PreordersScreen() {
               sales={overdueSales}
               overdue
               savedSaleNumber={savedSaleNumber}
+              deliveringSaleNumber={deliveringSaleNumber}
               onSalePress={(saleNumber) =>
                 router.push({
                   pathname: '/sale/[saleNumber]',
                   params: { saleNumber: String(saleNumber), returnTo: 'preorders' },
                 })
               }
+              onMarkDelivered={handleMarkDelivered}
             />
           </>
         ) : null}
@@ -132,12 +174,14 @@ export default function PreordersScreen() {
           <PreorderSalesList
             sales={upcomingSales}
             savedSaleNumber={savedSaleNumber}
+            deliveringSaleNumber={deliveringSaleNumber}
             onSalePress={(saleNumber) =>
               router.push({
                 pathname: '/sale/[saleNumber]',
                 params: { saleNumber: String(saleNumber), returnTo: 'preorders' },
               })
             }
+            onMarkDelivered={handleMarkDelivered}
           />
         ) : (
           <View style={styles.emptyCard}>

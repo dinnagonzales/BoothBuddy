@@ -306,8 +306,9 @@ export function SaleDetailScreen({
       ? draftPaymentMethod
       : draftPaymentMethod ?? sale.paymentMethod;
   const selectedPayment = sale.isPreorder && !readOnly ? draftPaymentMethod : paymentMethod;
-  const preorderCompleteLabel =
-    activePreorderPayment === 'cash'
+  const preorderCompleteLabel = preorderPaymentLocked
+    ? 'Mark Delivered → Sales'
+    : activePreorderPayment === 'cash'
       ? 'Mark paid with Cash → Sales'
       : activePreorderPayment === 'venmo_zelle'
         ? 'Mark paid with Venmo/Zelle → Sales'

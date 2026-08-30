@@ -8,15 +8,19 @@ import type { SaleSummary } from '@/lib/types';
 type PreorderSalesListProps = {
   sales: SaleSummary[];
   savedSaleNumber?: number | null;
+  deliveringSaleNumber?: number | null;
   overdue?: boolean;
   onSalePress?: (saleNumber: number) => void;
+  onMarkDelivered?: (saleNumber: number) => void;
 };
 
 export function PreorderSalesList({
   sales,
   savedSaleNumber,
+  deliveringSaleNumber = null,
   overdue = false,
   onSalePress,
+  onMarkDelivered,
 }: PreorderSalesListProps) {
   if (sales.length === 0) {
     return null;
@@ -34,33 +38,49 @@ export function PreorderSalesList({
               <Text style={styles.savedBannerText}>Saved ✓</Text>
             </View>
           ) : null}
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => onSalePress?.(sale.saleNumber)}
-            style={({ pressed }) => [
-              styles.saleRow,
-              overdue && styles.saleRowOverdue,
-              pressed && styles.saleRowPressed,
-            ]}>
-            <View style={styles.saleCopy}>
-              <Text style={styles.saleNumber}>
-                {sale.name ? sale.name : `#${sale.saleNumber}`}
-              </Text>
-              {sale.notes ? <Text style={styles.saleNotes}>{sale.notes}</Text> : null}
-              <Text style={[styles.paymentStatus, isPaid && styles.paymentStatusPaid]}>
-                • {isPaid ? 'Paid' : 'Pending Payment'}
-              </Text>
-              {sale.completeDate ? (
-                <Text style={[styles.saleCompleteDate, overdue && styles.saleCompleteDateOverdue]}>
-                  Complete: {formatCompleteDate(sale.completeDate)}
-                  {overdue || isCompleteDateOverdue(sale.completeDate) ? ' · Overdue' : ''}
+          <View
+            style={[styles.saleCard, overdue && styles.saleCardOverdue]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onSalePress?.(sale.saleNumber)}
+              style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
+              <View style={styles.saleCopy}>
+                <Text style={styles.saleNumber}>
+                  {sale.name ? sale.name : `#${sale.saleNumber}`}
                 </Text>
-              ) : null}
-            </View>
-            <View style={styles.saleAmountWrap}>
-              <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>
-            </View>
-          </Pressable>
+                {sale.notes ? <Text style={styles.saleNotes}>{sale.notes}</Text> : null}
+                <Text style={[styles.paymentStatus, isPaid && styles.paymentStatusPaid]}>
+                  • {isPaid ? 'Paid' : 'Pending Payment'}
+                </Text>
+                {sale.completeDate ? (
+                  <Text style={[styles.saleCompleteDate, overdue && styles.saleCompleteDateOverdue]}>
+                    Complete: {formatCompleteDate(sale.completeDate)}
+                    {overdue || isCompleteDateOverdue(sale.completeDate) ? ' · Overdue' : ''}
+                  </Text>
+                ) : null}
+              </View>
+              <View style={styles.saleAmountWrap}>
+                <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>
+              </View>
+            </Pressable>
+            {isPaid ? (
+              <View style={styles.saleCardFooter}>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={deliveringSaleNumber === sale.saleNumber}
+                  onPress={() => onMarkDelivered?.(sale.saleNumber)}
+                  style={({ pressed }) => [
+                    styles.deliverButton,
+                    deliveringSaleNumber === sale.saleNumber && styles.deliverButtonDisabled,
+                    pressed && deliveringSaleNumber !== sale.saleNumber && styles.deliverButtonPressed,
+                  ]}>
+                  <Text style={styles.deliverButtonLabel}>
+                    {deliveringSaleNumber === sale.saleNumber ? 'Delivering…' : 'Mark Delivered'}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </View>
         </View>
         );
       })}
@@ -90,20 +110,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.greenDark,
   },
+  saleCard: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  saleCardOverdue: {
+    borderWidth: 1,
+    borderColor: '#F5C2C2',
+    backgroundColor: '#FFF8F8',
+  },
   saleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    borderRadius: 14,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 8,
     gap: 12,
-  },
-  saleRowOverdue: {
-    borderWidth: 1,
-    borderColor: '#F5C2C2',
-    backgroundColor: '#FFF8F8',
   },
   saleRowPressed: {
     opacity: 0.85,
@@ -146,5 +170,28 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: colors.ink,
+  },
+  saleCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+  },
+  deliverButton: {
+    backgroundColor: colors.green,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  deliverButtonPressed: {
+    opacity: 0.85,
+  },
+  deliverButtonDisabled: {
+    opacity: 0.55,
+  },
+  deliverButtonLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 11,
+    color: colors.white,
   },
 });
