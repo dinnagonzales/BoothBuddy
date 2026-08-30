@@ -56,7 +56,7 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
             autoCapitalize="words"
             editable={!busy}
           />
-          <Text style={styles.hint}>Required — shows in settings and exports</Text>
+          <Text style={styles.hint}>Required — shows in Events and exports</Text>
         </View>
 
         <View style={styles.fieldDivider} />

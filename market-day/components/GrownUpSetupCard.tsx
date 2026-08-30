@@ -44,7 +44,7 @@ export function GrownUpSetupCard({
 
           <Text style={styles.title}>Grown-up setup</Text>
           <Text style={styles.subtext}>
-            Pick a 4-digit Pass Code. You'll need it every time you open settings.
+            Pick a 4-digit Pass Code. You&apos;ll need it every time you open Events.
           </Text>
 
           <View style={styles.form}>

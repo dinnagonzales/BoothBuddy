@@ -109,7 +109,7 @@ export default function SettingsScreen() {
   if (!activeDay) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader title="⚙️ Settings" onBack={() => leaveGrownUpArea(router)} />
+        <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
         <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.emptyWrap}>
             <View style={styles.emptyBadge}>
@@ -136,7 +136,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="⚙️ Settings" onBack={() => leaveGrownUpArea(router)} />
+      <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <MarketDaySummaryCard
           name={activeDay.name}

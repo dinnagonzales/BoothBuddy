@@ -28,6 +28,16 @@ import type { Item } from '@/lib/types';
 
 type HomeItem = Item & { soldOut?: boolean };
 
+type MenuRow = HomeItem[];
+
+function chunkMenuRows(items: HomeItem[]): MenuRow[] {
+  const rows: MenuRow[] = [];
+  for (let i = 0; i < items.length; i += 2) {
+    rows.push(items.slice(i, i + 2));
+  }
+  return rows;
+}
+
 type ActiveMarketSummary = {
   name: string;
   dateLabel: string;
@@ -118,6 +128,8 @@ export default function HomeScreen() {
     router.push('/sell');
   };
 
+  const menuRows = chunkMenuRows(items);
+
   if (setupReady === null) {
     return (
       <Screen>
@@ -142,7 +154,7 @@ export default function HomeScreen() {
         <View style={styles.container}>
           <View style={styles.topBar}>
             <Pressable
-              accessibilityLabel="Settings"
+              accessibilityLabel="Events"
               style={styles.gearButton}
               onPress={openSettings}>
               <Text style={styles.gearIcon}>⚙️</Text>
@@ -186,11 +198,12 @@ export default function HomeScreen() {
           </View>
 
           <Text style={styles.menuLabel}>🍭 Available Items</Text>
-
+          <Text style={styles.menuHint}>Tap an item to start a sale</Text>
 
           <FlatList
-            data={items}
-            keyExtractor={(item) => String(item.id)}
+            key="home-menu-grid"
+            data={menuRows}
+            keyExtractor={(row) => String(row[0]?.id ?? 'empty-row')}
             contentContainerStyle={styles.itemList}
             style={styles.itemListScroll}
             ListEmptyComponent={
@@ -198,27 +211,37 @@ export default function HomeScreen() {
                 No items yet — ask a grown-up to add some in setup.
               </Text>
             }
-            renderItem={({ item }) => (
-              <Pressable
-                accessibilityRole="button"
-                disabled={item.soldOut}
-                onPress={() => openSellWithItem(item)}
-                style={({ pressed }) => [
-                  styles.menuRow,
-                  item.soldOut ? styles.menuRowSoldOut : null,
-                  pressed && !item.soldOut ? styles.menuRowPressed : null,
-                ]}>
-                <Text style={styles.menuEmoji}>{item.emoji}</Text>
-                <View style={styles.menuNameWrap}>
-                  <Text style={[styles.menuName, item.soldOut ? styles.menuNameSoldOut : null]}>
-                    {item.name}
-                  </Text>
-                  {item.soldOut ? <Text style={styles.soldOutLabel}>Sold out</Text> : null}
-                </View>
-                <Text style={[styles.menuPrice, item.soldOut ? styles.menuPriceSoldOut : null]}>
-                  {formatMoney(item.priceCents)}
-                </Text>
-              </Pressable>
+            renderItem={({ item: row }) => (
+              <View style={styles.menuGridRow}>
+                {row.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    accessibilityRole="button"
+                    disabled={item.soldOut}
+                    onPress={() => openSellWithItem(item)}
+                    style={({ pressed }) => [
+                      styles.menuTile,
+                      item.soldOut ? styles.menuTileSoldOut : null,
+                      pressed && !item.soldOut ? styles.menuTilePressed : null,
+                    ]}>
+                    <Text style={styles.menuTileEmoji}>{item.emoji}</Text>
+                    <Text
+                      style={[styles.menuTileName, item.soldOut ? styles.menuTileNameSoldOut : null]}
+                      numberOfLines={2}>
+                      {item.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.menuTilePrice,
+                        item.soldOut ? styles.menuTilePriceSoldOut : null,
+                      ]}>
+                      {formatMoney(item.priceCents)}
+                    </Text>
+                    {item.soldOut ? <Text style={styles.soldOutLabel}>Sold out</Text> : null}
+                  </Pressable>
+                ))}
+                {row.length === 1 ? <View style={styles.menuTileSpacer} /> : null}
+              </View>
             )}
           />
         </View>
@@ -345,57 +368,63 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   itemList: {
-    gap: spacing.itemListGap,
     paddingBottom: 40,
   },
   itemListScroll: {
     flex: 1,
   },
-  menuRow: {
+  menuGridRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    gap: spacing.itemListGap,
+    marginBottom: spacing.itemListGap,
+  },
+  menuTile: {
+    flex: 1,
+    aspectRatio: 1,
     backgroundColor: colors.white,
     borderRadius: radii.itemRow,
-    paddingHorizontal: spacing.itemRowPaddingH,
-    paddingVertical: spacing.itemRowPaddingV,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-  menuRowPressed: {
+  menuTileSpacer: {
+    flex: 1,
+  },
+  menuTilePressed: {
     opacity: 0.88,
   },
-  menuRowSoldOut: {
+  menuTileSoldOut: {
     opacity: 0.65,
   },
-  menuEmoji: {
-    width: 28,
-    fontSize: 22,
+  menuTileEmoji: {
+    fontSize: 52,
+    lineHeight: 58,
     textAlign: 'center',
   },
-  menuName: {
+  menuTileName: {
     fontFamily: fonts.body.extraBold,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.ink,
+    textAlign: 'center',
   },
-  menuNameWrap: {
-    flex: 1,
-    gap: 2,
-  },
-  menuNameSoldOut: {
+  menuTileNameSoldOut: {
     color: colors.inkSoft,
   },
   soldOutLabel: {
     fontFamily: fonts.body.bold,
-    fontSize: 11,
+    fontSize: 10,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: colors.inkSoft,
   },
-  menuPrice: {
+  menuTilePrice: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 14,
+    fontSize: 17,
     color: colors.purpleDark,
   },
-  menuPriceSoldOut: {
+  menuTilePriceSoldOut: {
     color: colors.inkSoft,
   },
   emptyItems: {
