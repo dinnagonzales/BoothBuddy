@@ -137,12 +137,11 @@ It might be **Sold out** for today. Pick something else or ask a grown-up.
 
 **For sellers**
 
-1. See the big **Total** — that’s what the customer owes.
+1. See **Order Total** — that’s what the customer owes.
 2. **Cash** is selected by default. In the cash-entry card (above the payment-method cards):
 
-   - Tap bill chips ($1, $5, $10, $20, $100), **Exact amount**, or **Clear** at the top.
-   - The **amount received** shows below the chips.
-   - Use **− / +** under the amount for $1 tweaks.
+   - **Amount Paid** — large number between **− / +** (gray when empty, red if too low, green when enough).
+   - Tap bill chips ($1, $5, $10, $20, $100), **Exact amount**, or **Clear** below that.
    - Read **Change** (money back) or **Still $X due** (not enough yet) in the status bar.
    - If there is change, tap the centered **Keep change?** button (unchecked by default). The checkbox fills when selected; the line switches to **Keeping $X — no change back**.
 
@@ -342,7 +341,7 @@ After you **End Market Day**, that day moves to **Past Events** on Settings (whe
 
 Each row shows the **name**, **date**, and **number of sales**. Tap one to open its dashboard:
 
-- Totals and profit (same 2×2 grid as an active day)
+- Totals and profit (same summary as an active day, including **Tips**)
 - Full **Sales** list — tap to edit or remove
 - **Export sales as CSV** (or **Re-export** if you already exported)
 - **↩ Reopen Market Day** — only on the most recently closed day, and only before export
@@ -375,7 +374,7 @@ After export, **Reopen** is no longer available for that day.
 While a Market Day is active:
 
 1. **⚙️** → **Pass Code** → **Settings**.
-2. See totals: number of sales, **profit**, gross revenue, **Cash** vs **Venmo/Zelle**.
+2. See totals: number of sales, **profit**, gross revenue, **Cash** vs **Venmo/Zelle**, and **Tips** (kept change).
 3. Scroll the **Sales** list — each row shows sale number (or name if you added one), time, amount, payment method.
 4. Tap a sale to change payment method, add optional **name** or **notes**, or remove the sale.
 
@@ -493,9 +492,9 @@ Only grown-ups can archive items, from **📦 Inventory**.
 ## `/faq/cash-change` — How does cash change work?
 
 1. On the payment screen, **Cash** is selected by default and the cash-entry card is at the top.
-2. Tap bill chips to match what the customer gave you ($1, $5, $10, $20, $100) — each tap **adds** to the running total.
+2. Set **Amount Paid** with **− / +** or tap bill chips ($1, $5, $10, $20, $100) — each chip tap **adds** to the running total.
 3. Or tap **Exact amount** if they paid the perfect total, or **Clear** to start over.
-4. The **amount received** is shown below the chips; use **− / +** underneath for $1 tweaks.
+4. The amount turns **red** if it’s below **Order Total**, **green** when it’s enough.
 
 The status bar shows:
 

@@ -75,6 +75,7 @@ test('Quick Sale during an Active Market Day still saves to Running Tab', async 
     profitCents: 0,
     cashCents: 0,
     venmoCents: 0,
+    tipsCents: 0,
   });
 
   const allTimeSales = await catalog.listAllTimeSales();

@@ -61,6 +61,7 @@ test('admin can remove a mis-logged Sale', async () => {
     profitCents: 600,
     cashCents: 0,
     venmoCents: 800,
+    tipsCents: 0,
   });
 });
 
@@ -112,6 +113,7 @@ test('admin can change payment method on a Sale', async () => {
     profitCents: 300,
     cashCents: 0,
     venmoCents: 400,
+    tipsCents: 0,
   });
 });
 

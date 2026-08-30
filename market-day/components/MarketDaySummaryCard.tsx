@@ -31,6 +31,7 @@ type MarketDaySummaryCardProps = {
   saleCount: number;
   cashCents: number;
   venmoCents: number;
+  tipsCents?: number;
   variant?: 'admin' | 'viewOnly' | 'allTime';
   totalCents?: number;
   profitCents?: number;
@@ -44,6 +45,7 @@ export function MarketDaySummaryCard({
   saleCount,
   cashCents,
   venmoCents,
+  tipsCents = 0,
   variant = 'admin',
 }: MarketDaySummaryCardProps) {
   return (
@@ -74,6 +76,13 @@ export function MarketDaySummaryCard({
             label="Cash"
             value={formatMoney(cashCents)}
             backgroundColor={colors.green}
+            fullWidth
+          />
+          <StatBox
+            emoji="💝"
+            label="Tips"
+            value={formatMoney(tipsCents)}
+            backgroundColor={colors.amber}
             fullWidth
           />
         </View>
@@ -108,6 +117,13 @@ export function MarketDaySummaryCard({
               backgroundColor={colors.green}
             />
           </View>
+          <StatBox
+            emoji="💝"
+            label="Tips"
+            value={formatMoney(tipsCents)}
+            backgroundColor={colors.amber}
+            fullWidth
+          />
         </View>
       )}
     </View>

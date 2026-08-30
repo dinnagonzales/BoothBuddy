@@ -33,6 +33,7 @@ export default function SalesScreen() {
     profitCents: 0,
     cashCents: 0,
     venmoCents: 0,
+    tipsCents: 0,
   });
   const [sales, setSales] = useState<AllTimeSaleSummary[]>([]);
   const [startDate, setStartDate] = useState(() => startOfLocalDay());
@@ -100,6 +101,7 @@ export default function SalesScreen() {
           saleCount={sales.length}
           cashCents={stats.cashCents}
           venmoCents={stats.venmoCents}
+          tipsCents={stats.tipsCents}
         />
 
         <View style={styles.exportSection}>

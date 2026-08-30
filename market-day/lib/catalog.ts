@@ -50,6 +50,7 @@ export type MarketDayStats = {
   profitCents: number;
   cashCents: number;
   venmoCents: number;
+  tipsCents: number;
 };
 
 export type SaleDetail = {
@@ -604,6 +605,7 @@ export function createCatalog(): Catalog {
       let profitCents = 0;
       let cashCents = 0;
       let venmoCents = 0;
+      let tipsCents = 0;
 
       for (const sale of daySales) {
         const saleTotal = cartTotal(sale.lines);
@@ -615,9 +617,12 @@ export function createCatalog(): Catalog {
         } else {
           venmoCents += saleTotal;
         }
+        if (sale.changeKept && sale.cashReceivedCents != null) {
+          tipsCents += Math.max(sale.cashReceivedCents - saleTotal, 0);
+        }
       }
 
-      return { totalCents, itemCount, profitCents, cashCents, venmoCents };
+      return { totalCents, itemCount, profitCents, cashCents, venmoCents, tipsCents };
     },
     async listSalesForMarketDay(marketDayId) {
       return sales
@@ -639,6 +644,7 @@ export function createCatalog(): Catalog {
       let profitCents = 0;
       let cashCents = 0;
       let venmoCents = 0;
+      let tipsCents = 0;
 
       for (const sale of completedSales()) {
         const saleTotal = cartTotal(sale.lines);
@@ -650,9 +656,12 @@ export function createCatalog(): Catalog {
         } else {
           venmoCents += saleTotal;
         }
+        if (sale.changeKept && sale.cashReceivedCents != null) {
+          tipsCents += Math.max(sale.cashReceivedCents - saleTotal, 0);
+        }
       }
 
-      return { totalCents, itemCount, profitCents, cashCents, venmoCents };
+      return { totalCents, itemCount, profitCents, cashCents, venmoCents, tipsCents };
     },
     async listAllTimeSales() {
       return completedSales()

@@ -33,6 +33,7 @@ test('admin dashboard shows total revenue and item count for the active Market D
     profitCents: 600,
     cashCents: 800,
     venmoCents: 0,
+    tipsCents: 0,
   });
 });
 
@@ -90,6 +91,7 @@ test('admin dashboard shows Cash and Venmo/Zelle totals separately', async () =>
     profitCents: 750,
     cashCents: 400,
     venmoCents: 600,
+    tipsCents: 0,
   });
 });
 
@@ -212,5 +214,6 @@ test('admin dashboard shows an empty Sale list before any Sales are logged', asy
     profitCents: 0,
     cashCents: 0,
     venmoCents: 0,
+    tipsCents: 0,
   });
 });

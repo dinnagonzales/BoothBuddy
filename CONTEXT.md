@@ -91,11 +91,11 @@ How the customer paid for a Sale — **Cash**, **Venmo/Zelle**, or **Pay on pick
 _Avoid_: Payment type, tender
 
 **Cash received**:
-For Cash sales, the amount of money the customer handed the seller. Set via quick-tap bill chips at the top of the cash-entry card ($1, $5, $10, $20, $100 — each tap adds to the running total), **Exact amount**, **Clear**, or **− / +** steppers below the displayed amount (in $1 increments). The app displays **Change** (cash received minus Sale total) in a status bar below the steppers.
+For Cash sales, the amount of money the customer handed the seller. The **Amount Paid** row at the top of the cash-entry card shows **− / +** steppers flanking the running total (gray when $0, red when below **Order Total**, green when enough). Below that, use quick-tap bill chips ($1, $5, $10, $20, $100 — each tap adds), **Exact amount**, or **Clear**. The app displays **Change** (cash received minus Sale total) in a status bar below the chips.
 _Avoid_: Amount tendered, paid
 
 **Change**:
-Cash received minus the Sale total, shown in the cash-entry card below the **− / +** steppers so the seller knows what to hand back (or **Still $X due** when not enough yet).
+Cash received minus the Sale total, shown in the cash-entry card below the bill chips so the seller knows what to hand back (or **Still $X due** when not enough yet).
 _Avoid_: Money back, difference
 
 **Keep change**:
@@ -103,7 +103,7 @@ Optional seller action at Cash checkout when change is due. A centered **Keep ch
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:
-The portion of **Change** the customer asked the seller to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer). Sale total and profit exclude kept change — tips are tracked separately for end-of-day cash counts.
+The portion of **Change** the customer asked the seller to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer) and on every market summary card (**Tips** stat). Sale total and profit exclude kept change — tips are tracked separately for end-of-day cash counts.
 _Avoid_: Tip, bonus, extra revenue
 
 **Active Market Day**:

@@ -70,6 +70,12 @@ export default function PaymentScreen() {
     [cashReceivedCents, totalCents],
   );
   const cashCoversTotal = cashReceivedCents >= totalCents;
+  const cashAmountColorStyle =
+    cashReceivedCents === 0
+      ? styles.cashAmountEmpty
+      : cashReceivedCents < totalCents
+        ? styles.cashAmountShort
+        : styles.cashAmountGood;
   const canComplete =
     paymentCanComplete(paymentMethod, cashReceivedCents, totalCents) &&
     (!preorderCheckout || preorderMetadataValid(saleName, saleNotes, saleCompleteDate));
@@ -132,12 +138,35 @@ export default function PaymentScreen() {
           />
 
           <View style={styles.totalBlock}>
-            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalLabel}>Order Total</Text>
             <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
           </View>
 
           {paymentMethod === 'cash' ? (
             <Card style={styles.cashEntry} className="p-4 mb-3">
+              <Text style={styles.valuePaidLabel}>Amount Paid</Text>
+              <View style={styles.cashControlRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Subtract one dollar"
+                  style={styles.minusButton}
+                  onPress={() => setCashReceivedCents((value) => Math.max(value - 100, 0))}>
+                  <Text style={styles.stepButtonLabel}>−</Text>
+                </Pressable>
+                <View style={styles.cashAmountWrap}>
+                  <Text style={[styles.cashAmount, cashAmountColorStyle]}>
+                    {formatMoney(cashReceivedCents)}
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Add one dollar"
+                  style={styles.plusButton}
+                  onPress={() => setCashReceivedCents((value) => value + 100)}>
+                  <Text style={styles.stepButtonLabel}>+</Text>
+                </Pressable>
+              </View>
+
               <Text style={styles.tapToAdd}>Tap to add</Text>
 
               <View style={styles.chipRow}>
@@ -173,31 +202,6 @@ export default function PaymentScreen() {
                     setCashReceivedCents(0);
                   }}>
                   <Text style={styles.clearChipLabel}>Clear</Text>
-                </Pressable>
-              </View>
-
-              <Text
-                style={[
-                  styles.cashAmount,
-                  cashReceivedCents === 0 ? styles.cashAmountEmpty : styles.cashAmountFilled,
-                ]}>
-                {formatMoney(cashReceivedCents)}
-              </Text>
-
-              <View style={styles.cashButtonRow}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Subtract one dollar"
-                  style={styles.minusButton}
-                  onPress={() => setCashReceivedCents((value) => Math.max(value - 100, 0))}>
-                  <Text style={styles.stepButtonLabel}>−</Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Add one dollar"
-                  style={styles.plusButton}
-                  onPress={() => setCashReceivedCents((value) => value + 100)}>
-                  <Text style={styles.stepButtonLabel}>+</Text>
                 </Pressable>
               </View>
 
@@ -377,12 +381,20 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: colors.white,
   },
-  cashButtonRow: {
+  valuePaidLabel: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 13,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
+    textAlign: 'center',
+  },
+  cashControlRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
-    marginTop: 10,
+    gap: 16,
+    marginTop: 4,
   },
   minusButton: {
     width: 46,
@@ -406,25 +418,34 @@ const styles = StyleSheet.create({
     color: colors.white,
     lineHeight: 28,
   },
+  cashAmountWrap: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    minWidth: 120,
+    alignItems: 'center',
+  },
   cashAmount: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 32,
-    marginTop: 14,
+    fontSize: 44,
     textAlign: 'center',
   },
-  cashAmountEmpty: {
-    color: colors.inkSoft,
-  },
-  cashAmountFilled: {
-    color: colors.ink,
-  },
   tapToAdd: {
+    marginTop: 14,
     textAlign: 'center',
     fontFamily: fonts.body.extraBold,
     fontSize: 11,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: colors.inkSoft,
+  },
+  cashAmountEmpty: {
+    color: colors.inkSoft,
+  },
+  cashAmountShort: {
+    color: colors.redDark,
+  },
+  cashAmountGood: {
+    color: colors.greenDark,
   },
   chipRow: {
     flexDirection: 'row',

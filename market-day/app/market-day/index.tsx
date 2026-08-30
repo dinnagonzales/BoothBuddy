@@ -17,7 +17,7 @@ export default function MarketDayDashboardScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
   const [activeDay, setActiveDay] = useState<MarketDay | null>(null);
-  const [stats, setStats] = useState({ cashCents: 0, venmoCents: 0 });
+  const [stats, setStats] = useState({ cashCents: 0, venmoCents: 0, tipsCents: 0 });
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -29,10 +29,14 @@ export default function MarketDayDashboardScreen() {
         getMarketDayStats(db, day.id),
         getMarketDaySales(db, day.id),
       ]);
-      setStats({ cashCents: dayStats.cashCents, venmoCents: dayStats.venmoCents });
+      setStats({
+        cashCents: dayStats.cashCents,
+        venmoCents: dayStats.venmoCents,
+        tipsCents: dayStats.tipsCents,
+      });
       setSales(daySales);
     } else {
-      setStats({ cashCents: 0, venmoCents: 0 });
+      setStats({ cashCents: 0, venmoCents: 0, tipsCents: 0 });
       setSales([]);
     }
     setLoaded(true);
@@ -64,6 +68,7 @@ export default function MarketDayDashboardScreen() {
             saleCount={sales.length}
             cashCents={stats.cashCents}
             venmoCents={stats.venmoCents}
+            tipsCents={stats.tipsCents}
           />
 
           <View style={styles.salesSection}>

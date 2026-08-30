@@ -51,8 +51,8 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 2. **Pick Items** — scrollable list with **+** buttons; cart pinned at bottom with **− / +** per line, running total, **Checkout**.
    - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
-3. **Payment** — total; when **Cash** is selected, a cash-entry card (bill chips → amount received → **− / +** steppers → **Change** or **Still $X due** → optional **Keep change?** when change is due); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
-   - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each adds to amount), **Exact amount**, **Clear**, **− / +** steppers ($1 increments). When change is due, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
+3. **Payment** — **Order Total**; when **Cash** is selected, a cash-entry card (**Amount Paid** with **− / +** steppers — amount turns red below total, green when enough) → bill chips → **Change** or **Still $X due** → optional **Keep change?** when change is due); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
+   - **Cash:** **Amount Paid** row first, then quick-tap bills ($1, $5, $10, $20, $100 — each adds), **Exact amount**, **Clear**. When change is due, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
    - **Venmo/Zelle:** selector only; assumed paid in full.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
@@ -85,7 +85,7 @@ Off-day sales come from **Make a Sale** when no **Active Market Day** is open (o
 
 Behind gear icon + parental gate (numeric code). Shows:
 
-- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown, sale list with Sale numbers (and optional sale names when set).
+- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown, **Tips** (kept change), sale list with Sale numbers (and optional sale names when set). Same summary card on Past Events detail, Market Day kid dashboard (without profit), and Sales tab (all-time).
 - Running Tab summary.
 - Item management (name, cost, price, emoji icon, optional photo).
 - Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.
@@ -111,7 +111,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 ## Payment
 
 - Cash and Venmo/Zelle are mutually exclusive per Sale.
-- **Cash** UI: bill chips at top of the cash-entry card, then amount received, **− / +** steppers, change/due line, then **Keep change?** (centered outline + checkbox; only when change is due; always defaults unchecked). Cash received stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips.
+- **Cash** UI: **Amount Paid** row (**− / +** flanking amount — gray when $0, red when below total, green when enough), then bill chips, change/due line, then **Keep change?** (centered outline + checkbox; only when change is due; always defaults unchecked). Cash received stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips.
 - Venmo/Zelle: no additional input.
 
 ---

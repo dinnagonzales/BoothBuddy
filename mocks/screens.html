@@ -65,7 +65,8 @@
   .pay-option.selected{ border-color:var(--green); }
   .pay-option .row{ display:flex; align-items:center; justify-content:space-between; }
   .pay-option .lbl{ font-family:'Fredoka'; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
-  .cash-amount{ margin-top:12px; text-align:center; font-family:'Fredoka'; font-size:32px; font-weight:600; }
+  .amount-paid-label{ text-align:center; font-size:11px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .cash-amount{ text-align:center; font-family:'Fredoka'; font-size:44px; font-weight:600; color:var(--green-dark); min-width:120px; padding:12px 8px; }
   .cash-controls{ margin-top:8px; display:flex; align-items:center; justify-content:center; gap:24px; }
   .step-btn{ width:46px; height:46px; border-radius:50%; border:none; font-family:'Fredoka'; font-size:24px; font-weight:600; color:#fff; }
   .step-btn.minus{ background:var(--pink-dark); }
@@ -143,10 +144,16 @@
   <div class="screen" style="background:#F3E9FF; padding:16px;">
     <div class="topbar"><h2 style="font-size:16px;">How'd they pay?</h2></div>
     <div class="pay-total">
-      <div class="t">Total</div>
+      <div class="t">Order Total</div>
       <div class="v">$6.00</div>
     </div>
     <div class="cash-entry">
+      <div class="amount-paid-label">Amount Paid</div>
+      <div class="cash-controls">
+        <button class="step-btn minus">−</button>
+        <div class="cash-amount">$20.00</div>
+        <button class="step-btn plus">+</button>
+      </div>
       <div class="tap-label">Tap to add</div>
       <div class="quick-bills">
         <button class="bill-btn exact">Exact amount</button>
@@ -154,11 +161,6 @@
         <button class="bill-btn">$5</button>
         <button class="bill-btn">$10</button>
         <button class="bill-btn">$20</button>
-      </div>
-      <div class="cash-amount">$20.00</div>
-      <div class="cash-controls">
-        <button class="step-btn minus">−</button>
-        <button class="step-btn plus">+</button>
       </div>
       <div class="change-row">Change: $14.00</div>
       <div class="keep-change-wrap">
