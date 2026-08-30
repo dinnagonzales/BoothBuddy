@@ -41,16 +41,20 @@
   }
 
   .item-list{ display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:2px; }
-  .item-row{ background:#fff; border-radius:16px; padding:10px 12px; display:flex; align-items:center; gap:10px; }
-  .item-row .ic{ font-size:22px; width:28px; text-align:center; }
-  .item-row .nm{ flex:1; font-weight:800; font-size:14px; }
-  .item-row .pr{ font-family:'Fredoka'; font-weight:600; font-size:14px; color:var(--purple-dark); margin-right:8px; }
+  .item-row{ background:#fff; border-radius:16px; padding:14px 16px; display:flex; align-items:center; gap:10px; }
+  .item-row .ic{ font-size:24px; width:32px; text-align:center; }
+  .item-row .nm{ flex:1; font-weight:800; font-size:16px; }
+  .item-row .pr{ font-family:'Fredoka'; font-weight:600; font-size:16px; color:var(--purple-dark); margin-right:4px; }
+  .menu-stepper{ display:flex; align-items:center; gap:4px; }
+  .menu-step{ width:32px; height:32px; border-radius:50%; border:none; font-family:'Fredoka'; font-size:20px; font-weight:600; color:#fff; display:flex; align-items:center; justify-content:center; }
+  .menu-step.minus{ background:var(--pink-dark); }
+  .menu-step.plus{ background:var(--green); }
+  .qty-box{ width:32px; height:32px; border-radius:12px; background:#FAF8FF; display:flex; align-items:center; justify-content:center; font-family:'Fredoka'; font-size:16px; font-weight:600; }
   .add-btn{ width:30px; height:30px; border-radius:50%; background:var(--purple); color:#fff; border:none; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
   .cart-box{ background:#fff; border-radius:18px; padding:12px 14px; margin-top:10px; }
   .cart-title{ font-size:11px; font-weight:800; text-transform:uppercase; color:var(--ink-soft); letter-spacing:0.5px; margin-bottom:6px; }
   .cart-line{ display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding:3px 0; }
-  .cart-line .q{ color:var(--ink-soft); font-weight:700; margin-right:4px; }
   .cart-total-row{ display:flex; justify-content:space-between; align-items:center; border-top:2px solid #F3E9FF; margin-top:8px; padding-top:8px; }
   .cart-total-row .t{ font-family:'Fredoka'; font-size:15px; font-weight:600; }
   .cart-total-row .v{ font-family:'Fredoka'; font-size:20px; font-weight:700; color:var(--pink-dark); }
@@ -123,17 +127,17 @@
   <div class="screen" style="background:#F3E9FF; padding:16px;">
     <div class="topbar"><h2 style="font-size:16px;">What sold?</h2></div>
     <div class="item-list">
-      <div class="item-row"><span class="ic">🐉</span><span class="nm">Dragon</span><span class="pr">$4.00</span><button class="add-btn">+</button></div>
-      <div class="item-row"><span class="ic">🔑</span><span class="nm">Groot key</span><span class="pr">$2.00</span><button class="add-btn">+</button></div>
-      <div class="item-row"><span class="ic">⚪</span><span class="nm">Pokeball</span><span class="pr">$2.00</span><button class="add-btn">+</button></div>
-      <div class="item-row"><span class="ic">📱</span><span class="nm">Phone stand</span><span class="pr">$2.50</span><button class="add-btn">+</button></div>
-      <div class="item-row"><span class="ic">🔤</span><span class="nm">Letter - A</span><span class="pr">$1.50</span><button class="add-btn">+</button></div>
+      <div class="item-row"><span class="ic">🐉</span><span class="nm">Dragon</span><span class="pr">$4.00</span><span class="menu-stepper"><button class="menu-step minus">−</button><span class="qty-box"></span><button class="menu-step plus">+</button></span></div>
+      <div class="item-row"><span class="ic">🔑</span><span class="nm">Groot key</span><span class="pr">$2.00</span><span class="menu-stepper"><button class="menu-step minus">−</button><span class="qty-box">2</span><button class="menu-step plus">+</button></span></div>
+      <div class="item-row"><span class="ic">⚪</span><span class="nm">Pokeball</span><span class="pr">$2.00</span><span class="menu-stepper"><button class="menu-step minus">−</button><span class="qty-box">1</span><button class="menu-step plus">+</button></span></div>
+      <div class="item-row"><span class="ic">📱</span><span class="nm">Phone stand</span><span class="pr">$2.50</span><span class="menu-stepper"><button class="menu-step minus">−</button><span class="qty-box"></span><button class="menu-step plus">+</button></span></div>
+      <div class="item-row"><span class="ic">🔤</span><span class="nm">Letter - A</span><span class="pr">$1.50</span><span class="menu-stepper"><button class="menu-step minus">−</button><span class="qty-box"></span><button class="menu-step plus">+</button></span></div>
     </div>
     <div class="cart-box">
       <div class="cart-title">Cart</div>
-      <div class="cart-line"><span><span class="q">2x</span>Groot key</span><span>$4.00</span></div>
-      <div class="cart-line"><span><span class="q">1x</span>Pokeball</span><span>$2.00</span></div>
-      <div class="cart-total-row"><span class="t">Total</span><span class="v">$6.00</span></div>
+      <div class="cart-line"><span>Groot key(2)</span><span>$4.00</span></div>
+      <div class="cart-line"><span>Pokeball(1)</span><span>$2.00</span></div>
+      <div class="cart-total-row"><span class="t">3 items</span><span class="v">$6.00</span></div>
       <button class="checkout-btn">Checkout →</button>
     </div>
   </div>

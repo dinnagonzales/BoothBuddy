@@ -38,7 +38,7 @@ Lightweight tracker for Market Day MVP work. Not synced to GitHub or any externa
 
 ## Already in scaffold (done)
 
-- Kid sell flow: Home Items menu → **Make a Sale** (always) or **+ Pre-order** → cart → payment → celebration → Fix  
+- Kid sell flow: Home Items menu → **Make a Sale** (always) or **+ Pre-order** → menu steppers + cart summary → payment → celebration → Fix  
 - SQLite schema  
 - HeroUI Native + Uniwind theme  
 - Visual polish — Fredoka/Nunito, mock-aligned spacing/radii (`constants/visual.ts`)

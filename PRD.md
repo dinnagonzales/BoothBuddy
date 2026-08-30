@@ -48,7 +48,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 ### Log a sale (seller — primary flow)
 
 1. **Home** — **Items** list (icon, name, price) + **Make a Sale** (always enabled). Optional **Market Day** banner when a day is active.
-2. **Pick Items** — scrollable list with **+** buttons; cart pinned at bottom with **− / +** per line, running total, **Checkout**.
+2. **Pick Items** — scrollable menu with **− / qty / +** steppers per row; cart pinned at bottom shows **Name(qty)** and line subtotal, **N items** + total, **Checkout**.
    - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
 3. **Payment** — **Order Total**; when **Cash** is selected, a cash-entry card (**Amount Paid** with **− / +** steppers — amount turns red below total, green when enough) → bill chips → **Change** or **Still $X due** → optional **Keep change?** when change is due); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).

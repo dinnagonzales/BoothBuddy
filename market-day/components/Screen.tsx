@@ -52,16 +52,49 @@ type ItemCardProps = {
   emoji: string;
   name: string;
   priceLabel: string;
+  quantity?: number;
+  onIncrement?: () => void;
+  onDecrement?: () => void;
   onAdd?: () => void;
 };
 
-export function ItemCard({ emoji, name, priceLabel, onAdd }: ItemCardProps) {
+export function ItemCard({
+  emoji,
+  name,
+  priceLabel,
+  quantity = 0,
+  onIncrement,
+  onDecrement,
+  onAdd,
+}: ItemCardProps) {
+  const useStepper = onIncrement != null && onDecrement != null;
+
   return (
     <View style={styles.itemCard}>
       <Text style={styles.itemEmoji}>{emoji}</Text>
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemPrice}>{priceLabel}</Text>
-      {onAdd ? (
+      {useStepper ? (
+        <View style={styles.stepper}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Remove one ${name}`}
+            onPress={onDecrement}
+            style={styles.stepperMinus}>
+            <Text style={styles.stepperButtonLabel}>−</Text>
+          </Pressable>
+          <View style={styles.qtyBox}>
+            {quantity > 0 ? <Text style={styles.qtyBoxLabel}>{quantity}</Text> : null}
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Add one ${name}`}
+            onPress={onIncrement}
+            style={styles.stepperPlus}>
+            <Text style={styles.stepperButtonLabel}>+</Text>
+          </Pressable>
+        </View>
+      ) : onAdd ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Add ${name}`}
@@ -131,19 +164,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.itemRowPaddingV,
   },
   itemEmoji: {
-    width: 28,
-    fontSize: 22,
+    width: 32,
+    fontSize: 24,
     textAlign: 'center',
   },
   itemName: {
     flex: 1,
     fontFamily: fonts.body.extraBold,
-    fontSize: 14,
+    fontSize: 16,
     color: colors.ink,
   },
   itemPrice: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 14,
+    fontSize: 16,
     color: colors.purpleDark,
     marginRight: 4,
   },
@@ -169,5 +202,45 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.white,
     lineHeight: 24,
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  stepperMinus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.pinkDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperPlus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.green,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperButtonLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 20,
+    color: colors.white,
+    lineHeight: 22,
+  },
+  qtyBox: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.stepBtn,
+    backgroundColor: '#FAF8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyBoxLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 16,
+    color: colors.ink,
   },
 });

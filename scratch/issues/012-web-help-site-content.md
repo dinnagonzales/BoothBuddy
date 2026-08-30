@@ -111,13 +111,11 @@ You set up items, start and end Market Days, and check sales behind a **4-digit 
 **For sellers**
 
 1. Open Market Day on the home screen.
-2. Tap **Make a Sale**  
-   *Tip: You can also tap a menu item to start with that in your cart.*
+2. Tap **Make a Sale**
 3. At the top you’ll see **CART: Invoice #___**. That’s this order’s number.
-4. Tap **+** next to things the customer wants.
-5. Use **−** and **+** in the cart to fix amounts.
-6. Check the **Total**.
-7. Tap **Checkout →**.
+4. Use **−** and **+** on each menu row to set quantities (the box in the middle shows the count).
+5. Check the cart summary — each line is **Name(qty)** and subtotal; the footer shows **N items** and the total.
+6. Tap **Checkout →**.
 
 **When a Market Day is open**
 
@@ -208,7 +206,7 @@ Use this when someone wants to order now and pay when they pick up.
 
 1. On the home screen, tap **+ Pre-order** (top right, green button).
 2. Fill in **Name**, **Notes**, and **Complete date** — all required (e.g. customer name, special requests, and when they'll pick up).
-3. Tap **+** to add items to the cart.
+3. Use **−** and **+** on menu rows to add items.
 4. Tap **Checkout →**.
 5. Payment is **Pay on pickup** — no money collected yet.
 6. **Preorder saved!** 🎉 The grown-up marks it complete when the customer pays.

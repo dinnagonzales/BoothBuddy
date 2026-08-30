@@ -30,8 +30,8 @@ export const radii = {
 export const spacing = {
   screen: 16,
   itemListGap: 8,
-  itemRowPaddingH: 12,
-  itemRowPaddingV: 10,
+  itemRowPaddingH: 16,
+  itemRowPaddingV: 14,
 } as const;
 
 /** iOS HIG minimum; mock add button is 30px but booth use needs larger taps. */

@@ -15,7 +15,7 @@ Human review required before calling done — kid should confirm it "feels right
 - **`constants/visual.ts`** — Fredoka/Nunito family names, radii, spacing, and touch-target minimums locked to the mock
 - **`constants/app-fonts.ts`** — single font registration map used by `app/_layout.tsx`
 - **`__tests__/visual-polish-test.ts`** — guards tokens against mock drift
-- **Screens wired:** Home, sell (cart + green checkout), payment, celebration, grown-up settings, `Screen` primitives, `MarketDaySummaryCard`
+- **Screens wired:** Home, sell (menu **− / qty / +** steppers, read-only cart, green checkout), payment, celebration, grown-up settings, `Screen` primitives, `MarketDaySummaryCard`
 - **Screen background** unified to `#F3E9FF` via `colors.screen` in `constants/theme.ts`
 - **Add button** touch target raised to 44×44 (mock is 30px; booth use needs larger taps)
 

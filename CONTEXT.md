@@ -29,7 +29,7 @@ The set of Items offered during one Market Day. When the admin starts a Market D
 _Avoid_: Day catalog, offering list, daily inventory
 
 **Items**:
-The read-only list on Home showing each Menu Item's icon, name, and price (sold out Items included with an indicator). Same rows as checkout, without add buttons.
+The read-only list on Home showing each Menu Item's icon, name, and price (sold out Items included with an indicator). Same row styling as checkout, without **− / +** steppers.
 _Avoid_: Catalog, inventory list, stickers
 
 **Sold out**:
@@ -67,7 +67,7 @@ An auto-incrementing reference assigned to every Sale app-wide — including **P
 _Avoid_: Receipt number, order ID
 
 **Cart**:
-The in-progress list of Items being checked out. Each line shows quantity, name, and subtotal, with **−** and **+** controls to adjust quantity. Removing a line sets quantity to zero.
+The in-progress list of Items being checked out. Each line shows **Name(qty)** and line subtotal. Quantity is adjusted on the menu rows above (**− / qty box / +**); removing an item sets quantity to zero.
 _Avoid_: Basket, order draft, ticket
 
 **Line item**:

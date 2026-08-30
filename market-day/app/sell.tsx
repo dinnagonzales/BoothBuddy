@@ -135,6 +135,7 @@ export default function SellScreen() {
 
   const preorderMetaValid = preorderMetadataValid(saleName, saleNotes, saleCompleteDate);
   const canCheckout = itemCount > 0 && (!metaRequired || preorderMetaValid);
+  const itemCountLabel = itemCount === 1 ? '1 item' : `${itemCount} items`;
 
   const handleCompleteDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
     if (Platform.OS === 'android') {
@@ -151,29 +152,35 @@ export default function SellScreen() {
         <View style={styles.container}>
           <ScreenHeader title={screenTitle} onBack={() => router.back()} />
 
-          <SectionLabel>🍭 Menu · tap + to add</SectionLabel>
+          <SectionLabel>🍭 Menu · use − and + to adjust</SectionLabel>
 
           <FlatList
             data={items}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={{ gap: spacing.itemListGap, paddingBottom: 8 }}
             style={{ flex: 1 }}
-            renderItem={({ item }) => (
-              <ItemCard
-                emoji={item.emoji}
-                name={item.name}
-                priceLabel={formatMoney(item.priceCents)}
-                onAdd={() =>
-                  addItem({
-                    itemId: item.id,
-                    name: item.name,
-                    emoji: item.emoji,
-                    priceCents: item.priceCents,
-                    costCents: item.costCents,
-                  })
-                }
-              />
-            )}
+            renderItem={({ item }) => {
+              const quantity = lines.find((line) => line.itemId === item.id)?.quantity ?? 0;
+
+              return (
+                <ItemCard
+                  emoji={item.emoji}
+                  name={item.name}
+                  priceLabel={formatMoney(item.priceCents)}
+                  quantity={quantity}
+                  onIncrement={() =>
+                    addItem({
+                      itemId: item.id,
+                      name: item.name,
+                      emoji: item.emoji,
+                      priceCents: item.priceCents,
+                      costCents: item.costCents,
+                    })
+                  }
+                  onDecrement={() => changeQuantity(item.id, -1)}
+                />
+              );
+            }}
           />
 
           <View style={styles.cartContainer}>
@@ -240,31 +247,16 @@ export default function SellScreen() {
               <Text style={styles.cartTitle}>Cart</Text>
               {lines.map((line) => (
                 <View key={line.itemId} style={styles.cartLine}>
-                  <View style={styles.cartLineLeft}>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Remove one ${line.name}`}
-                      style={styles.minusButton}
-                      onPress={() => changeQuantity(line.itemId, -1)}>
-                      <Text style={styles.stepButtonLabel}>−</Text>
-                    </Pressable>
-                    <Text style={styles.quantityLabel}>{line.quantity}</Text>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Add one ${line.name}`}
-                      style={styles.plusButton}
-                      onPress={() => changeQuantity(line.itemId, 1)}>
-                      <Text style={styles.stepButtonLabel}>+</Text>
-                    </Pressable>
-                    <Text style={styles.cartLineName}>{line.name}</Text>
-                  </View>
+                  <Text style={styles.cartLineName}>
+                    {line.name}({line.quantity})
+                  </Text>
                   <Text style={styles.cartLinePrice}>
                     {formatMoney(line.priceCents * line.quantity)}
                   </Text>
                 </View>
               ))}
               <View style={styles.cartTotalRow}>
-                <Text style={styles.cartTotalLabel}>Total</Text>
+                <Text style={styles.cartTotalLabel}>{itemCountLabel}</Text>
                 <Text style={styles.cartTotalValue}>{formatMoney(totalCents)}</Text>
               </View>
               <Pressable
@@ -385,22 +377,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 3,
   },
-  cartLineLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
   cartLineName: {
     fontFamily: fonts.body.bold,
     fontSize: 13,
     color: colors.ink,
+    flex: 1,
     flexShrink: 1,
+    marginRight: 12,
   },
   cartLinePrice: {
     fontFamily: fonts.body.bold,
     fontSize: 13,
     color: colors.ink,
+    minWidth: 52,
+    textAlign: 'right',
   },
   cartTotalRow: {
     flexDirection: 'row',
@@ -420,35 +410,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.bold,
     fontSize: 20,
     color: colors.pinkDark,
-  },
-  minusButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.pinkDark,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  plusButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.green,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepButtonLabel: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 20,
-    color: colors.white,
-    lineHeight: 22,
-  },
-  quantityLabel: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 16,
-    color: colors.ink,
-    minWidth: 18,
-    textAlign: 'center',
   },
   checkoutButtonOuter: {
     marginTop: 10,
