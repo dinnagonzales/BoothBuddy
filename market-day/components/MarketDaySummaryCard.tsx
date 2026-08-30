@@ -48,6 +48,12 @@ export function MarketDaySummaryCard({
   tipsCents = 0,
   variant = 'admin',
 }: MarketDaySummaryCardProps) {
+  const cashTotalCents = cashCents + tipsCents;
+  const cashSubValue =
+    tipsCents > 0
+      ? `${formatMoney(cashCents)} + ${formatMoney(tipsCents)} (tips)`
+      : undefined;
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.name}>{variant === 'allTime' ? 'All Time' : name}</Text>
@@ -74,15 +80,9 @@ export function MarketDaySummaryCard({
           <StatBox
             emoji="💵"
             label="Cash"
-            value={formatMoney(cashCents)}
+            value={formatMoney(cashTotalCents)}
+            subValue={cashSubValue}
             backgroundColor={colors.green}
-            fullWidth
-          />
-          <StatBox
-            emoji="💝"
-            label="Tips"
-            value={formatMoney(tipsCents)}
-            backgroundColor={colors.amber}
             fullWidth
           />
         </View>
@@ -113,17 +113,11 @@ export function MarketDaySummaryCard({
             <StatBox
               emoji="💵"
               label="Cash"
-              value={formatMoney(cashCents)}
+              value={formatMoney(cashTotalCents)}
+              subValue={cashSubValue}
               backgroundColor={colors.green}
             />
           </View>
-          <StatBox
-            emoji="💝"
-            label="Tips"
-            value={formatMoney(tipsCents)}
-            backgroundColor={colors.amber}
-            fullWidth
-          />
         </View>
       )}
     </View>

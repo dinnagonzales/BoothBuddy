@@ -85,7 +85,7 @@ Off-day sales come from **Make a Sale** when no **Active Market Day** is open (o
 
 Behind gear icon + parental gate (numeric code). Shows:
 
-- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown, **Tips** (kept change), sale list with Sale numbers (and optional sale names when set). Same summary card on Past Events detail, Market Day kid dashboard (without profit), and Sales tab (all-time).
+- Active / most recent Market Day dashboard: totals, item count, Cash vs Venmo/Zelle breakdown (Cash total includes kept change, with a **$X + $Y (tips)** subline when tips exist), sale list with Sale numbers (and optional sale names when set). Same summary card on Past Events detail, Market Day kid dashboard (without profit), and Sales tab (all-time).
 - Running Tab summary.
 - Item management (name, cost, price, emoji icon, optional photo).
 - Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.

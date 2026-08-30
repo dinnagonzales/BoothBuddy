@@ -103,7 +103,7 @@ Optional seller action at Cash checkout when change is due. A centered **Keep ch
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:
-The portion of **Change** the customer asked the seller to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer) and on every market summary card (**Tips** stat). Sale total and profit exclude kept change — tips are tracked separately for end-of-day cash counts.
+The portion of **Change** the customer asked the seller to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer) and on market summary cards as part of **Cash** — total cash shown up top, with a **$sales + $tips (tips)** breakdown underneath when tips exist. Sale total and profit exclude kept change — tips are tracked separately for end-of-day cash counts.
 _Avoid_: Tip, bonus, extra revenue
 
 **Active Market Day**:

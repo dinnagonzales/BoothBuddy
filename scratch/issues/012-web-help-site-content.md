@@ -341,7 +341,7 @@ After you **End Market Day**, that day moves to **Past Events** on Settings (whe
 
 Each row shows the **name**, **date**, and **number of sales**. Tap one to open its dashboard:
 
-- Totals and profit (same summary as an active day, including **Tips**)
+- Totals and profit (same summary as an active day; **Cash** shows total with a tips breakdown when kept change exists)
 - Full **Sales** list — tap to edit or remove
 - **Export sales as CSV** (or **Re-export** if you already exported)
 - **↩ Reopen Market Day** — only on the most recently closed day, and only before export
@@ -374,7 +374,7 @@ After export, **Reopen** is no longer available for that day.
 While a Market Day is active:
 
 1. **⚙️** → **Pass Code** → **Settings**.
-2. See totals: number of sales, **profit**, gross revenue, **Cash** vs **Venmo/Zelle**, and **Tips** (kept change).
+2. See totals: number of sales, **profit**, gross revenue, **Cash** (with a **$sales + $tips (tips)** subline when applicable) vs **Venmo/Zelle**.
 3. Scroll the **Sales** list — each row shows sale number (or name if you added one), time, amount, payment method.
 4. Tap a sale to change payment method, add optional **name** or **notes**, or remove the sale.
 
