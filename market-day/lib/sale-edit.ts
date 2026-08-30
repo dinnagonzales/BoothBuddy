@@ -63,3 +63,18 @@ export function cashReceivedForEditedSale(
   if (paymentMethod !== 'cash') return 0;
   return cashReceivedCents ?? totalCents;
 }
+
+export function cashChangeCents(cashReceivedCents: number, totalCents: number): number {
+  return Math.max(cashReceivedCents - totalCents, 0);
+}
+
+export function cashChangeStatusLabel(
+  changeCents: number,
+  keepChange: boolean,
+  format: (cents: number) => string,
+): string {
+  if (keepChange) {
+    return `Keeping ${format(changeCents)} — no change back`;
+  }
+  return `Change: ${format(changeCents)}`;
+}

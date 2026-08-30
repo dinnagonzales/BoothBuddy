@@ -55,6 +55,9 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/faq/edit-sale-later` | Change a sale later | Grown-up |
 | `/faq/one-market-day` | Can I run two Market Days? | Grown-up |
 | `/faq/reopen` | I ended the day by mistake | Grown-up |
+| `/privacy` | Privacy Policy | Everyone |
+
+**Privacy page:** use [web/privacy.html](../../web/privacy.html) (source: [docs/privacy-policy.md](../../docs/privacy-policy.md)). Replace `CONTACT_EMAIL` before publish.
 
 ---
 
@@ -140,6 +143,7 @@ It might be **Sold out** for today. Pick something else or ask a grown-up.
    **💵 Cash**
    - Tap bill buttons ($1, $5, $10, $20, $100), **Exact amount**, or **+/− $1**.
    - The app shows **Change** (money back) or **Still $X due** (not enough yet).
+   - If there is change, **Keep Change?** appears below (unchecked by default). Tap it if the customer says you can keep the extra — the line switches to **Keeping $X — no change back**.
 
    **📱 Venmo / Zelle**
    - Tap that option. No cash math needed.
@@ -356,7 +360,7 @@ There is no **Today’s Menu** on past events — the menu was for that day only
 3. Tap **⬇ Export sales as CSV** (or **Re-export** if needed).
 4. Use the share sheet to save or email the file (Mail, AirDrop, Files, etc.).
 
-The CSV includes sale numbers, times, items, prices, costs, payment method, and profit — ready for Excel.
+The CSV includes sale numbers, times, items, prices, costs, payment method, cash received, change kept, and profit — ready for Excel. After the sale rows, a blank line and summary totals: **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, and **Tips total**.
 
 If you edit a sale after exporting, the app shows **Re-export recommended**.
 
@@ -496,7 +500,10 @@ Only grown-ups can archive items, from **📦 Inventory**.
 The app shows:
 
 - **Change: $X** — give this much back
+- **Keeping $X — no change back** — you checked **Keep Change?** (customer said keep it)
 - **Still $X due** — they didn’t give enough yet
+
+When change is due, **Keep Change?** appears below (unchecked by default). Tap it only if the customer says you can keep the extra.
 
 Tap **Complete sale ✓** when the payment is right.
 

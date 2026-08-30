@@ -8,6 +8,7 @@ type CartContextValue = {
   editingSaleId: number | null;
   editingPaymentMethod: PaymentMethod | null;
   editingCashReceivedCents: number | null;
+  editingChangeKept: boolean;
   invoiceNumber: number | null;
   saleName: string;
   saleNotes: string;
@@ -18,6 +19,7 @@ type CartContextValue = {
   setEditingSaleId: (saleId: number | null) => void;
   setEditingPaymentMethod: (paymentMethod: PaymentMethod | null) => void;
   setEditingCashReceivedCents: (cashReceivedCents: number | null) => void;
+  setEditingChangeKept: (changeKept: boolean) => void;
   setInvoiceNumber: (saleNumber: number | null) => void;
   setSaleName: (name: string) => void;
   setSaleNotes: (notes: string) => void;
@@ -38,6 +40,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<PaymentMethod | null>(null);
   const [editingCashReceivedCents, setEditingCashReceivedCents] = useState<number | null>(null);
+  const [editingChangeKept, setEditingChangeKept] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
   const [saleName, setSaleName] = useState('');
   const [saleNotes, setSaleNotes] = useState('');
@@ -83,6 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       editingSaleId,
       editingPaymentMethod,
       editingCashReceivedCents,
+      editingChangeKept,
       invoiceNumber,
       saleName,
       saleNotes,
@@ -93,6 +97,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setEditingSaleId,
       setEditingPaymentMethod,
       setEditingCashReceivedCents,
+      setEditingChangeKept,
       setInvoiceNumber,
       setSaleName,
       setSaleNotes,
@@ -106,6 +111,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setEditingSaleId(null);
         setEditingPaymentMethod(null);
         setEditingCashReceivedCents(null);
+        setEditingChangeKept(false);
         setInvoiceNumber(null);
         setSaleName('');
         setSaleNotes('');
@@ -116,7 +122,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       totalCents,
     };
-  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder]);
+  }, [lines, editingSaleId, editingPaymentMethod, editingCashReceivedCents, editingChangeKept, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

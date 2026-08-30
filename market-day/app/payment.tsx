@@ -9,7 +9,7 @@ import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
-import { paymentCanComplete, preorderMetadataValid } from '@/lib/sale-edit';
+import { paymentCanComplete, preorderMetadataValid, cashChangeCents, cashChangeStatusLabel } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/types';
 
@@ -29,16 +29,18 @@ const chipShadow = Platform.select({
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder } =
+  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, editingChangeKept, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder } =
     useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
+  const [keepChange, setKeepChange] = useState(false);
   const preorderCheckout = isQuickSale && isPreorder && editingSaleId == null;
 
   useEffect(() => {
     if (preorderCheckout) {
       setPaymentMethod('pay_on_pickup');
       setCashReceivedCents(0);
+      setKeepChange(false);
     }
   }, [preorderCheckout]);
 
@@ -51,12 +53,19 @@ export default function PaymentScreen() {
     if (editingPaymentMethod === 'cash' && editingCashReceivedCents != null) {
       setCashReceivedCents(editingCashReceivedCents);
     }
-  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents]);
+    setKeepChange(editingChangeKept);
+  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents, editingChangeKept]);
 
   const changeCents = useMemo(
-    () => Math.max(cashReceivedCents - totalCents, 0),
+    () => cashChangeCents(cashReceivedCents, totalCents),
     [cashReceivedCents, totalCents],
   );
+
+  useEffect(() => {
+    if (changeCents === 0) {
+      setKeepChange(false);
+    }
+  }, [changeCents]);
   const amountDueCents = useMemo(
     () => Math.max(totalCents - cashReceivedCents, 0),
     [cashReceivedCents, totalCents],
@@ -91,6 +100,7 @@ export default function PaymentScreen() {
         lines,
         paymentMethod,
         cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
+        changeKept: paymentMethod === 'cash' && keepChange,
         name: saleName,
         notes: saleNotes,
         completeDate: saleCompleteDate,
@@ -127,6 +137,100 @@ export default function PaymentScreen() {
             <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
           </View>
 
+          {paymentMethod === 'cash' ? (
+            <Card style={styles.cashEntry} className="p-4 mb-3">
+              <Text style={styles.tapToAdd}>Tap to add</Text>
+
+              <View style={styles.chipRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Exact amount ${formatMoney(totalCents)}`}
+                  style={styles.exactChip}
+                  onPress={() => {
+                    setKeepChange(false);
+                    setCashReceivedCents(totalCents);
+                  }}>
+                  <Text style={styles.chipLabel}>Exact amount</Text>
+                </Pressable>
+                {BILLS.map((cents) => (
+                  <Pressable
+                    key={cents}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add ${formatMoney(cents)}`}
+                    style={styles.chip}
+                    onPress={() => {
+                      setKeepChange(false);
+                      setCashReceivedCents((value) => value + cents);
+                    }}>
+                    <Text style={styles.chipLabel}>{formatMoney(cents)}</Text>
+                  </Pressable>
+                ))}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear cash amount"
+                  style={styles.clearChip}
+                  onPress={() => {
+                    setKeepChange(false);
+                    setCashReceivedCents(0);
+                  }}>
+                  <Text style={styles.clearChipLabel}>Clear</Text>
+                </Pressable>
+              </View>
+
+              <View style={styles.cashControlRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Subtract one dollar"
+                  style={styles.minusButton}
+                  onPress={() => setCashReceivedCents((value) => Math.max(value - 100, 0))}>
+                  <Text style={styles.stepButtonLabel}>−</Text>
+                </Pressable>
+                <Text
+                  style={[
+                    styles.cashAmount,
+                    cashReceivedCents === 0 ? styles.cashAmountEmpty : styles.cashAmountFilled,
+                  ]}>
+                  {formatMoney(cashReceivedCents)}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Add one dollar"
+                  style={styles.plusButton}
+                  onPress={() => setCashReceivedCents((value) => value + 100)}>
+                  <Text style={styles.stepButtonLabel}>+</Text>
+                </Pressable>
+              </View>
+
+              <View style={styles.statusBar}>
+                {cashCoversTotal ? (
+                  <Text style={[styles.changeText, keepChange ? styles.keepChangeText : null]}>
+                    {cashChangeStatusLabel(changeCents, keepChange, formatMoney)}
+                  </Text>
+                ) : (
+                  <Text style={styles.dueText}>Still {formatMoney(amountDueCents)} due</Text>
+                )}
+              </View>
+
+              {changeCents > 0 ? (
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: keepChange }}
+                  accessibilityLabel="Keep change"
+                  style={styles.keepChangeBlock}
+                  onPress={() => setKeepChange((value) => !value)}>
+                  <Text style={styles.keepChangeLabel}>Keep Change?</Text>
+                  <View
+                    className={cn(
+                      'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
+                      keepChange ? 'bg-success' : 'bg-surface',
+                    )}>
+                    {keepChange ? <Text className="text-white font-bold">✓</Text> : null}
+                  </View>
+                </Pressable>
+              ) : null}
+            </Card>
+          ) : null}
+
           <Card
             style={styles.payOption}
             className={cn(
@@ -147,71 +251,6 @@ export default function PaymentScreen() {
                 {paymentMethod === 'cash' ? <Text className="text-white font-bold">✓</Text> : null}
               </View>
             </Pressable>
-
-            {paymentMethod === 'cash' ? (
-              <>
-                <View style={styles.cashControlRow}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Subtract one dollar"
-                    style={styles.minusButton}
-                    onPress={() => setCashReceivedCents((value) => Math.max(value - 100, 0))}>
-                    <Text style={styles.stepButtonLabel}>−</Text>
-                  </Pressable>
-                  <Text
-                    style={[
-                      styles.cashAmount,
-                      cashReceivedCents === 0 ? styles.cashAmountEmpty : styles.cashAmountFilled,
-                    ]}>
-                    {formatMoney(cashReceivedCents)}
-                  </Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Add one dollar"
-                    style={styles.plusButton}
-                    onPress={() => setCashReceivedCents((value) => value + 100)}>
-                    <Text style={styles.stepButtonLabel}>+</Text>
-                  </Pressable>
-                </View>
-
-                <Text style={styles.tapToAdd}>Tap to add</Text>
-
-                <View style={styles.chipRow}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Exact amount ${formatMoney(totalCents)}`}
-                    style={styles.exactChip}
-                    onPress={() => setCashReceivedCents(totalCents)}>
-                    <Text style={styles.chipLabel}>Exact amount</Text>
-                  </Pressable>
-                  {BILLS.map((cents) => (
-                    <Pressable
-                      key={cents}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Add ${formatMoney(cents)}`}
-                      style={styles.chip}
-                      onPress={() => setCashReceivedCents((value) => value + cents)}>
-                      <Text style={styles.chipLabel}>{formatMoney(cents)}</Text>
-                    </Pressable>
-                  ))}
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear cash amount"
-                    style={styles.clearChip}
-                    onPress={() => setCashReceivedCents(0)}>
-                    <Text style={styles.clearChipLabel}>Clear</Text>
-                  </Pressable>
-                </View>
-
-                <View style={styles.statusBar}>
-                  {cashCoversTotal ? (
-                    <Text style={styles.changeText}>Change: {formatMoney(changeCents)}</Text>
-                  ) : (
-                    <Text style={styles.dueText}>Still {formatMoney(amountDueCents)} due</Text>
-                  )}
-                </View>
-              </>
-            ) : null}
           </Card>
 
           <Card
@@ -225,6 +264,7 @@ export default function PaymentScreen() {
               onPress={() => {
                 setPaymentMethod('venmo_zelle');
                 setCashReceivedCents(0);
+                setKeepChange(false);
               }}>
               <Text style={styles.payOptionLabel}>📱 Venmo / Zelle</Text>
               <View
@@ -253,6 +293,7 @@ export default function PaymentScreen() {
                 onPress={() => {
                   setPaymentMethod('pay_on_pickup');
                   setCashReceivedCents(0);
+                  setKeepChange(false);
                 }}>
                 <Text style={styles.payOptionLabel}>📋 Pay on pickup</Text>
                 <View
@@ -313,6 +354,9 @@ const styles = StyleSheet.create({
     fontSize: 44,
     color: colors.ink,
   },
+  cashEntry: {
+    borderRadius: radii.payOption,
+  },
   payOption: {
     borderRadius: radii.payOption,
   },
@@ -334,7 +378,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
-    marginTop: 16,
+    marginTop: 14,
   },
   minusButton: {
     width: 46,
@@ -371,7 +415,6 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   tapToAdd: {
-    marginTop: 6,
     textAlign: 'center',
     fontFamily: fonts.body.extraBold,
     fontSize: 11,
@@ -384,7 +427,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 12,
+    marginTop: 8,
   },
   chip: {
     backgroundColor: colors.purple,
@@ -419,21 +462,34 @@ const styles = StyleSheet.create({
     color: colors.purpleDark,
   },
   statusBar: {
-    marginTop: 14,
+    marginTop: 16,
     backgroundColor: '#F3E9FF',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     alignItems: 'center',
   },
   dueText: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 16,
+    fontSize: 20,
     color: colors.inkSoft,
   },
   changeText: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 16,
+    fontSize: 22,
     color: colors.greenDark,
+  },
+  keepChangeText: {
+    color: colors.purpleDark,
+  },
+  keepChangeBlock: {
+    marginTop: 12,
+    alignItems: 'center',
+    gap: 8,
+  },
+  keepChangeLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 15,
+    color: colors.ink,
   },
 });

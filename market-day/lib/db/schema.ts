@@ -90,6 +90,12 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
     await db.execAsync('ALTER TABLE sales ADD COLUMN complete_date TEXT');
   }
 
+  const refreshedSalesColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(sales)');
+  const hasChangeKept = refreshedSalesColumns.some((column) => column.name === 'change_kept');
+  if (!hasChangeKept) {
+    await db.execAsync('ALTER TABLE sales ADD COLUMN change_kept INTEGER NOT NULL DEFAULT 0');
+  }
+
   const salesTableSql = await db.getFirstAsync<{ sql: string | null }>(
     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'sales'",
   );

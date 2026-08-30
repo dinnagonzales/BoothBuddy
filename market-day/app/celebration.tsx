@@ -24,6 +24,7 @@ export default function CelebrationScreen() {
     setEditingSaleId,
     setEditingPaymentMethod,
     setEditingCashReceivedCents,
+    setEditingChangeKept,
     setInvoiceNumber,
     setSaleName,
     setSaleNotes,
@@ -85,6 +86,7 @@ export default function CelebrationScreen() {
       setEditingCashReceivedCents(
         cashReceivedForEditedSale(sale.paymentMethod, sale.cashReceivedCents, sale.totalCents),
       );
+      setEditingChangeKept(sale.changeKept);
       setInvoiceNumber(sale.saleNumber ?? null);
       setSaleName(sale.name ?? '');
       setSaleNotes(sale.notes ?? '');

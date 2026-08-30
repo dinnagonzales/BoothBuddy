@@ -52,7 +52,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
    - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
 3. **Payment** — total; **Cash** or **Venmo/Zelle** (mutually exclusive).
-   - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each replaces amount), **− / +** steppers ($1 increments), numeric input, **Change** displayed.
+   - **Cash:** quick-tap bills ($1, $5, $10, $20, $100 — each adds to amount), **Exact amount**, **− / +** steppers ($1 increments), **Change** displayed; when change is due, optional **Keep Change?** checkbox (default off) records kept change for export.
    - **Venmo/Zelle:** checkbox only; assumed paid in full.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
@@ -100,7 +100,7 @@ Behind gear icon + parental gate (numeric code). Shows:
 
 **Market Day:** id, name, startedAt, closedAt, exportedAt
 
-**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), name (optional, admin-only), notes (optional, admin-only), completeDate (required for preorders — pickup-ready date)
+**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), changeKept (if cash and seller checked **Keep Change?**), name (optional, admin-only), notes (optional, admin-only), completeDate (required for preorders — pickup-ready date)
 
 **Line item:** itemId, quantity, priceAtSale, costAtSale
 
@@ -111,7 +111,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 ## Payment
 
 - Cash and Venmo/Zelle are mutually exclusive per Sale.
-- Cash: cash received + change shown; cash received stored for export.
+- Cash: cash received + change shown; cash received stored for export. **Keep Change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips.
 - Venmo/Zelle: no additional input.
 
 ---
@@ -121,7 +121,8 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 - **Market Day:** one CSV per Closed Market Day; name in filename and rows.
 - **Running Tab:** date range picker → CSV for sales in range; marks sales exported.
 - **Preorders:** printable text file from the **Preorders tab** — prep summary (total quantities per item) plus one block per open order with checkbox lines for crossing off at pickup. Share sheet (Mail, AirDrop, Files).
-- Columns (CSV) include: sale number, date/time, market day name (if any), items (name, qty, price, cost), total, payment method, cash received, profit, customer name (when set on the sale).
+- Columns (CSV) include: sale number, date/time, market day name (if any), items (name, qty, price, cost), line total, line profit, sale total, payment method, cash received, change kept, customer name (when set on the sale).
+- Summary footer (blank line, then four rows): **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, **Tips total** — amounts in the Sale Total column.
 - Export locks undo-close for Market Days.
 - Edits after export flag bucket **out of date — re-export recommended**.
 
@@ -131,7 +132,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 
 - Seller completes a 3-item cash sale start-to-finish without help.
 - No sale requires keyboard typing (numeric entry only for cash).
-- End-of-day export reconciles against manual cash/Venmo/Zelle counts.
+- End-of-day export reconciles against manual cash/Venmo/Zelle counts; kept change appears in **Tips total** and **Change kept** per row.
 - Kid never sees cost or sales totals.
 
 ## Resolved open questions (from v0.1)
@@ -139,7 +140,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 | Question | Decision |
 |----------|----------|
 | Undo/edit sales? | **Edit this sale** on celebration; **admin edit** anytime in grown-up settings |
-| Cash received? | Record + show **change**; quick bills + $1 steppers |
+| Cash received? | Record + show **change**; quick bills + $1 steppers; optional **Keep Change?** when change is due |
 | Session reset? | **Market Day** = explicit session; **Running Tab** for misc |
 | Emoji vs photo? | **Emoji default, photo optional** |
 | History view? | **Removed** — Home is Items menu; no Stickers tab |

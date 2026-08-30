@@ -19,7 +19,7 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Home** — Items menu (no sales totals); optional Market Day banner; **Make a Sale** (always) + **+ Pre-order**
 - **Make a Sale** — always available; attaches to active Market Day when one is open; off-day sales save to Running Tab with optional name/notes
 - **+ Pre-order** — required name/notes/complete date, Pay on pickup, global catalog, always Running Tab (even during a fair)
-- **Sell flow** — pick Items, cart ±, payment (cash w/ change + Venmo/Zelle + pay on pickup for preorders)
+- **Sell flow** — pick Items, cart ±, payment (cash w/ change + **Keep Change?** + Venmo/Zelle + pay on pickup for preorders)
 - **Celebration** — Edit this sale / Go to Dashboard; tap ✕ → Home
 - **Settings** — Active Market Day dashboard (2×2 stats, Today's Menu, sales list)
 - **Past Events** — closed days on Settings empty state; detail view with export + Reopen
@@ -28,7 +28,7 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Preorders tab** — prep summary (what to make), overdue/upcoming sections sorted by complete date, printable export, open preorders; mark complete from admin edit
 - **Inventory** — item CRUD, archive, delete (when no past sales)
 - **Sale detail (admin)** — edit payment method, optional name/notes/complete date (preorders), remove sale
-- **Export** — closed Market Day + Running Tab date range (CSV) + preorder printout (text) → share sheet
+- **Export** — closed Market Day + Running Tab date range (CSV with **Change kept** column + tips summary footer) + preorder printout (text) → share sheet
 - **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`)
 - **SQLite** — local-first data on device
 

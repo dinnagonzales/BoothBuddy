@@ -29,6 +29,7 @@ const CSV_HEADERS = [
   'Sale Total',
   'Payment Method',
   'Cash Received',
+  'Change Kept',
   'Customer Name',
 ] as const;
 
@@ -47,6 +48,72 @@ function formatCentsForCsv(cents: number): string {
 function formatSaleDateTime(iso: string): string {
   const date = new Date(iso);
   return `${date.toLocaleDateString('en-US')} ${formatSaleTime(iso)}`;
+}
+
+export type CsvExportSummary = {
+  totalWithoutTipsCents: number;
+  grossWithoutTipsCents: number;
+  profitWithoutTipsCents: number;
+  tipsTotalCents: number;
+};
+
+export function computeExportSummary(
+  rows: Awaited<ReturnType<typeof getMarketDayExportRows>>,
+): CsvExportSummary {
+  const sales = new Map<number, { saleTotalCents: number; changeKeptCents: number }>();
+  let grossWithoutTipsCents = 0;
+  let profitWithoutTipsCents = 0;
+
+  for (const row of rows) {
+    const lineTotalCents = row.priceCents * row.quantity;
+    const lineProfitCents = (row.priceCents - row.costCents) * row.quantity;
+    grossWithoutTipsCents += lineTotalCents;
+    profitWithoutTipsCents += lineProfitCents;
+
+    if (!sales.has(row.saleNumber)) {
+      sales.set(row.saleNumber, {
+        saleTotalCents: row.saleTotalCents,
+        changeKeptCents: row.changeKeptCents,
+      });
+    }
+  }
+
+  let totalWithoutTipsCents = 0;
+  let tipsTotalCents = 0;
+  for (const sale of sales.values()) {
+    totalWithoutTipsCents += sale.saleTotalCents;
+    tipsTotalCents += sale.changeKeptCents;
+  }
+
+  return {
+    totalWithoutTipsCents,
+    grossWithoutTipsCents,
+    profitWithoutTipsCents,
+    tipsTotalCents,
+  };
+}
+
+const SALE_TOTAL_COLUMN_INDEX = CSV_HEADERS.indexOf('Sale Total');
+
+function formatSummaryRow(label: string, cents: number): string {
+  const fields = Array.from({ length: CSV_HEADERS.length }, () => '');
+  fields[0] = label;
+  fields[SALE_TOTAL_COLUMN_INDEX] = formatCentsForCsv(cents);
+  return fields.map(escapeCsvField).join(',');
+}
+
+function appendSummaryRows(
+  lines: string[],
+  rows: Awaited<ReturnType<typeof getMarketDayExportRows>>,
+): void {
+  if (rows.length === 0) return;
+
+  const summary = computeExportSummary(rows);
+  lines.push('');
+  lines.push(formatSummaryRow('Total (without tips)', summary.totalWithoutTipsCents));
+  lines.push(formatSummaryRow('Gross (without tips)', summary.grossWithoutTipsCents));
+  lines.push(formatSummaryRow('Profit (without tips)', summary.profitWithoutTipsCents));
+  lines.push(formatSummaryRow('Tips total', summary.tipsTotalCents));
 }
 
 export function buildMarketDayCsv(
@@ -71,12 +138,15 @@ export function buildMarketDayCsv(
         formatCentsForCsv(row.saleTotalCents),
         paymentMethodLabel(row.paymentMethod),
         row.cashReceivedCents == null ? '' : formatCentsForCsv(row.cashReceivedCents),
+        row.changeKeptCents > 0 ? formatCentsForCsv(row.changeKeptCents) : '',
         row.customerName ?? '',
       ]
         .map(escapeCsvField)
         .join(','),
     );
   }
+
+  appendSummaryRows(lines, rows);
 
   return `${lines.join('\n')}\n`;
 }

@@ -494,6 +494,7 @@ function mapSaleRow(row: {
   total_cents: number;
   payment_method: PaymentMethod;
   cash_received_cents: number | null;
+  change_kept?: number;
   name: string | null;
   notes: string | null;
   complete_date: string | null;
@@ -507,6 +508,7 @@ function mapSaleRow(row: {
     totalCents: row.total_cents,
     paymentMethod: row.payment_method,
     cashReceivedCents: row.cash_received_cents,
+    changeKept: (row.change_kept ?? 0) === 1,
     name: row.name,
     notes: row.notes,
     completeDate: row.complete_date,
@@ -522,6 +524,7 @@ export async function createSale(
     lines: CartLine[];
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
+    changeKept?: boolean;
     name?: string | null;
     notes?: string | null;
     completeDate?: string | null;
@@ -534,19 +537,26 @@ export async function createSale(
   const notes = normalizeOptionalText(params.notes);
   const completeDate = normalizeOptionalText(params.completeDate);
   const isPreorder = params.isPreorder === true ? 1 : 0;
+  const changeKept =
+    params.paymentMethod === 'cash' &&
+    params.changeKept === true &&
+    (params.cashReceivedCents ?? 0) > totalCents
+      ? 1
+      : 0;
 
   if (isPreorder === 1 && (!name || !notes || !completeDate)) {
     throw new Error('Preorder requires name, notes, and complete date');
   }
 
   const result = await db.runAsync(
-    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, name, notes, complete_date, is_preorder)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, change_kept, name, notes, complete_date, is_preorder)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     nextNumber,
     params.marketDayId,
     totalCents,
     params.paymentMethod,
     params.cashReceivedCents,
+    changeKept,
     name,
     notes,
     completeDate,
@@ -574,6 +584,7 @@ export async function createSale(
     totalCents,
     paymentMethod: params.paymentMethod,
     cashReceivedCents: params.cashReceivedCents,
+    changeKept: changeKept === 1,
     name,
     notes,
     completeDate,
@@ -590,7 +601,8 @@ export async function getSale(db: SQLiteDatabase, saleId: number): Promise<Sale 
     total_cents: number;
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
-    name: string | null;
+    change_kept?: number;
+  name: string | null;
     notes: string | null;
     complete_date: string | null;
     is_preorder: number;
@@ -655,7 +667,8 @@ export async function getSaleByNumber(
     total_cents: number;
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
-    name: string | null;
+    change_kept?: number;
+  name: string | null;
     notes: string | null;
     complete_date: string | null;
     is_preorder: number;
@@ -705,11 +718,14 @@ export async function updateSale(
       : sale.completeDate;
   const cashReceivedCents =
     paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
+  const changeKept =
+    paymentMethod === 'cash' && updates.paymentMethod === undefined ? sale.changeKept : false;
 
   await db.runAsync(
-    `UPDATE sales SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ?, complete_date = ? WHERE id = ?`,
+    `UPDATE sales SET payment_method = ?, cash_received_cents = ?, change_kept = ?, name = ?, notes = ?, complete_date = ? WHERE id = ?`,
     paymentMethod,
     cashReceivedCents,
+    changeKept ? 1 : 0,
     name,
     notes,
     completeDate,
@@ -744,7 +760,7 @@ export async function completePreorder(
 
   await db.runAsync(
     `UPDATE sales
-     SET payment_method = ?, cash_received_cents = ?, name = ?, notes = ?, complete_date = ?, is_preorder = 0
+     SET payment_method = ?, cash_received_cents = ?, change_kept = 0, name = ?, notes = ?, complete_date = ?, is_preorder = 0
      WHERE id = ?`,
     params.paymentMethod,
     cashReceivedCents,
@@ -761,7 +777,8 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
-    name: string | null;
+    change_kept?: number;
+  name: string | null;
     notes: string | null;
     complete_date: string | null;
     created_at: string;
@@ -876,7 +893,8 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
-    name: string | null;
+    change_kept?: number;
+  name: string | null;
     created_at: string;
     market_day_name: string | null;
   }>(
@@ -913,7 +931,8 @@ export async function getMarketDaySales(
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
-    name: string | null;
+    change_kept?: number;
+  name: string | null;
     created_at: string;
   }>(
     `SELECT sale_number, total_cents, payment_method, name, created_at
@@ -1034,6 +1053,7 @@ export type MarketDayExportRow = {
   saleTotalCents: number;
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
+  changeKeptCents: number;
   customerName: string | null;
 };
 
@@ -1050,13 +1070,14 @@ export async function getMarketDayExportRows(
     total_cents: number;
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
+    change_kept?: number;
     name: string | null;
     item_name: string;
     quantity: number;
     price_cents: number;
     cost_cents: number;
   }>(
-    `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.name,
+    `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.change_kept, s.name,
             i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
@@ -1077,6 +1098,10 @@ export async function getMarketDayExportRows(
     saleTotalCents: row.total_cents,
     paymentMethod: row.payment_method,
     cashReceivedCents: row.cash_received_cents,
+    changeKeptCents:
+      row.change_kept === 1 && row.cash_received_cents != null
+        ? Math.max(row.cash_received_cents - row.total_cents, 0)
+        : 0,
     customerName: row.name,
   }));
 }
@@ -1092,6 +1117,7 @@ export async function getSalesExportRows(
     total_cents: number;
     payment_method: PaymentMethod;
     cash_received_cents: number | null;
+    change_kept?: number;
     name: string | null;
     market_day_name: string | null;
     item_name: string;
@@ -1099,7 +1125,7 @@ export async function getSalesExportRows(
     price_cents: number;
     cost_cents: number;
   }>(
-    `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.name,
+    `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.change_kept, s.name,
             md.name AS market_day_name,
             i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
      FROM sales s
@@ -1125,6 +1151,10 @@ export async function getSalesExportRows(
     saleTotalCents: row.total_cents,
     paymentMethod: row.payment_method,
     cashReceivedCents: row.cash_received_cents,
+    changeKeptCents:
+      row.change_kept === 1 && row.cash_received_cents != null
+        ? Math.max(row.cash_received_cents - row.total_cents, 0)
+        : 0,
     customerName: row.name,
   }));
 }
@@ -1176,7 +1206,8 @@ export async function getPreorderExportRows(db: SQLiteDatabase): Promise<Preorde
   const rows = await db.getAllAsync<{
     sale_number: number;
     created_at: string;
-    name: string | null;
+    change_kept?: number;
+  name: string | null;
     notes: string | null;
     item_name: string;
     emoji: string;

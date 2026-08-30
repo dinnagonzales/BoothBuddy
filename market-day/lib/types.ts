@@ -35,6 +35,7 @@ export type Sale = {
   totalCents: number;
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
+  changeKept: boolean;
   name: string | null;
   notes: string | null;
   completeDate: string | null;

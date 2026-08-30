@@ -1,8 +1,11 @@
 import {
+  cashChangeCents,
+  cashChangeStatusLabel,
   cashReceivedForEditedSale,
   paymentCanComplete,
   saleHasUnsavedChanges,
 } from '@/lib/sale-edit';
+import { formatMoney } from '@/lib/money';
 
 test('sale edit save stays disabled until a field changes', () => {
   const saved = {
@@ -68,4 +71,15 @@ test('cashReceivedForEditedSale falls back to the sale total', () => {
   expect(cashReceivedForEditedSale('cash', null, 2500)).toBe(2500);
   expect(cashReceivedForEditedSale('cash', 5000, 2500)).toBe(5000);
   expect(cashReceivedForEditedSale('venmo_zelle', null, 2500)).toBe(0);
+});
+
+test('cashChangeCents is zero when cash received does not exceed total', () => {
+  expect(cashChangeCents(1700, 1700)).toBe(0);
+  expect(cashChangeCents(1500, 1700)).toBe(0);
+  expect(cashChangeCents(2000, 1700)).toBe(300);
+});
+
+test('cashChangeStatusLabel shows give-back or keep-change copy', () => {
+  expect(cashChangeStatusLabel(300, false, formatMoney)).toBe('Change: $3.00');
+  expect(cashChangeStatusLabel(300, true, formatMoney)).toBe('Keeping $3.00 — no change back');
 });

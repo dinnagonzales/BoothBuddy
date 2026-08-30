@@ -98,6 +98,14 @@ _Avoid_: Amount tendered, paid
 Cash received minus the Sale total, shown to the seller during Cash checkout so they know what to hand back.
 _Avoid_: Money back, difference
 
+**Keep change**:
+Optional seller action at Cash checkout when change is due. **Keep Change?** appears below the change line (unchecked by default). When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full **Cash received** is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
+_Avoid_: Tip, overpay, donation
+
+**Change kept**:
+The portion of **Change** the customer asked the seller to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer). Sale total and profit exclude kept change — tips are tracked separately for end-of-day cash counts.
+_Avoid_: Tip, bonus, extra revenue
+
 **Active Market Day**:
 The one Market Day currently open for selling. Exactly zero or one may be active at a time. When active, **Make a Sale** attaches new sales to that Market Day and Home shows today's **Menu**. When none is active, **Make a Sale** still works — sales save to the **Running Tab** with optional name/notes. Starting a Market Day is optional for porch sales but recommended for fairs.
 _Avoid_: Current session, open event

@@ -6,7 +6,7 @@
 
 ## What to build
 
-The **Admin** can **export** a **Closed Market Day** as CSV and hand it off via the native share sheet (Mail, AirDrop, Files). CSV includes **Sale number**, date/time, **Market Day** name, line item names/qty/price/cost, **Sale** total, **Payment method**, **Cash received**, **Customer name** (optional sale name, when set), and profit. Filename includes the **Market Day** name.
+The **Admin** can **export** a **Closed Market Day** as CSV and hand it off via the native share sheet (Mail, AirDrop, Files). CSV includes **Sale number**, date/time, **Market Day** name, line item names/qty/price/cost, line total, line profit, **Sale** total, **Payment method**, **Cash received**, **Change kept** (when the seller checked **Keep Change?**), **Customer name** (optional sale name, when set), and a summary footer: **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, **Tips total**. Filename includes the **Market Day** name.
 
 **Export** locks **Reopen** for that **Market Day**. Edits after export flag re-export (see [005](./005-admin-edit-sale.md)).
 

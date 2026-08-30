@@ -92,6 +92,7 @@ export type Catalog = {
     lines: CartLine[];
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
+    changeKept?: boolean;
     name?: string | null;
     notes?: string | null;
   }): Promise<{ saleNumber: number }>;
@@ -99,6 +100,7 @@ export type Catalog = {
     lines: CartLine[];
     paymentMethod: PaymentMethod;
     cashReceivedCents: number | null;
+    changeKept?: boolean;
     name?: string | null;
     notes?: string | null;
     completeDate?: string | null;
@@ -149,6 +151,7 @@ export type SalesExportRow = {
   saleTotalCents: number;
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
+  changeKeptCents: number;
   customerName: string | null;
 };
 
@@ -176,6 +179,7 @@ type StoredSale = {
   lines: CartLine[];
   paymentMethod: PaymentMethod;
   cashReceivedCents: number | null;
+  changeKept: boolean;
   name: string | null;
   notes: string | null;
   completeDate: string | null;
@@ -256,6 +260,7 @@ export function createCatalog(): Catalog {
       lines: CartLine[];
       paymentMethod: PaymentMethod;
       cashReceivedCents: number | null;
+      changeKept?: boolean;
       name?: string | null;
       notes?: string | null;
       completeDate?: string | null;
@@ -269,12 +274,18 @@ export function createCatalog(): Catalog {
     if (params.isPreorder === true && (!name || !notes || !completeDate)) {
       throw new Error('Preorder requires name, notes, and complete date');
     }
+    const totalCents = cartTotal(params.lines);
+    const changeKept =
+      params.paymentMethod === 'cash' &&
+      params.changeKept === true &&
+      (params.cashReceivedCents ?? 0) > totalCents;
     sales.push({
       saleNumber,
       marketDayId,
       lines: params.lines,
       paymentMethod: params.paymentMethod,
       cashReceivedCents: params.cashReceivedCents,
+      changeKept,
       name,
       notes,
       completeDate,
@@ -320,6 +331,10 @@ export function createCatalog(): Catalog {
           saleTotalCents,
           paymentMethod: sale.paymentMethod,
           cashReceivedCents: sale.cashReceivedCents,
+          changeKeptCents:
+            sale.changeKept && sale.cashReceivedCents != null
+              ? Math.max(sale.cashReceivedCents - saleTotalCents, 0)
+              : 0,
           customerName: sale.name,
         });
       }
@@ -710,6 +725,7 @@ export function createCatalog(): Catalog {
       sale.paymentMethod = paymentMethod;
       sale.cashReceivedCents =
         paymentMethod === 'cash' ? (sale.cashReceivedCents ?? cartTotal(sale.lines)) : null;
+      sale.changeKept = false;
 
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
@@ -726,6 +742,7 @@ export function createCatalog(): Catalog {
           updates.paymentMethod === 'cash'
             ? (sale.cashReceivedCents ?? cartTotal(sale.lines))
             : null;
+        sale.changeKept = false;
       }
       if (updates.name !== undefined) {
         sale.name = normalizeOptionalText(updates.name);
