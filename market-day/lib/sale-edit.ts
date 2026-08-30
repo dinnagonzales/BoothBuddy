@@ -31,11 +31,8 @@ export function paymentCanComplete(
   cashReceivedCents: number,
   totalCents: number,
 ): boolean {
-  return (
-    paymentMethod === 'venmo_zelle' ||
-    paymentMethod === 'pay_on_pickup' ||
-    cashReceivedCents >= totalCents
-  );
+  if (paymentMethod === 'pay_on_pickup') return true;
+  return cashReceivedCents >= totalCents;
 }
 
 export function paymentMethodCompletesPreorder(paymentMethod: PaymentMethod): boolean {
@@ -60,7 +57,7 @@ export function cashReceivedForEditedSale(
   cashReceivedCents: number | null,
   totalCents: number,
 ): number {
-  if (paymentMethod !== 'cash') return 0;
+  if (paymentMethod === 'pay_on_pickup') return 0;
   return cashReceivedCents ?? totalCents;
 }
 

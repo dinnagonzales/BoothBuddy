@@ -63,14 +63,17 @@ test('edited cash sale cannot complete until cash is prefilled', () => {
   expect(paymentCanComplete('cash', 5000, 2500)).toBe(true);
 });
 
-test('edited venmo sale can complete without cash entry', () => {
-  expect(paymentCanComplete('venmo_zelle', 0, 2500)).toBe(true);
+test('edited venmo sale cannot complete until amount is at least the total', () => {
+  expect(paymentCanComplete('venmo_zelle', 0, 2500)).toBe(false);
+  expect(paymentCanComplete('venmo_zelle', 2500, 2500)).toBe(true);
+  expect(paymentCanComplete('venmo_zelle', 3000, 2500)).toBe(true);
 });
 
 test('cashReceivedForEditedSale falls back to the sale total', () => {
   expect(cashReceivedForEditedSale('cash', null, 2500)).toBe(2500);
   expect(cashReceivedForEditedSale('cash', 5000, 2500)).toBe(5000);
-  expect(cashReceivedForEditedSale('venmo_zelle', null, 2500)).toBe(0);
+  expect(cashReceivedForEditedSale('venmo_zelle', null, 2500)).toBe(2500);
+  expect(cashReceivedForEditedSale('venmo_zelle', 3000, 2500)).toBe(3000);
 });
 
 test('cashChangeCents is zero when cash received does not exceed total', () => {

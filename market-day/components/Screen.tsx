@@ -84,7 +84,7 @@ export function ItemCard({
             <Text style={styles.stepperButtonLabel}>−</Text>
           </Pressable>
           <View style={styles.qtyBox}>
-            {quantity > 0 ? <Text style={styles.qtyBoxLabel}>{quantity}</Text> : null}
+            <Text style={styles.qtyBoxLabel}>{quantity}</Text>
           </View>
           <Pressable
             accessibilityRole="button"

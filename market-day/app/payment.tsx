@@ -50,10 +50,15 @@ export default function PaymentScreen() {
     if (editingPaymentMethod != null) {
       setPaymentMethod(editingPaymentMethod);
     }
-    if (editingPaymentMethod === 'cash' && editingCashReceivedCents != null) {
+    if (
+      (editingPaymentMethod === 'cash' || editingPaymentMethod === 'venmo_zelle') &&
+      editingCashReceivedCents != null
+    ) {
       setCashReceivedCents(editingCashReceivedCents);
+    } else if (editingPaymentMethod === 'venmo_zelle') {
+      setCashReceivedCents(totalCents);
     }
-  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents]);
+  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents, totalCents]);
 
   const changeCents = useMemo(
     () => cashChangeCents(cashReceivedCents, totalCents),
@@ -76,6 +81,7 @@ export default function PaymentScreen() {
       : cashReceivedCents < totalCents
         ? styles.cashAmountShort
         : styles.cashAmountGood;
+  const showAmountEntry = paymentMethod === 'cash' || paymentMethod === 'venmo_zelle';
   const canComplete =
     paymentCanComplete(paymentMethod, cashReceivedCents, totalCents) &&
     (!preorderCheckout || preorderMetadataValid(saleName, saleNotes, saleCompleteDate));
@@ -104,8 +110,10 @@ export default function PaymentScreen() {
         marketDayId,
         lines,
         paymentMethod,
-        cashReceivedCents: paymentMethod === 'cash' ? cashReceivedCents : null,
-        changeKept: paymentMethod === 'cash' && keepChange,
+        cashReceivedCents:
+          paymentMethod === 'cash' || paymentMethod === 'venmo_zelle' ? cashReceivedCents : null,
+        changeKept:
+          (paymentMethod === 'cash' || paymentMethod === 'venmo_zelle') && keepChange,
         name: saleName,
         notes: saleNotes,
         completeDate: saleCompleteDate,
@@ -142,7 +150,7 @@ export default function PaymentScreen() {
             <Text style={styles.totalValue}>{formatMoney(totalCents)}</Text>
           </View>
 
-          {paymentMethod === 'cash' ? (
+          {showAmountEntry ? (
             <Card style={styles.cashEntry} className="p-4 mb-3">
               <Text style={styles.valuePaidLabel}>Amount Paid</Text>
               <View style={styles.cashControlRow}>
@@ -271,7 +279,7 @@ export default function PaymentScreen() {
               className="flex-row justify-between items-center"
               onPress={() => {
                 setPaymentMethod('venmo_zelle');
-                setCashReceivedCents(0);
+                setCashReceivedCents(totalCents);
                 setKeepChange(false);
               }}>
               <Text style={styles.payOptionLabel}>📱 Venmo / Zelle</Text>

@@ -48,12 +48,11 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 ### Log a sale (seller — primary flow)
 
 1. **Home** — **Items** list (icon, name, price) + **Make a Sale** (always enabled). Optional **Market Day** banner when a day is active.
-2. **Pick Items** — scrollable menu with **− / qty / +** steppers per row; cart pinned at bottom shows **Name(qty)** and line subtotal, **N items** + total, **Checkout**.
+2. **Pick Items** — scrollable menu with **− / qty / +** steppers per row (**0** when not in cart); cart pinned at bottom shows **Name(qty)** and line subtotal, **N items** + total, **Checkout**.
    - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
-3. **Payment** — **Order Total**; when **Cash** is selected, a cash-entry card (**Amount Paid** with **− / +** steppers — amount turns red below total, green when enough) → bill chips → **Change** or **Still $X due** → optional **Keep change?** when change is due); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
-   - **Cash:** **Amount Paid** row first, then quick-tap bills ($1, $5, $10, $20, $100 — each adds), **Exact amount**, **Clear**. When change is due, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
-   - **Venmo/Zelle:** selector only; assumed paid in full.
+3. **Payment** — **Order Total**; when **Cash** or **Venmo/Zelle** is selected, an amount-entry card (**Amount Paid** with **− / +** steppers — amount turns red below total, green when enough) → bill chips → **Change** or **Still $X due** → optional **Keep change?** when overpaid); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
+   - **Cash** or **Venmo/Zelle:** **Amount Paid** row first, then quick-tap bills ($1, $5, $10, $20, $100 — each adds), **Exact amount**, **Clear**. **Venmo/Zelle** defaults to **Exact amount** on tap. When overpaid, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
 ### Log a preorder (seller)
@@ -111,8 +110,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 ## Payment
 
 - Cash and Venmo/Zelle are mutually exclusive per Sale.
-- **Cash** UI: **Amount Paid** row (**− / +** flanking amount — gray when $0, red when below total, green when enough), then bill chips, change/due line, then **Keep change?** (centered outline + checkbox; only when change is due; always defaults unchecked). Cash received stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips.
-- Venmo/Zelle: no additional input.
+- **Cash** and **Venmo/Zelle** share the same amount-entry UI: **Amount Paid** row (**− / +** flanking amount — gray when $0, red when below total, green when enough), then bill chips, change/due line, then **Keep change?** (centered outline + checkbox; only when amount paid exceeds total; always defaults unchecked). Amount paid stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips. **Venmo/Zelle** pre-fills **Exact amount** when selected.
 
 ---
 
@@ -140,7 +138,7 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 | Question | Decision |
 |----------|----------|
 | Undo/edit sales? | **Edit this sale** on celebration; **admin edit** anytime in grown-up settings |
-| Cash received? | Record + show **change**; quick bills + $1 steppers; optional **Keep Change?** when change is due |
+| Cash received? | Record amount paid + show **change** for Cash and Venmo/Zelle; quick bills + $1 steppers; optional **Keep Change?** when overpaid |
 | Session reset? | **Market Day** = explicit session; **Running Tab** for misc |
 | Emoji vs photo? | **Emoji default, photo optional** |
 | History view? | **Removed** — Home is Items menu; no Stickers tab |

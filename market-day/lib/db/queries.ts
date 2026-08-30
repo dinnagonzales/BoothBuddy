@@ -538,11 +538,7 @@ export async function createSale(
   const completeDate = normalizeOptionalText(params.completeDate);
   const isPreorder = params.isPreorder === true ? 1 : 0;
   const changeKept =
-    params.paymentMethod === 'cash' &&
-    params.changeKept === true &&
-    (params.cashReceivedCents ?? 0) > totalCents
-      ? 1
-      : 0;
+    params.changeKept === true && (params.cashReceivedCents ?? 0) > totalCents ? 1 : 0;
 
   if (isPreorder === 1 && (!name || !notes || !completeDate)) {
     throw new Error('Preorder requires name, notes, and complete date');

@@ -67,7 +67,7 @@ An auto-incrementing reference assigned to every Sale app-wide — including **P
 _Avoid_: Receipt number, order ID
 
 **Cart**:
-The in-progress list of Items being checked out. Each line shows **Name(qty)** and line subtotal. Quantity is adjusted on the menu rows above (**− / qty box / +**); removing an item sets quantity to zero.
+The in-progress list of Items being checked out. Each line shows **Name(qty)** and line subtotal. Quantity is adjusted on the menu rows above (**− / qty box / +**); the qty box shows **0** when the item isn't in the cart yet; removing an item sets quantity to zero.
 _Avoid_: Basket, order draft, ticket
 
 **Line item**:
@@ -91,7 +91,7 @@ How the customer paid for a Sale — **Cash**, **Venmo/Zelle**, or **Pay on pick
 _Avoid_: Payment type, tender
 
 **Cash received**:
-For Cash sales, the amount of money the customer handed the seller. The **Amount Paid** row at the top of the cash-entry card shows **− / +** steppers flanking the running total (gray when $0, red when below **Order Total**, green when enough). Below that, use quick-tap bill chips ($1, $5, $10, $20, $100 — each tap adds), **Exact amount**, or **Clear**. The app displays **Change** (cash received minus Sale total) in a status bar below the chips.
+For **Cash** and **Venmo/Zelle** sales, the amount the customer paid (including any tip). The **Amount Paid** row at the top of the amount-entry card shows **− / +** steppers flanking the running total (gray when $0, red when below **Order Total**, green when enough). Below that, use quick-tap bill chips ($1, $5, $10, $20, $100 — each tap adds), **Exact amount**, or **Clear**. **Venmo/Zelle** selects **Exact amount** by default. The app displays **Change** (amount paid minus Sale total) in a status bar below the chips.
 _Avoid_: Amount tendered, paid
 
 **Change**:
@@ -99,7 +99,7 @@ Cash received minus the Sale total, shown in the cash-entry card below the bill 
 _Avoid_: Money back, difference
 
 **Keep change**:
-Optional seller action at Cash checkout when change is due. A centered **Keep change?** outline control with checkbox appears below the change line (always unchecked by default — including when re-editing a sale). When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full **Cash received** is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
+Optional seller action at **Cash** or **Venmo/Zelle** checkout when amount paid exceeds the total. A centered **Keep change?** outline control with checkbox appears below the change line (always unchecked by default — including when re-editing a sale). When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full amount paid is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:

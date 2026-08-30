@@ -277,9 +277,7 @@ export function createCatalog(): Catalog {
     }
     const totalCents = cartTotal(params.lines);
     const changeKept =
-      params.paymentMethod === 'cash' &&
-      params.changeKept === true &&
-      (params.cashReceivedCents ?? 0) > totalCents;
+      params.changeKept === true && (params.cashReceivedCents ?? 0) > totalCents;
     sales.push({
       saleNumber,
       marketDayId,

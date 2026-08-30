@@ -136,14 +136,14 @@ It might be **Sold out** for today. Pick something else or ask a grown-up.
 **For sellers**
 
 1. See **Order Total** — that’s what the customer owes.
-2. **Cash** is selected by default. In the cash-entry card (above the payment-method cards):
+2. **Cash** is selected by default. The amount-entry card (above the payment-method cards) also appears for **Venmo / Zelle**:
 
    - **Amount Paid** — large number between **− / +** (gray when empty, red if too low, green when enough).
    - Tap bill chips ($1, $5, $10, $20, $100), **Exact amount**, or **Clear** below that.
-   - Read **Change** (money back) or **Still $X due** (not enough yet) in the status bar.
-   - If there is change, tap the centered **Keep change?** button (unchecked by default). The checkbox fills when selected; the line switches to **Keeping $X — no change back**.
+   - Read **Change** (money back / overpaid) or **Still $X due** (not enough yet) in the status bar.
+   - If amount paid is more than the total, tap the centered **Keep change?** button (unchecked by default). The checkbox fills when selected; the line switches to **Keeping $X — no change back**.
 
-3. Pick how they paid — tap **💵 Cash** or **📱 Venmo / Zelle** in the cards below (Venmo needs no cash math).
+3. Pick how they paid — tap **💵 Cash** or **📱 Venmo / Zelle** in the cards below. **Venmo / Zelle** starts at **Exact amount** so you can bump it up if the customer adds a tip.
 
 4. Tap **Complete sale ✓**.
 5. You did it! **Sold!** 🎉
@@ -509,10 +509,9 @@ Tap **Complete sale ✓** when the payment is right.
 ## `/faq/venmo-zelle` — Venmo / Zelle payments
 
 1. On the payment screen, tap **📱 Venmo / Zelle**.
-2. The grown-up or customer handles the real payment on their phone.
-3. Tap **Complete sale ✓** in Market Day to save the sale.
-
-No change math — the full total is paid digitally.
+2. **Amount Paid** defaults to the exact order total — same card as cash (chips, **− / +**, **Keep change?**).
+3. The grown-up or customer handles the real payment on their phone. If they add a tip, tap **+** or a bill chip to match what they sent, then check **Keep change?** when the extra is a tip.
+4. Tap **Complete sale ✓** in Market Day to save the sale.
 
 ---
 

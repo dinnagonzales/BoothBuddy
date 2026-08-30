@@ -19,7 +19,7 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Home** — Items menu (no sales totals); optional Market Day banner; **Make a Sale** (always) + **+ Pre-order**
 - **Make a Sale** — always available; attaches to active Market Day when one is open; off-day sales save to Running Tab with optional name/notes
 - **+ Pre-order** — required name/notes/complete date, Pay on pickup, global catalog, always Running Tab (even during a fair)
-- **Sell flow** — menu **− / qty / +** steppers, read-only cart (**Name(qty)** + **N items** total), payment (**Order Total**; cash-entry: **Amount Paid** → chips → change → **Keep change?**; Cash / Venmo-Zelle selectors below; pay on pickup for preorders)
+- **Sell flow** — menu **− / qty / +** steppers (**0** when not in cart), read-only cart (**Name(qty)** + **N items** total), payment (**Order Total**; amount-entry for Cash and Venmo/Zelle: **Amount Paid** → chips → change → **Keep change?**; payment-method selectors below; pay on pickup for preorders)
 - **Celebration** — Edit this sale / Go to Dashboard; tap ✕ → Home
 - **Settings** — Active Market Day dashboard (sales, profit, Cash with tips breakdown, Venmo/Zelle; Today's Menu, sales list)
 - **Past Events** — closed days on Settings empty state; detail view with export + Reopen
