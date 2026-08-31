@@ -49,7 +49,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 }
 
 type ItemCardProps = {
-  emoji: string;
+  icon: string;
   name: string;
   priceLabel: string;
   quantity?: number;
@@ -59,7 +59,7 @@ type ItemCardProps = {
 };
 
 export function ItemCard({
-  emoji,
+  icon,
   name,
   priceLabel,
   quantity = 0,
@@ -71,7 +71,7 @@ export function ItemCard({
 
   return (
     <View style={styles.itemCard}>
-      <Text style={styles.itemEmoji}>{emoji}</Text>
+      <Text style={styles.itemIcon}>{icon}</Text>
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemPrice}>{priceLabel}</Text>
       {useStepper ? (
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.itemRowPaddingH,
     paddingVertical: spacing.itemRowPaddingV,
   },
-  itemEmoji: {
+  itemIcon: {
     width: 32,
     fontSize: 24,
     textAlign: 'center',

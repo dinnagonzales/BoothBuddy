@@ -12,7 +12,7 @@ test('creating an Item makes it available to the seller without cost', async () 
 
   await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -22,7 +22,7 @@ test('creating an Item makes it available to the seller without cost', async () 
     {
       id: expect.any(Number),
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
     },
   ]);
@@ -33,7 +33,7 @@ test('an archived Item is not available to the seller', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });

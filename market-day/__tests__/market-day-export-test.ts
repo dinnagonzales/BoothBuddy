@@ -127,7 +127,7 @@ test('marketDayExportFilename sanitizes the Market Day name', () => {
 
 test('buildPreorderPrintout includes prep summary and checkbox lines per order', () => {
   const printout = buildPreorderPrintout(
-    [{ itemId: 1, name: 'Dragon', emoji: '🐉', quantity: 3 }],
+    [{ itemId: 1, name: 'Dragon', icon: '🐉', quantity: 3 }],
     [
       {
         saleNumber: 1,
@@ -135,7 +135,7 @@ test('buildPreorderPrintout includes prep summary and checkbox lines per order',
         customerName: 'Emma',
         notes: 'Saturday pickup',
         itemName: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         quantity: 2,
         priceCents: 400,
         saleTotalCents: 800,
@@ -146,7 +146,7 @@ test('buildPreorderPrintout includes prep summary and checkbox lines per order',
         customerName: 'Jake',
         notes: 'Sunday',
         itemName: 'Unicorn',
-        emoji: '🦄',
+        icon: '🦄',
         quantity: 1,
         priceCents: 300,
         saleTotalCents: 300,

@@ -113,7 +113,7 @@ export default function CelebrationScreen() {
         </Pressable>
 
         <View style={styles.badge}>
-          <Text style={styles.badgeEmoji}>✅</Text>
+          <Text style={styles.badgeIcon}>✅</Text>
         </View>
         <Text style={styles.title}>{isPreorder ? 'Preorder saved!' : 'Sold!'}</Text>
         <Text style={styles.subtitle}>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 14,
   },
-  badgeEmoji: {
+  badgeIcon: {
     fontSize: 44,
   },
   title: {

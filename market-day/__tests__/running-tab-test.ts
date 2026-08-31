@@ -5,7 +5,7 @@ test('Quick Sale saves to Running Tab with no Market Day', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -15,7 +15,7 @@ test('Quick Sale saves to Running Tab with no Market Day', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -48,7 +48,7 @@ test('Quick Sale during an Active Market Day still saves to Running Tab', async 
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -59,7 +59,7 @@ test('Quick Sale during an Active Market Day still saves to Running Tab', async 
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -88,7 +88,7 @@ test('Quick Sale can include optional name and notes', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -98,7 +98,7 @@ test('Quick Sale can include optional name and notes', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -122,7 +122,7 @@ test('listSalesExportRows includes all completed sales in the date range', async
   const catalog = createCatalog();
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -135,7 +135,7 @@ test('listSalesExportRows includes all completed sales in the date range', async
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -151,7 +151,7 @@ test('listSalesExportRows includes all completed sales in the date range', async
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,

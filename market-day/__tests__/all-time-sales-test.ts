@@ -5,7 +5,7 @@ test('all-time sales aggregates stats across every market day', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -16,7 +16,7 @@ test('all-time sales aggregates stats across every market day', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -34,7 +34,7 @@ test('all-time sales aggregates stats across every market day', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 2,
@@ -59,7 +59,7 @@ test('all-time sales list includes sale date context and market day name', async
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -70,7 +70,7 @@ test('all-time sales list includes sale date context and market day name', async
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -88,7 +88,7 @@ test('all-time sales list includes sale date context and market day name', async
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,

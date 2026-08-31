@@ -5,20 +5,20 @@ import { fonts } from '@/constants/visual';
 import { tokens } from '@/theme/tokens';
 
 type IconTileProps = {
-  emoji?: string;
+  icon?: string;
   imageSource?: ImageSourcePropType;
   size?: number;
   style?: ViewStyle;
 };
 
-/** Rounded-square tile like the bear icon lockup — for logos, item photos, emojis. */
-export function IconTile({ emoji, imageSource, size = 56, style }: IconTileProps) {
+/** Rounded-square tile like the bear icon lockup — for logos and item photos. */
+export function IconTile({ icon, imageSource, size = 56, style }: IconTileProps) {
   return (
     <View style={[styles.tile, { width: size, height: size, borderRadius: tokens.radius.md }, style]}>
       {imageSource ? (
         <Image source={imageSource} style={{ width: size, height: size, borderRadius: tokens.radius.md }} />
       ) : (
-        <Text style={[styles.emoji, { fontSize: size * 0.55, lineHeight: size * 0.62 }]}>{emoji ?? '🐻'}</Text>
+        <Text style={[styles.icon, { fontSize: size * 0.55, lineHeight: size * 0.62 }]}>{icon ?? '🐻'}</Text>
       )}
     </View>
   );
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  emoji: {
+  icon: {
     textAlign: 'center',
   },
 });

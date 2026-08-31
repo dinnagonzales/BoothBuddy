@@ -71,7 +71,7 @@ test('setup is incomplete with an Item but no profile or parental code', async (
 
   await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -106,7 +106,7 @@ test('setup stays complete when today\'s Menu is empty but Items exist in the ca
   await deps.gate.setCode('1234');
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -132,7 +132,7 @@ test('beginFreshSetupIfNoCode clears shop data when no code exists', async () =>
 
   await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });

@@ -6,7 +6,7 @@ const SCHEMA = `
   CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    emoji TEXT NOT NULL,
+    icon TEXT NOT NULL,
     photo_uri TEXT,
     cost_cents INTEGER NOT NULL,
     price_cents INTEGER NOT NULL,
@@ -66,6 +66,11 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   const hasArchived = columns.some((column) => column.name === 'archived');
   if (hasRetired && !hasArchived) {
     await db.execAsync('ALTER TABLE items RENAME COLUMN retired TO archived');
+  }
+  const hasEmojiColumn = columns.some((column) => column.name === 'emoji');
+  const hasIconColumn = columns.some((column) => column.name === 'icon');
+  if (hasEmojiColumn && !hasIconColumn) {
+    await db.execAsync('ALTER TABLE items RENAME COLUMN emoji TO icon');
   }
 
   const marketDayColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(market_days)');

@@ -7,7 +7,7 @@ import {
 
 export type ItemDraft = {
   name: string;
-  emoji: string;
+  icon: string;
   costCents: number;
   priceCents: number;
 };
@@ -15,7 +15,7 @@ export type ItemDraft = {
 export type SellerItem = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   priceCents: number;
   soldOut?: boolean;
 };
@@ -23,7 +23,7 @@ export type SellerItem = {
 export type MenuItem = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   priceCents: number;
   soldOut: boolean;
 };
@@ -31,14 +31,14 @@ export type MenuItem = {
 export type RemovedMenuItem = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   priceCents: number;
 };
 
 export type AdminItem = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   costCents: number;
   priceCents: number;
   archived: boolean;
@@ -252,7 +252,7 @@ export function createCatalog(): Catalog {
         return {
           id: item.id,
           name: item.name,
-          emoji: item.emoji,
+          icon: item.icon,
           priceCents: item.priceCents,
           soldOut: entry.soldOut,
         };
@@ -410,27 +410,27 @@ export function createCatalog(): Catalog {
       const item = items.find((entry) => entry.id === id);
       if (!item) return;
       item.name = draft.name;
-      item.emoji = draft.emoji;
+      item.icon = draft.icon;
       item.costCents = draft.costCents;
       item.priceCents = draft.priceCents;
     },
     async listForSeller(): Promise<SellerItem[]> {
       const active = getActiveMarketDayRecord();
       if (active) {
-        return listMenuItemsForMarketDay(active.id).map(({ id, name, emoji, priceCents, soldOut }) => ({
+        return listMenuItemsForMarketDay(active.id).map(({ id, name, icon, priceCents, soldOut }) => ({
           id,
           name,
-          emoji,
+          icon,
           priceCents,
           soldOut,
         }));
       }
       return items
         .filter((item) => !item.archived)
-        .map(({ id, name, emoji, priceCents }) => ({
+        .map(({ id, name, icon, priceCents }) => ({
           id,
           name,
-          emoji,
+          icon,
           priceCents,
         }));
     },
@@ -439,37 +439,37 @@ export function createCatalog(): Catalog {
       if (!active) {
         return items
           .filter((item) => !item.archived)
-          .map(({ id, name, emoji, priceCents }) => ({
+          .map(({ id, name, icon, priceCents }) => ({
             id,
             name,
-            emoji,
+            icon,
             priceCents,
           }));
       }
       return listMenuItemsForMarketDay(active.id)
         .filter((item) => !item.soldOut)
-        .map(({ id, name, emoji, priceCents }) => ({
+        .map(({ id, name, icon, priceCents }) => ({
           id,
           name,
-          emoji,
+          icon,
           priceCents,
         }));
     },
     async listForRunningTab(): Promise<SellerItem[]> {
       return items
         .filter((item) => !item.archived)
-        .map(({ id, name, emoji, priceCents }) => ({
+        .map(({ id, name, icon, priceCents }) => ({
           id,
           name,
-          emoji,
+          icon,
           priceCents,
         }));
     },
     async listForAdmin(): Promise<AdminItem[]> {
-      return items.map(({ id, name, emoji, costCents, priceCents, archived }) => ({
+      return items.map(({ id, name, icon, costCents, priceCents, archived }) => ({
         id,
         name,
-        emoji,
+        icon,
         costCents,
         priceCents,
         archived,
@@ -496,7 +496,7 @@ export function createCatalog(): Catalog {
           return {
             id: item.id,
             name: item.name,
-            emoji: item.emoji,
+            icon: item.icon,
             priceCents: item.priceCents,
           };
         });

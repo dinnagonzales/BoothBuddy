@@ -184,7 +184,7 @@ export function buildPreorderPrintout(
     lines.push('  (none)');
   } else {
     for (const item of prepSummary) {
-      lines.push(`  ${item.quantity}x ${item.emoji} ${item.name}`);
+      lines.push(`  ${item.quantity}x ${item.icon} ${item.name}`);
     }
   }
   lines.push('');
@@ -205,7 +205,7 @@ export function buildPreorderPrintout(
     lines.push(titleParts.join(' · '));
     for (const row of orderRows) {
       const lineTotal = row.priceCents * row.quantity;
-      lines.push(`  [ ] ${row.quantity}x ${row.emoji} ${row.itemName} ($${formatLineMoney(lineTotal)})`);
+      lines.push(`  [ ] ${row.quantity}x ${row.icon} ${row.itemName} ($${formatLineMoney(lineTotal)})`);
     }
     lines.push(`  Total: ${formatMoney(header.saleTotalCents)}`);
     lines.push('');

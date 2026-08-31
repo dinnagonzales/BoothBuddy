@@ -114,9 +114,6 @@ export default function SettingsScreen() {
       <View style={styles.screen}>
         <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
         <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.dashboardLogoWrap}>
-            <BoothBuddyLogo variant="long" style={styles.dashboardLogo} />
-          </View>
           <View style={styles.emptyWrap}>
             <View style={styles.emptyBadge}>
               <BoothBuddyLogo variant="full" style={styles.emptyLogo} />
@@ -144,9 +141,6 @@ export default function SettingsScreen() {
     <View style={styles.screen}>
       <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.dashboardLogoWrap}>
-          <BoothBuddyLogo variant="long" style={styles.dashboardLogo} />
-        </View>
         <View style={styles.summarySection}>
           <SectionLabel>Event Summary</SectionLabel>
           <MarketDaySummaryCard
@@ -281,13 +275,6 @@ const styles = StyleSheet.create({
   },
   salesSection: {
     marginTop: 10,
-  },
-  dashboardLogoWrap: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  dashboardLogo: {
-    height: 36,
   },
   emptyScrollContent: {
     flexGrow: 1,

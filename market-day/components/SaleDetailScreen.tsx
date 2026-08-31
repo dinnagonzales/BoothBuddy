@@ -404,7 +404,7 @@ export function SaleDetailScreen({
         <Text style={styles.sectionLabel}>Line items</Text>
         {sale.lines.map((line) => (
           <View key={line.itemId} style={styles.lineRow}>
-            <Text style={styles.lineEmoji}>{line.emoji}</Text>
+            <Text style={styles.lineIcon}>{line.icon}</Text>
             <View style={styles.lineCopy}>
               <Text style={styles.lineName}>{line.name}</Text>
               <Text style={styles.lineSubtotal}>{formatMoney(line.priceCents * line.quantity)}</Text>
@@ -796,7 +796,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 10,
   },
-  lineEmoji: {
+  lineIcon: {
     fontSize: 24,
   },
   lineCopy: {

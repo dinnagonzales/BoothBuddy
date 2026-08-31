@@ -121,7 +121,7 @@ export default function PreordersScreen() {
             <View style={styles.prepCard}>
               {prepSummary.map((item) => (
                 <View key={item.itemId} style={styles.prepRow}>
-                  <Text style={styles.prepEmoji}>{item.emoji}</Text>
+                  <Text style={styles.prepIcon}>{item.icon}</Text>
                   <Text style={styles.prepName}>{item.name}</Text>
                   <Text style={styles.prepQty}>× {item.quantity}</Text>
                 </View>
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  prepEmoji: {
+  prepIcon: {
     fontSize: 18,
     width: 24,
     textAlign: 'center',

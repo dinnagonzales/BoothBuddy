@@ -11,11 +11,11 @@ import { fonts } from '@/constants/visual';
 import { parseMoneyInput } from '@/lib/money';
 
 type ItemSetupCardProps = {
-  emoji: string;
+  icon: string;
   name: string;
   cost: string;
   price: string;
-  onEmojiChange: (value: string) => void;
+  onIconChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onCostChange: (value: string) => void;
   onPriceChange: (value: string) => void;
@@ -23,11 +23,11 @@ type ItemSetupCardProps = {
 };
 
 export function ItemSetupCard({
-  emoji,
+  icon,
   name,
   cost,
   price,
-  onEmojiChange,
+  onIconChange,
   onNameChange,
   onCostChange,
   onPriceChange,
@@ -39,7 +39,7 @@ export function ItemSetupCard({
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
         <BrandCard surface="peach" style={styles.card}>
-          <IconTile emoji="📦" size={56} style={styles.iconTile} />
+          <IconTile icon="📦" size={56} style={styles.iconTile} />
 
           <Text style={styles.title}>Add your first Item</Text>
           <Text style={styles.subtext}>
@@ -47,7 +47,7 @@ export function ItemSetupCard({
           </Text>
 
           <View style={styles.form}>
-            <Field label="Emoji" value={emoji} onChangeText={onEmojiChange} placeholder="📦" />
+            <Field label="Icon" value={icon} onChangeText={onIconChange} />
             <Field label="Name" value={name} onChangeText={onNameChange} placeholder="Dragon" />
             <Field
               label="Cost — not shown to staff"

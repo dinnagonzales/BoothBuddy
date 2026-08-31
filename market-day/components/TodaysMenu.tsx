@@ -54,7 +54,7 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
     }
     Alert.alert(
       'Mark sold out?',
-      `${item.emoji} ${item.name} stays on Home but can't be added to checkout.`,
+      `${item.icon} ${item.name} stays on Home but can't be added to checkout.`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Mark sold out', onPress: () => toggleSoldOut(item) },
@@ -73,7 +73,7 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
   const confirmRemove = (item: MenuItem) => {
     Alert.alert(
       'Remove from menu?',
-      `${item.emoji} ${item.name} hides from Home and checkout for today.`,
+      `${item.icon} ${item.name} hides from Home and checkout for today.`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Remove', style: 'destructive', onPress: () => removeItem(item) },
@@ -103,7 +103,7 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
       'Pick an item from inventory:',
       [
         ...removedItems.map((item) => ({
-          text: `${item.emoji} ${item.name}`,
+          text: `${item.icon} ${item.name}`,
           onPress: () => addItem(item.id),
         })),
         { text: 'Cancel', style: 'cancel' as const },
@@ -126,7 +126,7 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
               embedded && styles.itemRowEmbedded,
               item.soldOut && styles.itemRowSoldOut,
             ]}>
-            <Text style={styles.emoji}>{item.emoji}</Text>
+            <Text style={styles.icon}>{item.icon}</Text>
             <View style={styles.meta}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.price}>{formatMoney(item.priceCents)}</Text>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   itemRowSoldOut: {
     opacity: 0.55,
   },
-  emoji: {
+  icon: {
     fontSize: 18,
     width: 24,
     textAlign: 'center',

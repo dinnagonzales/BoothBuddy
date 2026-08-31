@@ -137,7 +137,7 @@ export default function HomeScreen() {
     addItem({
       itemId: item.id,
       name: item.name,
-      emoji: item.emoji,
+      icon: item.icon,
       priceCents: item.priceCents,
       costCents: item.costCents,
     });
@@ -175,7 +175,7 @@ export default function HomeScreen() {
               onPress={openSettings}>
               <Text style={styles.gearIcon}>⚙️</Text>
             </Pressable>
-            <View style={styles.titleWrap}>
+            <View pointerEvents="none" style={styles.titleWrap}>
               <BoothBuddyLogo variant="long" />
             </View>
             <Pressable
@@ -204,7 +204,11 @@ export default function HomeScreen() {
           <View style={styles.sellButtonWrap}>
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.push('/sell')}
+              onPress={() => {
+                setIsQuickSale(false);
+                setIsPreorder(false);
+                router.push('/sell');
+              }}
               style={({ pressed }) => [
                 styles.sellButtonOuter,
                 pressed ? styles.sellButtonOuterPressed : null,
@@ -220,6 +224,7 @@ export default function HomeScreen() {
 
           {items.length === 0 ? (
             <View style={styles.itemList}>
+              <Text style={styles.emptyMenuText}>Update Inventory to Complete a Sale</Text>
               <View style={styles.menuGridRow}>
                 <Pressable
                   accessibilityRole="button"
@@ -252,7 +257,7 @@ export default function HomeScreen() {
                         item.soldOut ? styles.menuTileSoldOut : null,
                         pressed && !item.soldOut ? styles.menuTilePressed : null,
                       ]}>
-                      <Text style={styles.menuTileEmoji}>{item.emoji}</Text>
+                      <Text style={styles.menuTileIcon}>{item.icon}</Text>
                       <Text
                         style={[styles.menuTileName, item.soldOut ? styles.menuTileNameSoldOut : null]}
                         numberOfLines={2}>
@@ -312,18 +317,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   topBar: {
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 38,
     marginBottom: 12,
-    gap: 8,
   },
   titleWrap: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  gearButton: {
+    zIndex: 1,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gearIcon: {
+    fontSize: 16,
+  },
   preorderButton: {
+    zIndex: 1,
     height: 38,
     borderRadius: 19,
     backgroundColor: colors.white,
@@ -337,17 +360,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 13,
     color: colors.green,
-  },
-  gearButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gearIcon: {
-    fontSize: 16,
   },
   heroCard: {
     borderRadius: 26,
@@ -394,6 +406,13 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginBottom: 10,
   },
+  emptyMenuText: {
+    fontFamily: fonts.body.semiBold,
+    fontSize: 14,
+    color: colors.inkSoft,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
   itemList: {
     paddingBottom: 40,
   },
@@ -425,7 +444,7 @@ const styles = StyleSheet.create({
   menuTileSoldOut: {
     opacity: 0.65,
   },
-  menuTileEmoji: {
+  menuTileIcon: {
     fontSize: 52,
     lineHeight: 58,
     textAlign: 'center',

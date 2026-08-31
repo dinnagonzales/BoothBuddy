@@ -5,7 +5,7 @@ test('closed Market Days appear in Past Events newest first with sale counts', a
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -17,7 +17,7 @@ test('closed Market Days appear in Past Events newest first with sale counts', a
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -35,7 +35,7 @@ test('closed Market Days appear in Past Events newest first with sale counts', a
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 2,
@@ -102,7 +102,7 @@ test('deleting a closed Market Day removes it and its sales from Past Events', a
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -114,7 +114,7 @@ test('deleting a closed Market Day removes it and its sales from Past Events', a
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,

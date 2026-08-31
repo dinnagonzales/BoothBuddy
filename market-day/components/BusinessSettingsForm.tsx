@@ -29,6 +29,7 @@ import {
 import {
   businessSettingsEqual,
   normalizeBusinessSettings,
+  normalizeOptionalUri,
   normalizeVenmoHandle,
   type BusinessSettings,
 } from '@/lib/business-settings';
@@ -363,6 +364,18 @@ function ImagePickerRow({
   square?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const resolvedUri = normalizeOptionalUri(imageUri);
+  const [imageReady, setImageReady] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageReady(false);
+    setImageFailed(false);
+  }, [resolvedUri]);
+
+  const showRemove = imageReady;
+  const showLoadedImage = resolvedUri != null && !imageFailed;
+
   return (
     <View style={[styles.imageRow, style]}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -372,13 +385,22 @@ function ImagePickerRow({
           accessibilityRole="button"
           onPress={onPick}
           style={[styles.imagePreview, square && styles.imagePreviewSquare]}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
+          {showLoadedImage ? (
+            <Image
+              source={{ uri: resolvedUri }}
+              style={styles.image}
+              resizeMode="cover"
+              onLoad={() => setImageReady(true)}
+              onError={() => {
+                setImageReady(false);
+                setImageFailed(true);
+              }}
+            />
           ) : (
             <Text style={styles.imagePlaceholder}>{emptyLabel}</Text>
           )}
         </Pressable>
-        {imageUri ? (
+        {showRemove ? (
           <Pressable accessibilityRole="button" onPress={onRemove} style={styles.removeButton}>
             <Text style={styles.removeButtonLabel}>Remove</Text>
           </Pressable>

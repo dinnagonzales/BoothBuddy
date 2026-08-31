@@ -6,7 +6,7 @@ test('Quick Sale preorder saves with pay on pickup and stays out of Sales tab', 
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -16,7 +16,7 @@ test('Quick Sale preorder saves with pay on pickup and stays out of Sales tab', 
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -52,7 +52,7 @@ test('marking a preorder complete moves it to Sales tab', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -62,7 +62,7 @@ test('marking a preorder complete moves it to Sales tab', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -96,7 +96,7 @@ test('pending preorders are excluded from Running Tab export', async () => {
   const catalog = createCatalog();
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -107,7 +107,7 @@ test('pending preorders are excluded from Running Tab export', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -136,7 +136,7 @@ test('preorder requires name and notes', async () => {
   const catalog = createCatalog();
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -144,7 +144,7 @@ test('preorder requires name and notes', async () => {
   const line = {
     itemId: dragon.id,
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     priceCents: 400,
     costCents: 100,
     quantity: 1,

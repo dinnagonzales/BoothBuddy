@@ -17,14 +17,14 @@ type AdminItemCatalogProps = {
 type FormMode = { type: 'add' } | { type: 'edit'; item: AdminItem };
 
 type ItemFormState = {
-  emoji: string;
+  icon: string;
   name: string;
   cost: string;
   price: string;
 };
 
 const emptyForm = (): ItemFormState => ({
-  emoji: '📦',
+  icon: '📦',
   name: '',
   cost: '',
   price: '',
@@ -65,7 +65,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
 
   const openEditForm = (item: AdminItem) => {
     setForm({
-      emoji: item.emoji,
+      icon: item.icon,
       name: item.name,
       cost: formatMoney(item.costCents),
       price: formatMoney(item.priceCents),
@@ -83,7 +83,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
       const catalog = createSqliteCatalog(db);
       const draft = {
         name: form.name.trim(),
-        emoji: form.emoji.trim() || '📦',
+        icon: form.icon.trim() || '📦',
         costCents: parseMoneyInput(form.cost),
         priceCents: parseMoneyInput(form.price),
       };
@@ -119,7 +119,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
   const deleteItem = (item: AdminItem) => {
     Alert.alert(
       'Delete this item?',
-      `${item.emoji} ${item.name} will be removed. Can't be undone.`,
+      `${item.icon} ${item.name} will be removed. Can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -234,7 +234,7 @@ function ItemRow({
 }) {
   return (
     <>
-      <Text style={[styles.emoji, editing && styles.emojiEdit]}>{item.emoji}</Text>
+      <Text style={[styles.icon, editing && styles.iconEdit]}>{item.icon}</Text>
       <View style={styles.meta}>
         <Text style={[styles.name, editing && styles.nameEdit]}>
           {item.name}
@@ -283,10 +283,10 @@ function ItemForm({
   return (
     <View style={styles.formBody}>
       <Field
-        label="Emoji"
-        value={form.emoji}
-        onChangeText={(emoji) => setForm((f) => ({ ...f, emoji }))}
-        emoji
+        label="Icon"
+        value={form.icon}
+        onChangeText={(icon) => setForm((f) => ({ ...f, icon }))}
+        icon
         first
       />
       <Field label="Name" value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} />
@@ -372,14 +372,14 @@ function Field({
   value,
   onChangeText,
   keyboardType,
-  emoji = false,
+  icon = false,
   first = false,
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   keyboardType?: 'decimal-pad' | 'default';
-  emoji?: boolean;
+  icon?: boolean;
   first?: boolean;
 }) {
   return (
@@ -390,7 +390,7 @@ function Field({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholderTextColor={colors.inkSoft}
-        style={[styles.fieldInput, emoji && styles.fieldInputEmoji]}
+        style={[styles.fieldInput, icon && styles.fieldInputIcon]}
       />
     </View>
   );
@@ -444,12 +444,12 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 22,
   },
-  emoji: {
+  icon: {
     fontSize: 18,
     width: 24,
     textAlign: 'center',
   },
-  emojiEdit: {
+  iconEdit: {
     fontSize: 22,
     width: 28,
   },
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.surfaceMuted,
   },
-  fieldInputEmoji: {
+  fieldInputIcon: {
     fontSize: 24,
     paddingTop: 6,
     paddingBottom: 10,

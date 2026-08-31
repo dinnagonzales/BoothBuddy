@@ -116,6 +116,7 @@ export function textOnBackground(bg: string): typeof tokens.color.ink | typeof t
     tokens.color.gray200,
     tokens.color.gray100,
     tokens.color.gray50,
+    tokens.color.grayLight,
     tokens.color.white,
     tokens.color.warning,
     tokens.color.warningSurface,

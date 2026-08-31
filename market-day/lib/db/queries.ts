@@ -20,7 +20,7 @@ import type {
 type ItemRow = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   photo_uri: string | null;
   cost_cents: number;
   price_cents: number;
@@ -31,7 +31,7 @@ function mapItem(row: ItemRow): Item {
   return {
     id: row.id,
     name: row.name,
-    emoji: row.emoji,
+    icon: row.icon,
     photoUri: row.photo_uri,
     costCents: row.cost_cents,
     priceCents: row.price_cents,
@@ -49,7 +49,7 @@ export async function getActiveItems(db: SQLiteDatabase): Promise<Item[]> {
 type MenuItemRow = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   photo_uri: string | null;
   cost_cents: number;
   price_cents: number;
@@ -104,7 +104,7 @@ function mapMenuItem(row: MenuItemRow): Item & { soldOut: boolean } {
   return {
     id: row.id,
     name: row.name,
-    emoji: row.emoji,
+    icon: row.icon,
     photoUri: row.photo_uri,
     costCents: row.cost_cents,
     priceCents: row.price_cents,
@@ -122,7 +122,7 @@ export async function getHomeItems(db: SQLiteDatabase): Promise<Array<Item & { s
   await ensureActiveMarketDayMenu(db);
 
   const rows = await db.getAllAsync<MenuItemRow>(
-    `SELECT i.id, i.name, i.emoji, i.photo_uri, i.cost_cents, i.price_cents, m.sold_out
+    `SELECT i.id, i.name, i.icon, i.photo_uri, i.cost_cents, i.price_cents, m.sold_out
      FROM menu_items m
      JOIN items i ON i.id = m.item_id
      WHERE m.market_day_id = ? AND m.removed = 0
@@ -164,11 +164,11 @@ export async function getMenuForAdmin(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<{
     id: number;
     name: string;
-    emoji: string;
+    icon: string;
     price_cents: number;
     sold_out: number;
   }>(
-    `SELECT i.id, i.name, i.emoji, i.price_cents, m.sold_out
+    `SELECT i.id, i.name, i.icon, i.price_cents, m.sold_out
      FROM menu_items m
      JOIN items i ON i.id = m.item_id
      WHERE m.market_day_id = ? AND m.removed = 0
@@ -179,7 +179,7 @@ export async function getMenuForAdmin(db: SQLiteDatabase) {
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
-    emoji: row.emoji,
+    icon: row.icon,
     priceCents: row.price_cents,
     soldOut: row.sold_out === 1,
   }));
@@ -194,10 +194,10 @@ export async function getRemovedMenuItems(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<{
     id: number;
     name: string;
-    emoji: string;
+    icon: string;
     price_cents: number;
   }>(
-    `SELECT i.id, i.name, i.emoji, i.price_cents
+    `SELECT i.id, i.name, i.icon, i.price_cents
      FROM menu_items m
      JOIN items i ON i.id = m.item_id
      WHERE m.market_day_id = ? AND m.removed = 1 AND i.archived = 0
@@ -208,7 +208,7 @@ export async function getRemovedMenuItems(db: SQLiteDatabase) {
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
-    emoji: row.emoji,
+    icon: row.icon,
     priceCents: row.price_cents,
   }));
 }
@@ -271,12 +271,12 @@ export async function addToMenu(db: SQLiteDatabase, itemId: number): Promise<voi
 
 export async function createItem(
   db: SQLiteDatabase,
-  draft: { name: string; emoji: string; costCents: number; priceCents: number },
+  draft: { name: string; icon: string; costCents: number; priceCents: number },
 ): Promise<{ id: number }> {
   const result = await db.runAsync(
-    'INSERT INTO items (name, emoji, cost_cents, price_cents) VALUES (?, ?, ?, ?)',
+    'INSERT INTO items (name, icon, cost_cents, price_cents) VALUES (?, ?, ?, ?)',
     draft.name,
-    draft.emoji,
+    draft.icon,
     draft.costCents,
     draft.priceCents,
   );
@@ -295,12 +295,12 @@ export async function getAllItems(db: SQLiteDatabase): Promise<Item[]> {
 export async function updateItem(
   db: SQLiteDatabase,
   id: number,
-  draft: { name: string; emoji: string; costCents: number; priceCents: number },
+  draft: { name: string; icon: string; costCents: number; priceCents: number },
 ): Promise<void> {
   await db.runAsync(
-    'UPDATE items SET name = ?, emoji = ?, cost_cents = ?, price_cents = ? WHERE id = ?',
+    'UPDATE items SET name = ?, icon = ?, cost_cents = ?, price_cents = ? WHERE id = ?',
     draft.name,
-    draft.emoji,
+    draft.icon,
     draft.costCents,
     draft.priceCents,
     id,
@@ -614,12 +614,12 @@ export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Prom
   const rows = await db.getAllAsync<{
     item_id: number;
     name: string;
-    emoji: string;
+    icon: string;
     quantity: number;
     price_cents: number;
     cost_cents: number;
   }>(
-    `SELECT li.item_id, i.name, i.emoji, li.quantity, li.price_cents, li.cost_cents
+    `SELECT li.item_id, i.name, i.icon, li.quantity, li.price_cents, li.cost_cents
      FROM line_items li
      JOIN items i ON i.id = li.item_id
      WHERE li.sale_id = ?`,
@@ -629,7 +629,7 @@ export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Prom
   return rows.map((row) => ({
     itemId: row.item_id,
     name: row.name,
-    emoji: row.emoji,
+    icon: row.icon,
     priceCents: row.price_cents,
     costCents: row.cost_cents,
     quantity: row.quantity,
@@ -1204,7 +1204,7 @@ export async function getSalesExportRows(
 export type PreorderPrepItem = {
   itemId: number;
   name: string;
-  emoji: string;
+  icon: string;
   quantity: number;
 };
 
@@ -1212,22 +1212,22 @@ export async function getPreorderPrepSummary(db: SQLiteDatabase): Promise<Preord
   const rows = await db.getAllAsync<{
     item_id: number;
     name: string;
-    emoji: string;
+    icon: string;
     quantity: number;
   }>(
-    `SELECT li.item_id, i.name, i.emoji, SUM(li.quantity) AS quantity
+    `SELECT li.item_id, i.name, i.icon, SUM(li.quantity) AS quantity
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
      WHERE s.is_preorder = 1
-     GROUP BY li.item_id, i.name, i.emoji
+     GROUP BY li.item_id, i.name, i.icon
      ORDER BY i.name ASC`,
   );
 
   return rows.map((row) => ({
     itemId: row.item_id,
     name: row.name,
-    emoji: row.emoji,
+    icon: row.icon,
     quantity: row.quantity,
   }));
 }
@@ -1238,7 +1238,7 @@ export type PreorderExportRow = {
   customerName: string;
   notes: string;
   itemName: string;
-  emoji: string;
+  icon: string;
   quantity: number;
   priceCents: number;
   saleTotalCents: number;
@@ -1252,13 +1252,13 @@ export async function getPreorderExportRows(db: SQLiteDatabase): Promise<Preorde
   name: string | null;
     notes: string | null;
     item_name: string;
-    emoji: string;
+    icon: string;
     quantity: number;
     price_cents: number;
     total_cents: number;
   }>(
     `SELECT s.sale_number, s.created_at, s.name, s.notes,
-            i.name AS item_name, i.emoji, li.quantity, li.price_cents, s.total_cents
+            i.name AS item_name, i.icon, li.quantity, li.price_cents, s.total_cents
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
@@ -1272,7 +1272,7 @@ export async function getPreorderExportRows(db: SQLiteDatabase): Promise<Preorde
     customerName: row.name ?? '',
     notes: row.notes ?? '',
     itemName: row.item_name,
-    emoji: row.emoji,
+    icon: row.icon,
     quantity: row.quantity,
     priceCents: row.price_cents,
     saleTotalCents: row.total_cents,

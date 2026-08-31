@@ -5,7 +5,7 @@ test('admin dashboard shows total revenue and item count for the active Market D
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -17,7 +17,7 @@ test('admin dashboard shows total revenue and item count for the active Market D
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 2,
@@ -42,13 +42,13 @@ test('admin dashboard shows Cash and Venmo/Zelle totals separately', async () =>
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
   const pokeball = await catalog.createItem({
     name: 'Pokeball',
-    emoji: '⚪',
+    icon: '⚪',
     costCents: 50,
     priceCents: 200,
   });
@@ -60,7 +60,7 @@ test('admin dashboard shows Cash and Venmo/Zelle totals separately', async () =>
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -75,7 +75,7 @@ test('admin dashboard shows Cash and Venmo/Zelle totals separately', async () =>
       {
         itemId: pokeball.id,
         name: 'Pokeball',
-        emoji: '⚪',
+        icon: '⚪',
         priceCents: 200,
         costCents: 50,
         quantity: 3,
@@ -100,7 +100,7 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -112,7 +112,7 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -127,7 +127,7 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 2,
@@ -165,7 +165,7 @@ test('seller Home does not include admin sales totals', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -177,7 +177,7 @@ test('seller Home does not include admin sales totals', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -201,7 +201,7 @@ test('admin dashboard shows an empty Sale list before any Sales are logged', asy
 
   await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });

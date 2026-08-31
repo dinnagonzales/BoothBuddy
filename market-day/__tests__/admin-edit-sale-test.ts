@@ -5,7 +5,7 @@ test('admin can remove a mis-logged Sale', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -17,7 +17,7 @@ test('admin can remove a mis-logged Sale', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -32,7 +32,7 @@ test('admin can remove a mis-logged Sale', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 2,
@@ -70,7 +70,7 @@ test('admin can change payment method on a Sale', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -82,7 +82,7 @@ test('admin can change payment method on a Sale', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -122,7 +122,7 @@ test('exported Market Day is flagged for re-export after a payment method edit',
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -134,7 +134,7 @@ test('exported Market Day is flagged for re-export after a payment method edit',
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -157,7 +157,7 @@ test('exported Market Day is flagged for re-export after removing a Sale', async
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -169,7 +169,7 @@ test('exported Market Day is flagged for re-export after removing a Sale', async
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -190,7 +190,7 @@ test('admin can add optional name and notes to a Sale', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -202,7 +202,7 @@ test('admin can add optional name and notes to a Sale', async () => {
       {
         itemId: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,

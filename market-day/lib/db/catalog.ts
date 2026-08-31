@@ -62,29 +62,29 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async listForSeller(): Promise<SellerItem[]> {
       const items = await getHomeItems(db);
-      return items.map(({ id, name, emoji, priceCents, soldOut }) => ({
+      return items.map(({ id, name, icon, priceCents, soldOut }) => ({
         id,
         name,
-        emoji,
+        icon,
         priceCents,
         ...(soldOut ? { soldOut } : {}),
       }));
     },
     async listForCheckout(): Promise<SellerItem[]> {
       const items = await getCheckoutItems(db);
-      return items.map(({ id, name, emoji, priceCents }) => ({
+      return items.map(({ id, name, icon, priceCents }) => ({
         id,
         name,
-        emoji,
+        icon,
         priceCents,
       }));
     },
     async listForRunningTab(): Promise<SellerItem[]> {
       const items = await getRunningTabItems(db);
-      return items.map(({ id, name, emoji, priceCents }) => ({
+      return items.map(({ id, name, icon, priceCents }) => ({
         id,
         name,
-        emoji,
+        icon,
         priceCents,
       }));
     },
@@ -93,7 +93,7 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
       return items.map((item) => ({
         id: item.id,
         name: item.name,
-        emoji: item.emoji,
+        icon: item.icon,
         costCents: item.costCents,
         priceCents: item.priceCents,
         archived: item.archived,

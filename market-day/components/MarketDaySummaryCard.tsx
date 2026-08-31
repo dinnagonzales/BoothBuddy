@@ -7,7 +7,7 @@ import { formatMoney } from '@/lib/money';
 import { textOnBackground } from '@/theme/tokens';
 
 type StatBoxProps = {
-  emoji: string;
+  icon: string;
   label: string;
   value: string;
   subValue?: string;
@@ -15,11 +15,11 @@ type StatBoxProps = {
   fullWidth?: boolean;
 };
 
-function StatBox({ emoji, label, value, subValue, backgroundColor, fullWidth }: StatBoxProps) {
+function StatBox({ icon, label, value, subValue, backgroundColor, fullWidth }: StatBoxProps) {
   const labelColor = textOnBackground(backgroundColor);
   return (
     <View style={[styles.statBox, fullWidth && styles.statBoxFullWidth, { backgroundColor }]}>
-      <Text style={styles.statEmoji}>{emoji}</Text>
+      <Text style={styles.statIcon}>{icon}</Text>
       <Text style={[styles.statLabel, { color: labelColor }]}>{label}</Text>
       <Text style={[styles.statValue, { color: labelColor }]}>{value}</Text>
       {subValue ? (
@@ -68,21 +68,21 @@ export function MarketDaySummaryCard({
       {variant === 'viewOnly' ? (
         <View style={styles.stack}>
           <StatBox
-            emoji="🧾"
+            icon="🧾"
             label="Total Sales"
             value={String(saleCount)}
             backgroundColor={colors.pink}
             fullWidth
           />
           <StatBox
-            emoji="📱"
+            icon="📱"
             label="Zelle / Venmo"
             value={formatMoney(venmoCents)}
-            backgroundColor={colors.gray400}
+            backgroundColor={colors.grayLight}
             fullWidth
           />
           <StatBox
-            emoji="💵"
+            icon="💵"
             label="Cash"
             value={formatMoney(cashTotalCents)}
             subValue={cashSubValue}
@@ -94,13 +94,13 @@ export function MarketDaySummaryCard({
         <View style={styles.grid}>
           <View style={styles.gridRow}>
             <StatBox
-              emoji="🧾"
+              icon="🧾"
               label="Total Sales"
               value={String(saleCount)}
               backgroundColor={colors.pink}
             />
             <StatBox
-              emoji="💰"
+              icon="💰"
               label="Profit"
               value={formatMoney(profitCents)}
               subValue={`${formatMoney(totalCents)} gross`}
@@ -109,13 +109,13 @@ export function MarketDaySummaryCard({
           </View>
           <View style={styles.gridRow}>
             <StatBox
-              emoji="📱"
+              icon="📱"
               label="Zelle / Venmo"
               value={formatMoney(venmoCents)}
-              backgroundColor={colors.gray400}
+              backgroundColor={colors.grayLight}
             />
             <StatBox
-              emoji="💵"
+              icon="💵"
               label="Cash"
               value={formatMoney(cashTotalCents)}
               subValue={cashSubValue}
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     flex: undefined,
     width: '100%',
   },
-  statEmoji: {
+  statIcon: {
     fontSize: 18,
     marginBottom: 6,
   },

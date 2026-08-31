@@ -3,7 +3,7 @@ export type PaymentMethod = 'cash' | 'venmo_zelle' | 'pay_on_pickup';
 export type Item = {
   id: number;
   name: string;
-  emoji: string;
+  icon: string;
   photoUri: string | null;
   costCents: number;
   priceCents: number;
@@ -22,7 +22,7 @@ export type MarketDay = {
 export type CartLine = {
   itemId: number;
   name: string;
-  emoji: string;
+  icon: string;
   priceCents: number;
   costCents: number;
   quantity: number;

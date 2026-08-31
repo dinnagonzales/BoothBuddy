@@ -115,14 +115,6 @@ export default function SellScreen() {
     }, [db, isQuickSale]),
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      if (loaded && items.length === 0) {
-        router.replace('/');
-      }
-    }, [items.length, loaded, router]),
-  );
-
   const screenTitle =
     invoiceNumber != null
       ? `CART: Invoice #${invoiceNumber}`
@@ -162,6 +154,20 @@ export default function SellScreen() {
               <View style={styles.menuLabel}>
                 <SectionLabel>🍭 Menu · use − and + to adjust</SectionLabel>
               </View>
+            }
+            ListEmptyComponent={
+              loaded ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Update inventory to complete a sale"
+                  onPress={() => router.push('/inventory?add=1')}
+                  style={({ pressed }) => [
+                    styles.emptyMenuCard,
+                    pressed && styles.emptyMenuCardPressed,
+                  ]}>
+                  <Text style={styles.emptyMenuText}>Update Inventory to Complete a Sale</Text>
+                </Pressable>
+              ) : null
             }
             ListFooterComponent={
               <View style={styles.cartContainer}>
@@ -266,7 +272,7 @@ export default function SellScreen() {
 
               return (
                 <ItemCard
-                  emoji={item.emoji}
+                  icon={item.icon}
                   name={item.name}
                   priceLabel={formatMoney(item.priceCents)}
                   quantity={quantity}
@@ -274,7 +280,7 @@ export default function SellScreen() {
                     addItem({
                       itemId: item.id,
                       name: item.name,
-                      emoji: item.emoji,
+                      icon: item.icon,
                       priceCents: item.priceCents,
                       costCents: item.costCents,
                     })
@@ -309,6 +315,23 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     marginBottom: 0,
+  },
+  emptyMenuCard: {
+    backgroundColor: colors.white,
+    borderRadius: radii.itemRow,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyMenuCardPressed: {
+    opacity: 0.88,
+  },
+  emptyMenuText: {
+    fontFamily: fonts.body.semiBold,
+    fontSize: 14,
+    color: colors.inkSoft,
+    textAlign: 'center',
   },
   cartContainer: {
     marginTop: 24,

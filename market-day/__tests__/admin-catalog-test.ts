@@ -1,12 +1,12 @@
 import { createCatalog } from '@/lib/catalog';
 import { ItemHasSalesError } from '@/lib/market-day';
 
-test('admin can add a new Item with emoji, name, cost, and price', async () => {
+test('admin can add a new Item with icon, name, cost, and price', async () => {
   const catalog = createCatalog();
 
   await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -15,7 +15,7 @@ test('admin can add a new Item with emoji, name, cost, and price', async () => {
     {
       id: expect.any(Number),
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       costCents: 100,
       priceCents: 400,
       archived: false,
@@ -27,14 +27,14 @@ test('admin can edit an existing Item', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
 
   await catalog.updateItem(item.id, {
     name: 'Phoenix',
-    emoji: '🔥',
+    icon: '🔥',
     costCents: 200,
     priceCents: 500,
   });
@@ -43,7 +43,7 @@ test('admin can edit an existing Item', async () => {
     {
       id: item.id,
       name: 'Phoenix',
-      emoji: '🔥',
+      icon: '🔥',
       costCents: 200,
       priceCents: 500,
       archived: false,
@@ -55,14 +55,14 @@ test('editing an Item updates what the seller sees', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
 
   await catalog.updateItem(item.id, {
     name: 'Phoenix',
-    emoji: '🔥',
+    icon: '🔥',
     costCents: 200,
     priceCents: 500,
   });
@@ -72,7 +72,7 @@ test('editing an Item updates what the seller sees', async () => {
     {
       id: item.id,
       name: 'Phoenix',
-      emoji: '🔥',
+      icon: '🔥',
       priceCents: 500,
     },
   ]);
@@ -83,7 +83,7 @@ test('an archived Item stays visible to the admin', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -94,7 +94,7 @@ test('an archived Item stays visible to the admin', async () => {
     {
       id: item.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       costCents: 100,
       priceCents: 400,
       archived: true,
@@ -106,7 +106,7 @@ test('archived Items cannot be added to new Sales', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -120,7 +120,7 @@ test('admin can unarchive an Item so it returns to the seller', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -132,7 +132,7 @@ test('admin can unarchive an Item so it returns to the seller', async () => {
     {
       id: item.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       costCents: 100,
       priceCents: 400,
       archived: false,
@@ -142,7 +142,7 @@ test('admin can unarchive an Item so it returns to the seller', async () => {
     {
       id: item.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
     },
   ]);
@@ -152,7 +152,7 @@ test('admin can delete an Item that has never been sold', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -167,7 +167,7 @@ test('admin cannot delete an Item that appears in past sales', async () => {
   const catalog = createCatalog();
   const item = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -179,7 +179,7 @@ test('admin cannot delete an Item that appears in past sales', async () => {
       {
         itemId: item.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         costCents: 100,
         quantity: 1,
@@ -194,7 +194,7 @@ test('admin cannot delete an Item that appears in past sales', async () => {
     {
       id: item.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       costCents: 100,
       priceCents: 400,
       archived: false,

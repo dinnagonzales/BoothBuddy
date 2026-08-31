@@ -5,13 +5,13 @@ test('starting a Market Day auto-populates the Menu with all non-archived Items'
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
   const unicorn = await catalog.createItem({
     name: 'Unicorn',
-    emoji: '🦄',
+    icon: '🦄',
     costCents: 150,
     priceCents: 500,
   });
@@ -23,7 +23,7 @@ test('starting a Market Day auto-populates the Menu with all non-archived Items'
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
       soldOut: false,
     },
@@ -35,13 +35,13 @@ test('admin can add a removed Item back to the Menu', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
   await catalog.createItem({
     name: 'Unicorn',
-    emoji: '🦄',
+    icon: '🦄',
     costCents: 150,
     priceCents: 500,
   });
@@ -53,7 +53,7 @@ test('admin can add a removed Item back to the Menu', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
     },
   ]);
@@ -66,14 +66,14 @@ test('admin can add a removed Item back to the Menu', async () => {
       {
         id: expect.any(Number),
         name: 'Unicorn',
-        emoji: '🦄',
+        icon: '🦄',
         priceCents: 500,
         soldOut: false,
       },
       {
         id: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         soldOut: false,
       },
@@ -84,14 +84,14 @@ test('admin can add a removed Item back to the Menu', async () => {
       {
         id: expect.any(Number),
         name: 'Unicorn',
-        emoji: '🦄',
+        icon: '🦄',
         priceCents: 500,
         soldOut: false,
       },
       {
         id: dragon.id,
         name: 'Dragon',
-        emoji: '🐉',
+        icon: '🐉',
         priceCents: 400,
         soldOut: false,
       },
@@ -104,13 +104,13 @@ test('removing an Item from the Menu hides it from Home and checkout', async () 
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
   await catalog.createItem({
     name: 'Unicorn',
-    emoji: '🦄',
+    icon: '🦄',
     costCents: 150,
     priceCents: 500,
   });
@@ -122,7 +122,7 @@ test('removing an Item from the Menu hides it from Home and checkout', async () 
     {
       id: expect.any(Number),
       name: 'Unicorn',
-      emoji: '🦄',
+      icon: '🦄',
       priceCents: 500,
       soldOut: false,
     },
@@ -131,7 +131,7 @@ test('removing an Item from the Menu hides it from Home and checkout', async () 
     {
       id: expect.any(Number),
       name: 'Unicorn',
-      emoji: '🦄',
+      icon: '🦄',
       priceCents: 500,
     },
   ]);
@@ -142,7 +142,7 @@ test('sold out Items stay on Home but are blocked in checkout', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -154,7 +154,7 @@ test('sold out Items stay on Home but are blocked in checkout', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
       soldOut: true,
     },
@@ -167,7 +167,7 @@ test('admin can mark a sold out Item available again', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -180,7 +180,7 @@ test('admin can mark a sold out Item available again', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
       soldOut: false,
     },
@@ -189,7 +189,7 @@ test('admin can mark a sold out Item available again', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
     },
   ]);
@@ -201,7 +201,7 @@ test('new Items auto-join the active Menu', async () => {
   await catalog.startMarketDay('Spring Fair 2026');
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -210,7 +210,7 @@ test('new Items auto-join the active Menu', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
       soldOut: false,
     },
@@ -222,7 +222,7 @@ test('archiving an Item drops it from the active Menu', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
@@ -239,13 +239,13 @@ test('undo close restores the Menu including sold out flags', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
   const unicorn = await catalog.createItem({
     name: 'Unicorn',
-    emoji: '🦄',
+    icon: '🦄',
     costCents: 150,
     priceCents: 500,
   });
@@ -260,7 +260,7 @@ test('undo close restores the Menu including sold out flags', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
       soldOut: true,
     },
@@ -272,13 +272,13 @@ test('Running Tab checkout ignores the Menu', async () => {
 
   const dragon = await catalog.createItem({
     name: 'Dragon',
-    emoji: '🐉',
+    icon: '🐉',
     costCents: 100,
     priceCents: 400,
   });
   const unicorn = await catalog.createItem({
     name: 'Unicorn',
-    emoji: '🦄',
+    icon: '🦄',
     costCents: 150,
     priceCents: 500,
   });
@@ -290,13 +290,13 @@ test('Running Tab checkout ignores the Menu', async () => {
     {
       id: dragon.id,
       name: 'Dragon',
-      emoji: '🐉',
+      icon: '🐉',
       priceCents: 400,
     },
     {
       id: unicorn.id,
       name: 'Unicorn',
-      emoji: '🦄',
+      icon: '🦄',
       priceCents: 500,
     },
   ]);
