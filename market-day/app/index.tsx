@@ -1,4 +1,4 @@
-import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState, type ReactNode } from 'react';
 import {
@@ -17,7 +17,7 @@ import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
-import { createSqliteCatalog } from '@/lib/db/catalog';
+import { getAdminProfile } from '@/lib/db/admin-profile';
 import { getHomeItems, getActiveMarketDay } from '@/lib/db/queries';
 import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
@@ -71,6 +71,7 @@ export default function HomeScreen() {
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
   const [passCodeOpen, setPassCodeOpen] = useState(false);
   const [passcodeGateEnabled, setPasscodeGateEnabled] = useState(true);
+  const [postUnlockPath, setPostUnlockPath] = useState<Href>('/settings');
 
   const openPreorder = () => {
     setIsQuickSale(true);
@@ -78,25 +79,31 @@ export default function HomeScreen() {
     router.push('/sell');
   };
 
-  const openSettings = () => {
+  const openGrownUpRoute = (path: '/settings' | '/inventory' | '/inventory?add=1') => {
     if (!passcodeGateEnabled) {
       unlock();
-      router.push('/settings');
+      router.push(path);
       return;
     }
     if (unlocked) {
-      router.push('/settings');
+      router.push(path);
       return;
     }
+    setPostUnlockPath(path);
     setPassCodeOpen(true);
   };
+
+  const openSettings = () => openGrownUpRoute('/settings');
+  const openInventory = () => openGrownUpRoute('/inventory?add=1');
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      const catalog = createSqliteCatalog(db);
 
-      isSetupComplete(deviceParentalGate, catalog)
+      isSetupComplete({
+        gate: deviceParentalGate,
+        profile: { get: () => getAdminProfile(db) },
+      })
         .then(async (complete) => {
           if (cancelled) return;
           setSetupReady(complete);
@@ -208,50 +215,61 @@ export default function HomeScreen() {
           <Text style={styles.menuLabel}>🍭 Available Items</Text>
           <Text style={styles.menuHint}>Tap an item to start a sale</Text>
 
-          <FlatList
-            key="home-menu-grid"
-            data={menuRows}
-            keyExtractor={(row) => String(row[0]?.id ?? 'empty-row')}
-            contentContainerStyle={styles.itemList}
-            style={styles.itemListScroll}
-            ListEmptyComponent={
-              <Text style={styles.emptyItems}>
-                No items yet — ask a grown-up to add some in setup.
-              </Text>
-            }
-            renderItem={({ item: row }) => (
+          {items.length === 0 ? (
+            <View style={styles.itemList}>
               <View style={styles.menuGridRow}>
-                {row.map((item) => (
-                  <Pressable
-                    key={item.id}
-                    accessibilityRole="button"
-                    disabled={item.soldOut}
-                    onPress={() => openSellWithItem(item)}
-                    style={({ pressed }) => [
-                      styles.menuTile,
-                      item.soldOut ? styles.menuTileSoldOut : null,
-                      pressed && !item.soldOut ? styles.menuTilePressed : null,
-                    ]}>
-                    <Text style={styles.menuTileEmoji}>{item.emoji}</Text>
-                    <Text
-                      style={[styles.menuTileName, item.soldOut ? styles.menuTileNameSoldOut : null]}
-                      numberOfLines={2}>
-                      {item.name}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.menuTilePrice,
-                        item.soldOut ? styles.menuTilePriceSoldOut : null,
-                      ]}>
-                      {formatMoney(item.priceCents)}
-                    </Text>
-                    {item.soldOut ? <Text style={styles.soldOutLabel}>Sold out</Text> : null}
-                  </Pressable>
-                ))}
-                {row.length === 1 ? <View style={styles.menuTileSpacer} /> : null}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Add Item"
+                  onPress={openInventory}
+                  style={({ pressed }) => [styles.menuTile, styles.addItemTile, pressed && styles.menuTilePressed]}>
+                  <Text style={styles.addItemPlus}>+</Text>
+                  <Text style={styles.addItemLabel}>Add Item</Text>
+                </Pressable>
+                <View style={styles.menuTileSpacer} />
               </View>
-            )}
-          />
+            </View>
+          ) : (
+            <FlatList
+              key="home-menu-grid"
+              data={menuRows}
+              keyExtractor={(row) => String(row[0]?.id ?? 'empty-row')}
+              contentContainerStyle={styles.itemList}
+              style={styles.itemListScroll}
+              renderItem={({ item: row }) => (
+                <View style={styles.menuGridRow}>
+                  {row.map((item) => (
+                    <Pressable
+                      key={item.id}
+                      accessibilityRole="button"
+                      disabled={item.soldOut}
+                      onPress={() => openSellWithItem(item)}
+                      style={({ pressed }) => [
+                        styles.menuTile,
+                        item.soldOut ? styles.menuTileSoldOut : null,
+                        pressed && !item.soldOut ? styles.menuTilePressed : null,
+                      ]}>
+                      <Text style={styles.menuTileEmoji}>{item.emoji}</Text>
+                      <Text
+                        style={[styles.menuTileName, item.soldOut ? styles.menuTileNameSoldOut : null]}
+                        numberOfLines={2}>
+                        {item.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.menuTilePrice,
+                          item.soldOut ? styles.menuTilePriceSoldOut : null,
+                        ]}>
+                        {formatMoney(item.priceCents)}
+                      </Text>
+                      {item.soldOut ? <Text style={styles.soldOutLabel}>Sold out</Text> : null}
+                    </Pressable>
+                  ))}
+                  {row.length === 1 ? <View style={styles.menuTileSpacer} /> : null}
+                </View>
+              )}
+            />
+          )}
         </View>
       </View>
 
@@ -262,7 +280,7 @@ export default function HomeScreen() {
         onSuccess={() => {
           unlock();
           setPassCodeOpen(false);
-          router.push('/settings');
+          router.push(postUnlockPath);
         }}
         onForgotCode={async () => {
           await resetAppForForgottenCode(db, deviceParentalGate);
@@ -435,12 +453,24 @@ const styles = StyleSheet.create({
   menuTilePriceSoldOut: {
     color: colors.inkSoft,
   },
-  emptyItems: {
-    fontFamily: fonts.body.semiBold,
-    fontSize: 14,
-    color: colors.inkSoft,
+  addItemTile: {
+    borderWidth: 2,
+    borderColor: colors.purple,
+    borderStyle: 'dashed',
+    backgroundColor: colors.white,
+  },
+  addItemPlus: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 52,
+    lineHeight: 58,
+    color: colors.purple,
     textAlign: 'center',
-    paddingVertical: 24,
+  },
+  addItemLabel: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 15,
+    color: colors.purpleDark,
+    textAlign: 'center',
   },
   sellButtonWrap: {
     marginBottom: 18,

@@ -11,6 +11,7 @@ import { formatMoney, parseMoneyInput } from '@/lib/money';
 
 type AdminItemCatalogProps = {
   db: SQLiteDatabase;
+  autoOpenAdd?: boolean;
 };
 
 type FormMode = { type: 'add' } | { type: 'edit'; item: AdminItem };
@@ -31,10 +32,11 @@ const emptyForm = (): ItemFormState => ({
 
 const formCardStyle = { borderRadius: 24 };
 
-export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
+export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogProps) {
   const [items, setItems] = useState<AdminItem[]>([]);
   const [formMode, setFormMode] = useState<FormMode | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false);
 
   const refreshItems = useCallback(async () => {
     const catalog = createSqliteCatalog(db);
@@ -44,6 +46,17 @@ export function AdminItemCatalog({ db }: AdminItemCatalogProps) {
   useEffect(() => {
     void refreshItems();
   }, [refreshItems]);
+
+  useEffect(() => {
+    if (!autoOpenAdd || autoOpenHandled || formMode != null) return;
+    if (items.length > 0) {
+      setAutoOpenHandled(true);
+      return;
+    }
+    setForm(emptyForm());
+    setFormMode({ type: 'add' });
+    setAutoOpenHandled(true);
+  }, [autoOpenAdd, autoOpenHandled, formMode, items.length]);
 
   const openAddForm = () => {
     setForm(emptyForm());
