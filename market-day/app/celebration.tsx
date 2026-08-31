@@ -121,7 +121,7 @@ export default function CelebrationScreen() {
             ? `Invoice #${invoiceNumber} • ${formatMoney(totalCents)}`
             : `${itemCount} ${itemLabel} • ${formatMoney(totalCents)}`}
         </Text>
-        <Text style={styles.prompt}>Everything look right?</Text>
+        <Text style={styles.prompt}>Need to change something?</Text>
         <Button size="lg" variant="primary" style={styles.dashboardButton} onPress={goHome}>
           <Button.Label style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Button.Label>
         </Button>

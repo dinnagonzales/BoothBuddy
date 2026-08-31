@@ -48,7 +48,9 @@ export function GrownUpSetupCard({
 
           <Text style={styles.title}>Owner setup</Text>
           <Text style={styles.subtext}>
-            Pick a 4-digit Pass Code. You&apos;ll need it every time you open Events.
+            Pick a 4-digit Pass Code to protect App Settings.
+            You'll enter it to open Settings.
+            Code protection can be turned off anytime.
           </Text>
 
           <View style={styles.form}>
@@ -78,9 +80,6 @@ export function GrownUpSetupCard({
               style={!canSave ? styles.buttonDisabled : undefined}
             />
 
-            <Text style={styles.tip}>
-              Tip: pick something easy for you to remember, tricky for staff to guess 😉
-            </Text>
           </View>
         </BrandCard>
       </View>

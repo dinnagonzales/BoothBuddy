@@ -78,8 +78,8 @@ export function ParentalGatePrompt({
       <View style={styles.container}>
         <Text style={styles.title}>Forgot Pass Code?</Text>
         <Text style={styles.body}>
-          There is no way to recover the old code. You can erase everything on this device and set
-          up Booth Buddy again from scratch.
+          We can&apos;t recover the old code. Erase everything on this device and set Booth Buddy up
+          again.
         </Text>
         <Pressable
           accessibilityRole="button"

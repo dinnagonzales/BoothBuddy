@@ -20,8 +20,8 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
             <BoothBuddyLogo variant="fullSm" />
           </View>
 
-          <Text style={styles.title}>Welcome to Booth Buddy</Text>
-          <Text style={styles.subtext}>Your shop on a phone or tablet.</Text>
+          <Text style={styles.title}>Booth Buddy</Text>
+          <Text style={styles.subtext}>Ring up sales from a phone or tablet.</Text>
 
           <View style={styles.sections}>
             <View style={styles.section}>
@@ -33,7 +33,7 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
 
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>For owners</Text>
-              <Bullet>Next you&apos;ll set a Pass Code and add your first item</Bullet>
+              <Bullet>Next: set a Pass Code and add your first item</Bullet>
               <Bullet>Tap ⚙️ anytime to manage inventory, events, and sales</Bullet>
             </View>
           </View>

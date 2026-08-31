@@ -34,7 +34,7 @@ export function VenmoZellePaymentInfo({
       <Card style={styles.card} className="p-4 mb-3">
         <Text style={styles.emptyTitle}>No payment info yet</Text>
         <Text style={styles.emptyBody}>
-          An owner can add Venmo or Zelle details in Settings.
+          Ask the owner to add Venmo or Zelle in Settings.
         </Text>
       </Card>
     );

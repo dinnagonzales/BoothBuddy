@@ -54,7 +54,7 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
     }
     Alert.alert(
       'Mark sold out?',
-      `${item.emoji} ${item.name} will stay on Home but can't be added to checkout.`,
+      `${item.emoji} ${item.name} stays on Home but can't be added to checkout.`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Mark sold out', onPress: () => toggleSoldOut(item) },
@@ -73,7 +73,7 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
   const confirmRemove = (item: MenuItem) => {
     Alert.alert(
       'Remove from menu?',
-      `${item.emoji} ${item.name} will be hidden from Home and checkout for today.`,
+      `${item.emoji} ${item.name} hides from Home and checkout for today.`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Remove', style: 'destructive', onPress: () => removeItem(item) },

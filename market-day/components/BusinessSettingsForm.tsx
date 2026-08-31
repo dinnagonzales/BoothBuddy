@@ -163,7 +163,7 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
   const replayOnboarding = () => {
     Alert.alert(
       'Replay onboarding?',
-      'This clears shop data and your Pass Code, then restarts from Welcome.',
+      'This clears shop data and your Pass Code, then restarts at Welcome.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -274,7 +274,7 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
 
           <ImagePickerRow
             label="Zelle QR code"
-            hint="Optional — upload a screenshot from your bank app."
+            hint="Bank app screenshot (optional)."
             imageUri={draft.zelleQrUri}
             emptyLabel="Upload Zelle QR"
             onPick={() => void pickImage('zelle-qr', 'zelleQrUri')}
@@ -294,7 +294,7 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
 
           <ImagePickerRow
             label="Venmo QR code"
-            hint="Optional — upload your Venmo QR if you prefer a custom image."
+            hint="Custom Venmo QR image (optional)."
             imageUri={draft.venmoQrUri}
             emptyLabel="Upload Venmo QR"
             onPick={() => void pickImage('venmo-qr', 'venmoQrUri')}

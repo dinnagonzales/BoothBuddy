@@ -56,7 +56,7 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
             autoCapitalize="words"
             editable={!busy}
           />
-          <Text style={styles.hint}>Required — shows in Events and exports</Text>
+          <Text style={styles.hint}>Shows in Events and exports</Text>
         </View>
 
         <View style={styles.fieldDivider} />
@@ -72,7 +72,7 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
             <Text style={styles.dateValue}>{formatMarketDayDate(marketDayStartedAtIso(date))}</Text>
             <Text style={styles.dateChevron}>▾</Text>
           </Pressable>
-          <Text style={styles.hint}>When this shop day happened</Text>
+          <Text style={styles.hint}>The date for this shop day</Text>
         </View>
       </View>
 

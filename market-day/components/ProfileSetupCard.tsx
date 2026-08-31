@@ -41,7 +41,7 @@ export function ProfileSetupCard({
 
           <Text style={styles.title}>Your shop</Text>
           <Text style={styles.subtext}>
-            Tell us about your business. Staff won&apos;t see this — it&apos;s for owner settings.
+            Business name and your name. Staff won&apos;t see this.
           </Text>
 
           <View style={styles.form}>

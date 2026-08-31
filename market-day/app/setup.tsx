@@ -87,7 +87,7 @@ export default function SetupScreen() {
   if (step === 'loading') {
     return (
       <Screen>
-        <Text className="text-muted font-bold text-center mt-8">Getting ready…</Text>
+        <Text className="text-muted font-bold text-center mt-8">One sec…</Text>
       </Screen>
     );
   }

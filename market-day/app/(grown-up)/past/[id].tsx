@@ -99,7 +99,7 @@ export default function PastMarketDayScreen() {
   const handleReopen = () => {
     Alert.alert(
       'Reopen Market Day?',
-      'Checkout will turn back on and this day becomes active again.',
+      'Checkout turns back on. This day becomes active again.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -129,7 +129,7 @@ export default function PastMarketDayScreen() {
     const saleLabel = sales.length === 1 ? '1 sale' : `${sales.length} sales`;
     Alert.alert(
       'Delete Market Day?',
-      `"${marketDay?.name ?? 'This market day'}" and ${saleLabel} will be permanently deleted. This cannot be undone.`,
+      `"${marketDay?.name ?? 'This market day'}" and ${saleLabel} will be deleted. Can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {

@@ -78,7 +78,7 @@ export function ChangePasscodeCard() {
       resetForm();
       setExpanded(false);
       lock();
-      Alert.alert('Pass Code updated', 'Enter your new code to keep going.');
+      Alert.alert('Pass Code updated', 'Use your new code next time you open Events.');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Could not update your Pass Code.';

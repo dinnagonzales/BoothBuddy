@@ -95,7 +95,7 @@ export default function PreordersScreen() {
               } catch (error) {
                 Alert.alert(
                   'Could not mark delivered',
-                  error instanceof Error ? error.message : 'Something went wrong.',
+                  error instanceof Error ? error.message : 'Try again.',
                 );
               } finally {
                 setDeliveringSaleNumber(null);
@@ -112,7 +112,7 @@ export default function PreordersScreen() {
       <ScreenHeader title="📋 Preorders" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.lead}>
-          Open preorders awaiting pickup. Tap an invoice to record payment and mark complete.
+          Tap an invoice to record payment and mark it picked up.
         </Text>
 
         {sales.length > 0 ? (

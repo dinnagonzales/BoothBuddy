@@ -119,7 +119,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
   const deleteItem = (item: AdminItem) => {
     Alert.alert(
       'Delete this item?',
-      `${item.emoji} ${item.name} will be removed from inventory permanently. This cannot be undone.`,
+      `${item.emoji} ${item.name} will be removed. Can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -328,7 +328,7 @@ function ItemForm({
               <Text style={styles.archiveButtonLabel}>📦 Archive Item</Text>
             </Pressable>
             <Text style={styles.archiveHint}>
-              Hides it from the menu — doesn&apos;t delete past sales
+              Hides from the menu. Past sales stay.
             </Text>
           </>
         ) : null}
@@ -351,7 +351,7 @@ function ItemForm({
               <Text style={styles.deleteButtonLabel}>🗑 Delete Item</Text>
             </Pressable>
             <Text style={styles.deleteHint}>
-              Only for mistakes — use Archive if this item has been sold before
+              Only for mistakes. Archive if this item has sold before.
             </Text>
           </>
         ) : null}

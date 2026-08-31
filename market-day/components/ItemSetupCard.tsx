@@ -43,7 +43,7 @@ export function ItemSetupCard({
 
           <Text style={styles.title}>Add your first Item</Text>
           <Text style={styles.subtext}>
-            Add at least one Item before staff can use Home. Cost stays owner-only.
+            Staff need at least one item on Home. Cost is owner-only.
           </Text>
 
           <View style={styles.form}>

@@ -273,7 +273,7 @@ export function SaleDetailScreen({
 
     Alert.alert(
       'Remove this sale?',
-      'This deletes the whole mis-logged transaction. It cannot be undone.',
+      'Deletes the whole sale. Can\u2019t be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -295,7 +295,7 @@ export function SaleDetailScreen({
     return (
       <View style={styles.screen}>
         <ScreenHeader title={`Sale #${saleNumber}`} onBack={onBack} />
-        <Text style={styles.missingText}>This sale could not be found.</Text>
+        <Text style={styles.missingText}>Sale not found.</Text>
       </View>
     );
   }
@@ -425,7 +425,7 @@ export function SaleDetailScreen({
             {preorderAwaitingPayment ? (
               <>
                 <Text style={styles.preorderPaymentHint}>
-                  Record how the customer paid to mark this preorder complete.
+                  Pick a payment method to complete this preorder.
                 </Text>
                 <Card
                   className={cn(

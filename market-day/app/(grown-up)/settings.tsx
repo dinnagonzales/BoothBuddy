@@ -92,7 +92,7 @@ export default function SettingsScreen() {
   const handleEndMarketDay = () => {
     Alert.alert(
       'End Market Day?',
-      'Sales stay saved, but checkout will stop until you start a new day.',
+      'Sales stay saved. Checkout stops until you start a new day.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -122,7 +122,7 @@ export default function SettingsScreen() {
               <BoothBuddyLogo variant="full" style={styles.emptyLogo} />
             </View>
             <Text style={styles.emptyTitle}>No market day yet</Text>
-            <Text style={styles.emptyBody}>Start one to begin tracking today&apos;s sales.</Text>
+            <Text style={styles.emptyBody}>Start one to track today&apos;s sales.</Text>
             <StartMarketDayForm onStart={handleStartMarketDay} busy={starting} />
           </View>
 
