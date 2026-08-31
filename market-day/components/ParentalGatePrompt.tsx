@@ -79,7 +79,7 @@ export function ParentalGatePrompt({
         <Text style={styles.title}>Forgot Pass Code?</Text>
         <Text style={styles.body}>
           There is no way to recover the old code. You can erase everything on this device and set
-          up Market Day again from scratch.
+          up Booth Buddy again from scratch.
         </Text>
         <Pressable
           accessibilityRole="button"

@@ -43,7 +43,7 @@ Visual design matches [../mocks/screens.html](../mocks/screens.html).
 - **Layout helpers** — `components/Screen.tsx` (`Screen`, `ScreenHeader`, `SectionLabel`, `ItemCard`)
 - **Reusable UI** — `components/ui/` (`Button`, `Card`, `Chip`, `Input`, …)
 
-Seller screens use explicit `StyleSheet` + token imports so typography stays consistent; celebration and payment labels no longer rely on generic system bold.
+Staff screens use explicit `StyleSheet` + token imports so typography stays consistent; celebration and payment labels no longer rely on generic system bold.
 
 ## Project layout
 

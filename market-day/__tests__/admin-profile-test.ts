@@ -1,5 +1,6 @@
 import {
   adminProfileDisplayName,
+  adminProfileEqual,
   isAdminProfileComplete,
   normalizeAdminProfile,
 } from '@/lib/admin-profile';
@@ -44,4 +45,25 @@ test('adminProfileDisplayName joins first and last name', () => {
       businessName: 'Dragon Shop',
     }),
   ).toBe('Emma Gonzalez');
+});
+
+test('adminProfileEqual compares every field', () => {
+  const left = normalizeAdminProfile({
+    firstName: 'Emma',
+    lastName: 'Gonzalez',
+    businessName: 'Dragon Shop',
+  });
+  const right = normalizeAdminProfile({
+    firstName: 'Emma',
+    lastName: 'Gonzalez',
+    businessName: 'Dragon Shop',
+  });
+  const different = normalizeAdminProfile({
+    firstName: 'Emma',
+    lastName: 'Smith',
+    businessName: 'Dragon Shop',
+  });
+
+  expect(adminProfileEqual(left, right)).toBe(true);
+  expect(adminProfileEqual(left, different)).toBe(false);
 });

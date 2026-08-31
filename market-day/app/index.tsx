@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
@@ -174,7 +175,9 @@ export default function HomeScreen() {
               onPress={openSettings}>
               <Text style={styles.gearIcon}>⚙️</Text>
             </Pressable>
-            <Text style={styles.title}>🎪 Market Day</Text>
+            <View style={styles.titleWrap}>
+              <BoothBuddyLogo variant="long" />
+            </View>
             <Pressable
               accessibilityLabel="Pre-order"
               style={styles.preorderButton}
@@ -315,12 +318,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 8,
   },
-  title: {
+  titleWrap: {
     flex: 1,
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 20,
-    color: colors.ink,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   preorderButton: {
     height: 38,

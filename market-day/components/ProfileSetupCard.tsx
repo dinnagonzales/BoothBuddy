@@ -1,3 +1,4 @@
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import type { ComponentProps } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,13 +31,13 @@ export function ProfileSetupCard({
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
         <View style={styles.card}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconEmoji}>🏪</Text>
+          <View style={styles.logoWrap}>
+            <BoothBuddyLogo variant="full" style={styles.logo} />
           </View>
 
           <Text style={styles.title}>Your shop</Text>
           <Text style={styles.subtext}>
-            Tell us about your business. The seller won&apos;t see this — it&apos;s for grown-up settings.
+            Tell us about your business. Staff won&apos;t see this — it&apos;s for owner settings.
           </Text>
 
           <View style={styles.form}>
@@ -44,20 +45,17 @@ export function ProfileSetupCard({
               label="Business name"
               value={businessName}
               onChangeText={onBusinessNameChange}
-              placeholder="Dragon Shop"
             />
             <Field
               label="First name"
               value={firstName}
               onChangeText={onFirstNameChange}
-              placeholder="Emma"
               autoComplete="given-name"
             />
             <Field
               label="Last name"
               value={lastName}
               onChangeText={onLastNameChange}
-              placeholder="Gonzalez"
               autoComplete="family-name"
             />
 
@@ -156,18 +154,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     ...cardShadow,
   },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.purple,
+  logoWrap: {
     alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
-  iconEmoji: {
-    fontSize: 26,
+  logo: {
+    width: 96,
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',

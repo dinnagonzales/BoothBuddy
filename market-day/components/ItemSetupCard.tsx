@@ -40,14 +40,14 @@ export function ItemSetupCard({
 
           <Text style={styles.title}>Add your first Item</Text>
           <Text style={styles.subtext}>
-            Add at least one Item before the seller can use Home. Cost stays grown-up only.
+            Add at least one Item before staff can use Home. Cost stays owner-only.
           </Text>
 
           <View style={styles.form}>
             <Field label="Emoji" value={emoji} onChangeText={onEmojiChange} placeholder="📦" />
             <Field label="Name" value={name} onChangeText={onNameChange} placeholder="Dragon" />
             <Field
-              label="Cost — not shown to the seller"
+              label="Cost — not shown to staff"
               value={cost}
               onChangeText={onCostChange}
               placeholder="1.00"

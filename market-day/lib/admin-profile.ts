@@ -37,3 +37,13 @@ export function adminProfileDisplayName(profile: AdminProfile): string {
   const normalized = normalizeAdminProfile(profile);
   return [normalized.firstName, normalized.lastName].filter(Boolean).join(' ');
 }
+
+export function adminProfileEqual(a: AdminProfile, b: AdminProfile): boolean {
+  const left = normalizeAdminProfile(a);
+  const right = normalizeAdminProfile(b);
+  return (
+    left.firstName === right.firstName &&
+    left.lastName === right.lastName &&
+    left.businessName === right.businessName
+  );
+}

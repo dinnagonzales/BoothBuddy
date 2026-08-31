@@ -1,3 +1,4 @@
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { useRef } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,11 +39,11 @@ export function GrownUpSetupCard({
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
         <View style={styles.card}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconEmoji}>🔒</Text>
+          <View style={styles.logoWrap}>
+            <BoothBuddyLogo variant="full" style={styles.logo} />
           </View>
 
-          <Text style={styles.title}>Grown-up setup</Text>
+          <Text style={styles.title}>Owner setup</Text>
           <Text style={styles.subtext}>
             Pick a 4-digit Pass Code. You&apos;ll need it every time you open Events.
           </Text>
@@ -81,7 +82,7 @@ export function GrownUpSetupCard({
             </Pressable>
 
             <Text style={styles.tip}>
-              Tip: pick something easy for you to remember, tricky for them to guess 😉
+              Tip: pick something easy for you to remember, tricky for staff to guess 😉
             </Text>
           </View>
         </View>
@@ -139,18 +140,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     ...cardShadow,
   },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.purple,
+  logoWrap: {
     alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
-  iconEmoji: {
-    fontSize: 26,
+  logo: {
+    width: 96,
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',

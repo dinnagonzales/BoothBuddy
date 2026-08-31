@@ -44,7 +44,7 @@ export default function RootLayout() {
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.screen }}>
               <ActivityIndicator size="large" color={colors.purple} />
               <Text style={{ color: colors.inkSoft, fontFamily: 'Nunito_700Bold', marginTop: 12 }}>
-                Loading Market Day…
+                Loading Booth Buddy…
               </Text>
             </View>
           }>

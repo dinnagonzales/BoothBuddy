@@ -6,9 +6,9 @@
 
 ## What to build
 
-Ship Market Day as a standalone iOS app (not Expo Go): Apple Developer enrollment, EAS production build, TestFlight on family iPad, privacy policy URL, App Store metadata and screenshots, submit for review by ~Sep 8–10 for Sep 18 market.
+Ship Booth Buddy as a standalone iOS app (not Expo Go): Apple Developer enrollment, EAS production build, TestFlight on family iPad, privacy policy URL, App Store metadata and screenshots, submit for review by ~Sep 8–10 for Sep 18 market.
 
-List under **Business** category (not Kids Category). Review notes should explain parental gate and that **Seller** never sees cost or totals.
+List under **Business** category (not Kids Category). Review notes should explain Pass Code gate and that **Staff** never sees cost or totals.
 
 ## Privacy policy (draft ready)
 
@@ -29,3 +29,4 @@ List under **Business** category (not Kids Category). Review notes should explai
 ## Blocked by
 
 - [001](001-first-run-setup.md) through [007](007-running-tab.md) — core MVP demo-ready
+\

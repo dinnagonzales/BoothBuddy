@@ -1,14 +1,14 @@
-# Market Day — Privacy Policy
+# Booth Buddy — Privacy Policy
 
 **Effective date:** August 28, 2026  
-**App:** Market Day (iOS)  
+**App:** Booth Buddy (iOS)  
 **Contact:** Replace with your support email before publishing (e.g. `hello@yourdomain.com`).
 
 ---
 
 ## Summary
 
-Market Day is a **local-first** point-of-sale app for kid-run craft booths. **We do not operate servers that collect your shop data.** Sales, inventory, and settings stay on your device unless **you** export or share them (for example, a CSV through the iOS share sheet).
+Booth Buddy is a **local-first** point-of-sale app for craft-fair and market booths. **We do not operate servers that collect your shop data.** Sales, inventory, and settings stay on your device unless **you** export or share them (for example, a CSV through the iOS share sheet).
 
 We do **not** sell data, show ads, or use third-party analytics.
 
@@ -16,7 +16,7 @@ We do **not** sell data, show ads, or use third-party analytics.
 
 ## Who this app is for
 
-Market Day is listed in the App Store **Business** category. A child (**Seller**) can log sales at the booth. A grown-up (**Admin**) sets up items, manages market days, and exports data behind a **Pass Code** (parental gate). Sellers do not see item cost or profit totals.
+Booth Buddy is listed in the App Store **Business** category. **Staff** can log sales at the booth. The **Owner** sets up items, manages Market Days, and exports data behind a **Pass Code**. Staff do not see item cost or profit totals.
 
 ---
 
@@ -26,11 +26,11 @@ All of the following is stored **locally** on your iPhone or iPad (SQLite databa
 
 | Data | Purpose | Who enters it |
 |------|---------|---------------|
-| **Items** | Name, emoji, price, cost, optional photo | Admin |
-| **Market Days** | Event name and dates | Admin |
-| **Sales** | Line items, totals, payment method, cash received, timestamps | Seller / Admin |
-| **Sale name & notes** | Optional labels (e.g. customer name, pickup notes) | Admin |
-| **Pass Code hash** | Hashed grown-up gate code (SHA-256 in iOS Keychain via Secure Store) | Admin |
+| **Items** | Name, emoji, price, cost, optional photo | Owner |
+| **Market Days** | Event name and dates | Owner |
+| **Sales** | Line items, totals, payment method, cash received, timestamps | Staff / Owner |
+| **Sale name & notes** | Optional labels (e.g. customer name, pickup notes) | Owner |
+| **Pass Code hash** | Hashed owner gate code (SHA-256 in iOS Keychain via Secure Store) | Owner |
 
 We **never** store your Pass Code in readable form.
 
@@ -38,7 +38,7 @@ We **never** store your Pass Code in readable form.
 
 ## Information we do not collect
 
-Market Day v1 does **not**:
+Booth Buddy v1 does **not**:
 
 - Require an account or login
 - Transmit shop data to our servers (we have none)
@@ -67,11 +67,11 @@ We do not receive copies of exports or shared files.
 
 ## Children's privacy
 
-Market Day is designed so kids can sell without seeing bookkeeping details (cost, profit, or sales dashboards). The grown-up **Pass Code** protects admin areas.
+Booth Buddy is designed so staff can sell without seeing bookkeeping details (cost, profit, or sales dashboards). The owner **Pass Code** protects owner-only areas.
 
-We do not knowingly collect personal information from children on our servers — because we do not collect data on servers at all. Optional **sale names** or **notes** that a grown-up types (for example a customer's first name) are stored locally under the grown-up's control.
+We do not knowingly collect personal information from children on our servers — because we do not collect data on servers at all. Optional **sale names** or **notes** that an owner types (for example a customer's first name) are stored locally under the owner's control.
 
-If you believe a child's information was entered into the app in error, delete that sale from grown-up settings or reset the app.
+If you believe a minor's information was entered into the app in error, delete that sale from owner settings or reset the app.
 
 ---
 
@@ -80,7 +80,7 @@ If you believe a child's information was entered into the app in error, delete t
 - Data remains on your device until you delete it (sales, items), end/remove market days, or uninstall the app.
 - **Forgot your code?** (factory reset) erases all shop data on that device and restarts setup.
 
-There is no cloud backup from Market Day v1. Keep exports you care about in Files or email.
+There is no cloud backup from Booth Buddy v1. Keep exports you care about in Files or email.
 
 ---
 

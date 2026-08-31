@@ -1,20 +1,20 @@
-# Market Day — Product Requirements Document (v0.2)
+# Booth Buddy — Product Requirements Document (v0.2)
 
 > Resolved via grill session Aug 28, 2026. Domain language lives in [CONTEXT.md](./CONTEXT.md).
 
 ## Overview
 
-Market Day is a kid-friendly point-of-sale app for a young vendor (age 12) selling 3D-printed items at in-person craft fairs and markets. It replaces a spreadsheet workflow with a fast, tappable interface a child can operate solo during a busy sales session, while giving the adult owner (Dinna) item/cost setup and data export for Excel reconciliation.
+Booth Buddy is a booth-friendly point-of-sale app for a young vendor (age 12) selling 3D-printed items at in-person craft fairs and markets. It replaces a spreadsheet workflow with a fast, tappable interface staff can operate solo during a busy sales session, while giving the owner item/cost setup and data export for Excel reconciliation.
 
 ## Problem
 
-The current Excel workbook works for after-the-fact bookkeeping but is too slow and error-prone live at a booth. The seller needs something that takes seconds per sale, requires no typing of item names or math, and can't fat-finger a formula.
+The current Excel workbook works for after-the-fact bookkeeping but is too slow and error-prone live at a booth. Staff need something that takes seconds per sale, requires no typing of item names or math, and can't fat-finger a formula.
 
 ## Goals
 
 - A 12-year-old can log a multi-item sale in well under 15 seconds, unsupervised.
-- Zero spreadsheet exposure for the kid — no formulas, no cost math, no item typing.
-- The adult sets up Items/prices once before market day and exports clean sales data afterward.
+- Zero spreadsheet exposure for staff — no formulas, no cost math, no item typing.
+- The owner sets up Items/prices once before market day and exports clean sales data afterward.
 - Works reliably on a phone or tablet at a booth, single device.
 
 ## Non-goals (v1)
@@ -27,8 +27,8 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 
 ## Target users
 
-- **Seller** — child operating the app at the booth during an Active Market Day.
-- **Admin** — adult owner; setup, Market Day management, Running Tab sales, export.
+- **Staff** — person operating the app at the booth during an Active Market Day.
+- **Owner** — shop owner; setup, Market Day management, Running Tab sales, export.
 
 ---
 
@@ -36,16 +36,16 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 
 ### First launch (admin setup wizard)
 
-1. Admin opens app → guided setup: set parental code → add at least one Item.
-2. Kid can browse Home (Items menu). **Make a Sale** is always available.
+1. Owner opens app → guided setup: set Pass Code → add at least one Item.
+2. Staff can browse Home (Items menu). **Make a Sale** is always available.
 
 ### Start a Market Day (admin)
 
-1. Admin taps gear → enters parental code.
+1. Owner taps gear → enters Pass Code.
 2. **Start Market Day** → enter a **Market Name** (required); date defaults to today.
 3. While active, a **Market Day** banner appears on Home and **Make a Sale** attaches new sales to that day.
 
-### Log a sale (seller — primary flow)
+### Log a sale (staff — primary flow)
 
 1. **Home** — **Items** list (icon, name, price) + **Make a Sale** (always enabled). Optional **Market Day** banner when a day is active.
 2. **Pick Items** — scrollable menu with **− / qty / +** steppers per row (**0** when not in cart); cart pinned at bottom shows **Name(qty)** and line subtotal, **N items** + total, **Checkout**.
@@ -53,13 +53,13 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).
 3. **Payment** — **Order Total**; when **Cash** or **Venmo/Zelle** is selected, an amount-entry card (**Amount Paid** with **− / +** steppers — amount turns red below total, green when enough) → bill chips → **Change** or **Still $X due** → optional **Keep change?** when overpaid); **Cash** and **Venmo/Zelle** selector cards below (mutually exclusive).
    - **Cash** or **Venmo/Zelle:** **Amount Paid** row first, then quick-tap bills ($1, $5, $10, $20, $100 — each adds), **Exact amount**, **Clear**. **Venmo/Zelle** defaults to **Exact amount** on tap. When overpaid, centered **Keep change?** outline control with checkbox (always unchecked by default, including when editing a sale) records kept change for export.
-   - **Venmo/Zelle selected:** a **Scan or send payment** card appears (above amount-entry) when a grown-up has configured payment info in **Settings** — Zelle full name (for bank-app confirmation), email/phone, optional uploaded QR; Venmo `@handle`, optional uploaded QR, or auto-generated Venmo QR with order amount.
+   - **Venmo/Zelle selected:** a **Scan or send payment** card appears (above amount-entry) when the owner has configured payment info in **Settings** — Zelle full name (for bank-app confirmation), email/phone, optional uploaded QR; Venmo `@handle`, optional uploaded QR, or auto-generated Venmo QR with order amount.
 4. **Celebration** — "Sold!" + item count + total; **Go to Dashboard** or **✕** → **Home**; **Edit this sale** reopens cart.
 
-### Log a preorder (seller)
+### Log a preorder (staff)
 
 1. Tap **+ Pre-order** on Home (top bar, next to gear).
-2. Same cart flow as seller checkout, but always a **Preorder**: **Sale name**, **Sale notes**, and **Complete date** required above the cart; screen title **Pre-order**.
+2. Same cart flow as staff checkout, but always a **Preorder**: **Sale name**, **Sale notes**, and **Complete date** required above the cart; screen title **Pre-order**.
 3. Uses the global non-archived catalog (not today's **Menu**), whether or not an **Active Market Day** is running.
 4. **Payment** — **Pay on pickup** only at creation; sale saves to **Running Tab** (`marketDayId` null) and appears in the **Preorders tab** until **Mark complete**.
 5. **Celebration** — "Preorder saved!" + **Invoice #N**; dismiss → **Home**.
@@ -77,13 +77,13 @@ Off-day sales come from **Make a Sale** when no **Active Market Day** is open (o
 
 ### End a Market Day (admin)
 
-1. **End Market Day** in grown-up settings.
+1. **End Market Day** in owner settings.
 2. **Undo close** available until export.
 3. After export, close is permanent (edits still allowed; bucket flagged for re-export).
 
-### Grown-up area (admin)
+### Owner area
 
-Behind gear icon + parental gate (numeric code by default). Five bottom tabs:
+Behind gear icon + Pass Code (numeric code by default). Five bottom tabs:
 
 - **Events** — Active Market Day dashboard (totals, item count, Cash vs Venmo/Zelle breakdown with tips subline when applicable), Today's Menu, sales list; when no active day, start form + Past Events.
 - **Inventory** — item catalog (cost, price, archive).
@@ -91,13 +91,13 @@ Behind gear icon + parental gate (numeric code by default). Five bottom tabs:
 - **Sales** — all-time completed sales + Running Tab date-range export.
 - **Settings** — business profile (name, logo), **Passcode** (change 4-digit code; **Require Pass Code for Settings** toggle — on by default; turning off skips the gear gate; changing the toggle requires the current code), and **Payment** (Zelle full name, email/phone, optional QR upload; Venmo username, optional QR upload).
 
-Same summary card metrics on Past Events detail, Market Day kid dashboard (without profit), and Sales tab (all-time).
+Same summary card metrics on Past Events detail, Market Day staff dashboard (without profit), and Sales tab (all-time).
 
-Other grown-up capabilities (across tabs):
+Other owner capabilities (across tabs):
 
 - Item management (name, cost, price, emoji icon, optional photo).
-- Archive Items (soft delete — hidden from seller, preserved in history). UnArchive restores them.
-- **Admin edit** any Sale (payment method, optional name/notes, complete date for preorders, remove whole sale); line-item quantity edit deferred — use remove + re-log for wrong items.
+- Archive Items (soft delete — hidden from staff, preserved in history). UnArchive restores them.
+- **Owner edit** any Sale (payment method, optional name/notes, complete date for preorders, remove whole sale); line-item quantity edit deferred — use remove + re-log for wrong items.
 - Export (see below).
 
 ---
@@ -108,19 +108,19 @@ Other grown-up capabilities (across tabs):
 
 **Market Day:** id, name, startedAt, closedAt, exportedAt
 
-**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), changeKept (if cash and seller checked **Keep Change?**), name (optional, admin-only), notes (optional, admin-only), completeDate (required for preorders — pickup-ready date)
+**Sale:** saleNumber (global auto-increment), timestamp, marketDayId (nullable → Running Tab), line items, total, paymentMethod, cashReceived (if cash), changeKept (if cash and staff checked **Keep Change?**), name (optional, owner-only), notes (optional, owner-only), completeDate (required for preorders — pickup-ready date)
 
 **Line item:** itemId, quantity, priceAtSale, costAtSale
 
-Price and cost snapshot at checkout. Admin edit re-snapshots on save.
+Price and cost snapshot at checkout. Owner edit re-snapshots on save.
 
 ---
 
 ## Payment
 
 - Cash and Venmo/Zelle are mutually exclusive per Sale.
-- **Cash** and **Venmo/Zelle** share the same amount-entry UI: **Amount Paid** row (**− / +** flanking amount — gray when $0, red when below total, green when enough), then bill chips, change/due line, then **Keep change?** (centered outline + checkbox; only when amount paid exceeds total; always defaults unchecked). Amount paid stored for export. **Keep change?** records when the customer lets the seller keep the difference (tips); sale total and profit exclude tips. **Venmo/Zelle** pre-fills **Exact amount** when selected.
-- **Venmo/Zelle checkout** shows configured pay-to info (Zelle name + contact + optional QR; Venmo handle + uploaded or generated QR with amount) so customers can scan or send payment before the seller confirms **Amount Paid**.
+- **Cash** and **Venmo/Zelle** share the same amount-entry UI: **Amount Paid** row (**− / +** flanking amount — gray when $0, red when below total, green when enough), then bill chips, change/due line, then **Keep change?** (centered outline + checkbox; only when amount paid exceeds total; always defaults unchecked). Amount paid stored for export. **Keep change?** records when the customer lets staff keep the difference (tips); sale total and profit exclude tips. **Venmo/Zelle** pre-fills **Exact amount** when selected.
+- **Venmo/Zelle checkout** shows configured pay-to info (Zelle name + contact + optional QR; Venmo handle + uploaded or generated QR with amount) so customers can scan or send payment before staff confirm **Amount Paid**.
 
 ---
 
@@ -138,21 +138,21 @@ Price and cost snapshot at checkout. Admin edit re-snapshots on save.
 
 ## Success criteria
 
-- Seller completes a 3-item cash sale start-to-finish without help.
+- Staff completes a 3-item cash sale start-to-finish without help.
 - No sale requires keyboard typing (numeric entry only for cash).
 - End-of-day export reconciles against manual cash/Venmo/Zelle counts; kept change appears in **Tips total** and **Change kept** per row.
-- Kid never sees cost or sales totals.
+- Staff never see cost or sales totals.
 
 ## Resolved open questions (from v0.1)
 
 | Question | Decision |
 |----------|----------|
-| Undo/edit sales? | **Edit this sale** on celebration; **admin edit** anytime in grown-up settings |
+| Undo/edit sales? | **Edit this sale** on celebration; **owner edit** anytime in owner settings |
 | Cash received? | Record amount paid + show **change** for Cash and Venmo/Zelle; quick bills + $1 steppers; optional **Keep Change?** when overpaid |
 | Session reset? | **Market Day** = explicit session; **Running Tab** for misc |
 | Emoji vs photo? | **Emoji default, photo optional** |
 | History view? | **Removed** — Home is Items menu; no Stickers tab |
-| Kid sees totals? | **No** — admin-only |
+| Staff sees totals? | **No** — owner-only |
 | Sale reference? | Global **Sale number**, admin/export only |
 
 ## Visual design
@@ -164,7 +164,7 @@ Typography and layout follow [mocks/screens.html](./mocks/screens.html):
 - **Palette** — purple/lavender screen (`#F3E9FF`), ink/cream accents (see `market-day/constants/theme.ts`)
 - **Tokens** — radii, spacing, and touch targets in `market-day/constants/visual.ts` (tested in `visual-polish-test.ts`)
 
-Screens polished for the Sep 18 fair: Home, sell, payment, celebration, grown-up settings. Final **HITL** pass: kid + admin iPad review at the booth.
+Screens polished for the Sep 18 fair: Home, sell, payment, celebration, owner settings. Final **HITL** pass: staff + owner iPad review at the booth.
 
 ## Out of scope for v0.2
 

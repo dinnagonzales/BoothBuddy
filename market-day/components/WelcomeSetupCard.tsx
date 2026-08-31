@@ -1,3 +1,4 @@
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,23 +13,23 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
         <View style={styles.card}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconEmoji}>🎪</Text>
+          <View style={styles.logoWrap}>
+            <BoothBuddyLogo variant="fullSm" />
           </View>
 
-          <Text style={styles.title}>Welcome to Market Day</Text>
+          <Text style={styles.title}>Welcome to Booth Buddy</Text>
           <Text style={styles.subtext}>Your shop on a phone or tablet.</Text>
 
           <View style={styles.sections}>
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>For sellers</Text>
+              <Text style={styles.sectionLabel}>For staff</Text>
               <Bullet>Tap Make a Sale to ring up customers anytime</Bullet>
               <Bullet>See today&apos;s Menu when a Market Day is running</Bullet>
               <Bullet>Use + Pre-order for pickup later</Bullet>
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>For grown-ups</Text>
+              <Text style={styles.sectionLabel}>For owners</Text>
               <Bullet>Next you&apos;ll set a Pass Code and add your first item</Bullet>
               <Bullet>Tap ⚙️ anytime to manage inventory, events, and sales</Bullet>
             </View>
@@ -104,18 +105,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     ...cardShadow,
   },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.purple,
+  logoWrap: {
     alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
-  },
-  iconEmoji: {
-    fontSize: 26,
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',

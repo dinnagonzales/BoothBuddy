@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useRouter } from 'expo-router';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -21,41 +22,54 @@ import { SectionLabel } from '@/components/Screen';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import {
+  adminProfileEqual,
+  normalizeAdminProfile,
+  type AdminProfile,
+} from '@/lib/admin-profile';
+import {
   businessSettingsEqual,
   normalizeBusinessSettings,
   normalizeVenmoHandle,
   type BusinessSettings,
 } from '@/lib/business-settings';
+import { getAdminProfile, saveAdminProfile } from '@/lib/db/admin-profile';
 import { getBusinessSettings, saveBusinessSettings } from '@/lib/db/business-settings';
 import { formatPhoneNumber, formatZelleContactForInput } from '@/lib/contact-format';
+import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { deleteBusinessImage, pickBusinessImage, type BusinessImageKind } from '@/lib/local-image';
+import { resetAppForForgottenCode } from '@/lib/reset-app';
 
 type BusinessSettingsFormProps = {
   db: SQLiteDatabase;
 };
 
 export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
+  const router = useRouter();
   const [saved, setSaved] = useState<BusinessSettings | null>(null);
   const [draft, setDraft] = useState<BusinessSettings | null>(null);
+  const [savedProfile, setSavedProfile] = useState<AdminProfile | null>(null);
+  const [profileDraft, setProfileDraft] = useState<AdminProfile | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
 
   const loadSettings = useCallback(async () => {
-    const settings = await getBusinessSettings(db);
+    const [settings, profile] = await Promise.all([getBusinessSettings(db), getAdminProfile(db)]);
     const displaySettings = {
       ...settings,
       zelleContact: formatZelleContactForInput(settings.zelleContact),
     };
     setSaved(settings);
     setDraft(displaySettings);
+    setSavedProfile(profile);
+    setProfileDraft(profile);
   }, [db]);
 
   useEffect(() => {
     void loadSettings();
   }, [loadSettings]);
 
-  if (!draft || !saved) {
+  if (!draft || !saved || !profileDraft || !savedProfile) {
     return (
       <View style={styles.loadingWrap}>
         <Text style={styles.loadingText}>Loading settings…</Text>
@@ -64,7 +78,10 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
   }
 
   const normalizedDraft = normalizeBusinessSettings(draft);
-  const dirty = !businessSettingsEqual(normalizedDraft, saved);
+  const normalizedProfileDraft = normalizeAdminProfile(profileDraft);
+  const dirty =
+    !businessSettingsEqual(normalizedDraft, saved) ||
+    !adminProfileEqual(normalizedProfileDraft, savedProfile);
   const canSave = dirty && !saving;
 
   const updateDraft = (patch: Partial<BusinessSettings>) => {
@@ -76,6 +93,10 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
       }
       return next;
     });
+  };
+
+  const updateProfileDraft = (patch: Partial<AdminProfile>) => {
+    setProfileDraft((current) => (current ? { ...current, ...patch } : current));
   };
 
   const pickImage = async (kind: BusinessImageKind, field: 'businessLogoUri' | 'zelleQrUri' | 'venmoQrUri') => {
@@ -107,7 +128,11 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
 
     setSaving(true);
     try {
-      const normalized = normalizeBusinessSettings(draft);
+      const normalized = normalizeBusinessSettings({
+        ...draft,
+        businessName: normalizedProfileDraft.businessName,
+      });
+      const normalizedProfile = normalizeAdminProfile(profileDraft);
 
       if (saved.businessLogoUri && saved.businessLogoUri !== normalized.businessLogoUri) {
         await deleteBusinessImage(saved.businessLogoUri);
@@ -120,11 +145,14 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
       }
 
       await saveBusinessSettings(db, normalized);
+      await saveAdminProfile(db, normalizedProfile);
       setSaved(normalized);
+      setSavedProfile(normalizedProfile);
       setDraft({
         ...normalized,
         zelleContact: formatZelleContactForInput(normalized.zelleContact),
       });
+      setProfileDraft(normalizedProfile);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 2500);
     } finally {
@@ -132,15 +160,54 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
     }
   };
 
+  const replayOnboarding = () => {
+    Alert.alert(
+      'Replay onboarding?',
+      'This clears shop data and your Pass Code, then restarts from Welcome.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Replay',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              await resetAppForForgottenCode(db, deviceParentalGate);
+              router.replace('/setup');
+            })();
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.wrap}>
-      <SectionLabel>Business</SectionLabel>
+      <SectionLabel>Your shop</SectionLabel>
       <View style={styles.card}>
-        <Field label="Business name" style={styles.businessNameField}>
+        <Field label="Business name">
           <TextInput
-            value={draft.businessName}
-            onChangeText={(value) => updateDraft({ businessName: value })}
-            placeholder="e.g. Emma's Dragon Shop"
+            value={profileDraft.businessName}
+            onChangeText={(value) => updateProfileDraft({ businessName: value })}
+            placeholderTextColor={colors.inkSoft}
+            style={styles.fieldInput}
+          />
+        </Field>
+
+        <Field label="First name">
+          <TextInput
+            value={profileDraft.firstName}
+            onChangeText={(value) => updateProfileDraft({ firstName: value })}
+            autoComplete="given-name"
+            placeholderTextColor={colors.inkSoft}
+            style={styles.fieldInput}
+          />
+        </Field>
+
+        <Field label="Last name">
+          <TextInput
+            value={profileDraft.lastName}
+            onChangeText={(value) => updateProfileDraft({ lastName: value })}
+            autoComplete="family-name"
             placeholderTextColor={colors.inkSoft}
             style={styles.fieldInput}
           />
@@ -250,6 +317,12 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
           {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save changes'}
         </Text>
       </Pressable>
+
+      {__DEV__ ? (
+        <Pressable accessibilityRole="button" onPress={replayOnboarding} style={styles.replayButton}>
+          <Text style={styles.replayButtonLabel}>Replay onboarding</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -374,10 +447,8 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     gap: 6,
   },
-  businessNameField: {
-    paddingBottom: 16,
-  },
   businessLogoRow: {
+    paddingTop: 14,
     paddingBottom: 16,
   },
   fieldLabel: {
@@ -483,5 +554,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
     color: colors.white,
+  },
+  replayButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  replayButtonLabel: {
+    fontFamily: fonts.body.bold,
+    fontSize: 13,
+    color: colors.purpleDark,
+    textDecorationLine: 'underline',
   },
 });

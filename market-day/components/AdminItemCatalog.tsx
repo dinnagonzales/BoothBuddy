@@ -291,7 +291,7 @@ function ItemForm({
       />
       <Field label="Name" value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} />
       <Field
-        label="Cost — not shown to the seller"
+        label="Cost — not shown to staff"
         value={form.cost}
         onChangeText={(cost) => setForm((f) => ({ ...f, cost }))}
         keyboardType="decimal-pad"

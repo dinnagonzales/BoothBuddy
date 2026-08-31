@@ -3,6 +3,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { ExpandableCard } from '@/components/ExpandableCard';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
@@ -113,9 +114,12 @@ export default function SettingsScreen() {
       <View style={styles.screen}>
         <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
         <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.dashboardLogoWrap}>
+            <BoothBuddyLogo variant="long" style={styles.dashboardLogo} />
+          </View>
           <View style={styles.emptyWrap}>
             <View style={styles.emptyBadge}>
-              <Text style={styles.emptyBadgeIcon}>🎪</Text>
+              <BoothBuddyLogo variant="full" style={styles.emptyLogo} />
             </View>
             <Text style={styles.emptyTitle}>No market day yet</Text>
             <Text style={styles.emptyBody}>Start one to begin tracking today&apos;s sales.</Text>
@@ -140,6 +144,9 @@ export default function SettingsScreen() {
     <View style={styles.screen}>
       <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.dashboardLogoWrap}>
+          <BoothBuddyLogo variant="long" style={styles.dashboardLogo} />
+        </View>
         <View style={styles.summarySection}>
           <SectionLabel>Event Summary</SectionLabel>
           <MarketDaySummaryCard
@@ -275,6 +282,13 @@ const styles = StyleSheet.create({
   salesSection: {
     marginTop: 10,
   },
+  dashboardLogoWrap: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dashboardLogo: {
+    height: 36,
+  },
   emptyScrollContent: {
     flexGrow: 1,
     paddingBottom: 24,
@@ -287,16 +301,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   emptyBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F3EFFA',
+    width: 120,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
   },
-  emptyBadgeIcon: {
-    fontSize: 30,
+  emptyLogo: {
+    width: 96,
   },
   emptyTitle: {
     fontFamily: fonts.heading.semiBold,
