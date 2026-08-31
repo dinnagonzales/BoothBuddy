@@ -2,7 +2,7 @@ import { Image, StyleSheet, type ImageStyle, type StyleProp } from 'react-native
 
 const logos = {
   long: require('@/assets/images/logo-long.png'),
-  full: require('@/assets/images/logo-full.png'),
+  full: require('@/assets/images/logo-full-sm.png'),
   fullSm: require('@/assets/images/logo-full-sm.png'),
   app: require('@/assets/images/logo-app.png'),
 } as const;

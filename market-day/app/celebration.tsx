@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { tokens } from '@/theme/tokens';
 
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Button, Card } from '@/components/ui';
@@ -164,7 +165,7 @@ export default function CelebrationScreen() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: tokens.shadow.scrim,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
-    color: colors.white,
+    color: colors.ink,
   },
   editButton: {
     marginTop: 16,

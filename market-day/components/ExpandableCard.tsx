@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
   },
   headerDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F3EFFA',
+    borderBottomColor: colors.surfaceMuted,
   },
   body: {
     paddingHorizontal: 12,
     paddingBottom: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F0EBFA',
+    borderTopColor: colors.borderSubtle,
   },
   bodyNoDivider: {
     borderTopWidth: 0,
@@ -122,14 +122,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: '#C9B8F0',
+    borderColor: colors.borderFocus,
     borderRadius: 16,
     paddingVertical: 13,
     alignItems: 'center',
     marginTop: 4,
   },
   addButtonEmbedded: {
-    backgroundColor: '#F3EFFA',
+    backgroundColor: colors.surfaceMuted,
   },
   addButtonPressed: {
     opacity: 0.85,

@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: '#E4DDF5',
+    borderTopColor: colors.borderSubtle,
     paddingTop: 10,
     paddingBottom: 4,
   },

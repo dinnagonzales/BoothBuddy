@@ -3,53 +3,112 @@
 
 @import 'heroui-native/styles';
 
+@theme {
+  /* Brand palette */
+  --color-peach: #ffd9d1;
+  --color-pink: #ffa0c1;
+  --color-gray: #a9a8af;
+  --color-gray-light: #d5d5d8;
+  --color-ink: #161616;
+  --color-white: #ffffff;
+
+  /* Pink scale */
+  --color-pink-50: #fff6f9;
+  --color-pink-100: #ffe7f0;
+  --color-pink-200: #ffd0e0;
+  --color-pink-300: #ffb8d0;
+  --color-pink-400: #ffa0c1;
+  --color-pink-500: #dc8ba7;
+  --color-pink-600: #b9778e;
+
+  /* Peach scale */
+  --color-peach-50: #fff0ed;
+  --color-peach-100: #ffe4df;
+  --color-peach-200: #ffd9d1;
+  --color-peach-300: #d0b2ac;
+  --color-peach-400: #a28b86;
+
+  /* Gray scale */
+  --color-gray-50: #dddcdf;
+  --color-gray-100: #c3c2c7;
+  --color-gray-200: #a9a8af;
+  --color-gray-300: #8c8b90;
+  --color-gray-400: #6e6e72;
+  --color-gray-500: #515053;
+
+  /* Ink scale */
+  --color-ink-100: #dcdcdc;
+  --color-ink-200: #adadad;
+  --color-ink-300: #7f7f7f;
+  --color-ink-400: #505050;
+  --color-ink-500: #161616;
+
+  /* Functional */
+  --color-success: #3f9463;
+  --color-success-dark: #2f7049;
+  --color-warning: #c77a1f;
+  --color-danger: #c64545;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  /* Typography */
+  --font-heading: Fredoka_600SemiBold, system-ui, sans-serif;
+  --font-heading-bold: Fredoka_700Bold, system-ui, sans-serif;
+  --font-body: Nunito_400Regular, system-ui, sans-serif;
+  --font-body-bold: Nunito_700Bold, system-ui, sans-serif;
+}
+
 @layer theme {
   :root {
     @variant light {
       --radius: 1rem;
-      --background: #f3e9ff;
-      --foreground: #2b2340;
+      --background: #fff0ed;
+      --foreground: #161616;
       --surface: #ffffff;
-      --surface-foreground: #2b2340;
-      --accent: #9b5de5;
-      --accent-foreground: #ffffff;
-      --success: #4cd787;
+      --surface-foreground: #161616;
+      --accent: #ffa0c1;
+      --accent-foreground: #161616;
+      --success: #3f9463;
       --success-foreground: #ffffff;
-      --warning: #ffd93d;
-      --warning-foreground: #2b2340;
-      --muted: #6e6480;
-      --border: #e4ddf5;
-      --separator: #f0eafb;
+      --warning: #c77a1f;
+      --warning-foreground: #161616;
+      --muted: #6e6e72;
+      --border: #d5d5d8;
+      --separator: #ffe4df;
       --default: #ffffff;
-      --default-foreground: #2b2340;
-      --danger: #d6497a;
+      --default-foreground: #161616;
+      --danger: #c64545;
       --danger-foreground: #ffffff;
       --field-background: #ffffff;
-      --field-border: #f0eafb;
+      --field-border: #ffe4df;
     }
 
     @variant dark {
       /* Match light tokens so Uniwind/HeroUI stay in sync (app is light-only). */
       --radius: 1rem;
-      --background: #f3e9ff;
-      --foreground: #2b2340;
+      --background: #fff0ed;
+      --foreground: #161616;
       --surface: #ffffff;
-      --surface-foreground: #2b2340;
-      --accent: #9b5de5;
-      --accent-foreground: #ffffff;
-      --success: #4cd787;
+      --surface-foreground: #161616;
+      --accent: #ffa0c1;
+      --accent-foreground: #161616;
+      --success: #3f9463;
       --success-foreground: #ffffff;
-      --warning: #ffd93d;
-      --warning-foreground: #2b2340;
-      --muted: #6e6480;
-      --border: #e4ddf5;
-      --separator: #f0eafb;
+      --warning: #c77a1f;
+      --warning-foreground: #161616;
+      --muted: #6e6e72;
+      --border: #d5d5d8;
+      --separator: #ffe4df;
       --default: #ffffff;
-      --default-foreground: #2b2340;
-      --danger: #d6497a;
+      --default-foreground: #161616;
+      --danger: #c64545;
       --danger-foreground: #ffffff;
       --field-background: #ffffff;
-      --field-border: #f0eafb;
+      --field-border: #ffe4df;
     }
   }
 }

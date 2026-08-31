@@ -75,12 +75,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   savedBanner: {
-    backgroundColor: '#E8F9EF',
+    backgroundColor: colors.successSurface,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#B8EBCE',
+    borderColor: colors.borderSuccess,
     alignItems: 'center',
   },
   savedBannerText: {

@@ -1,6 +1,7 @@
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, ZoomIn, ZoomOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { tokens } from '@/theme/tokens';
 
 import { ParentalGatePrompt } from '@/components/ParentalGatePrompt';
 import { colors } from '@/constants/theme';
@@ -82,9 +83,9 @@ export function PassCodeSheet({
 }
 
 const cardShadow = Platform.select({
-  web: { boxShadow: '0 10px 40px rgba(43, 35, 64, 0.16)' },
+  web: { boxShadow: `0 10px 40px ${tokens.shadow.medium}` },
   default: {
-    shadowColor: '#2B2340',
+    shadowColor: tokens.shadow.color,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.16,
     shadowRadius: 20,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(43, 35, 64, 0.42)',
+    backgroundColor: tokens.shadow.overlay,
   },
   centerWrap: {
     flex: 1,

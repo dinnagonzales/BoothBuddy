@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   fieldDivider: {
     height: 1,
-    backgroundColor: '#F0EAFB',
+    backgroundColor: colors.borderSubtle,
   },
   label: {
     fontFamily: 'Nunito_800ExtraBold',
@@ -162,10 +162,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   input: {
-    backgroundColor: '#F8F5FF',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#F0EAFB',
+    borderColor: colors.borderSubtle,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontFamily: 'Nunito_700Bold',
@@ -176,10 +176,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F8F5FF',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#F0EAFB',
+    borderColor: colors.borderSubtle,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -228,6 +228,6 @@ const styles = StyleSheet.create({
   startButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: colors.white,
+    color: colors.ink,
   },
 });

@@ -1,8 +1,11 @@
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BrandButton } from '@/components/ui/BrandButton';
+import { BrandCard } from '@/components/ui/BrandCard';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/theme';
+import { fonts } from '@/constants/visual';
 
 type WelcomeSetupCardProps = {
   onContinue: () => void;
@@ -12,7 +15,7 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
-        <View style={styles.card}>
+        <BrandCard surface="peach" style={styles.card}>
           <View style={styles.logoWrap}>
             <BoothBuddyLogo variant="fullSm" />
           </View>
@@ -35,13 +38,8 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
             </View>
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={onContinue}
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}>
-            <Text style={styles.buttonLabel}>Get started</Text>
-          </Pressable>
-        </View>
+          <BrandButton label="Get started" onPress={onContinue} />
+        </BrandCard>
       </View>
     </SafeAreaView>
   );
@@ -55,35 +53,6 @@ function Bullet({ children }: { children: string }) {
     </View>
   );
 }
-
-const cardShadow = Platform.select({
-  web: { boxShadow: '0 10px 0 rgba(43, 35, 64, 0.06)' },
-  default: {
-    shadowColor: '#2B2340',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.06,
-    shadowRadius: 0,
-    elevation: 2,
-  },
-});
-
-const buttonShadow = Platform.select({
-  web: { boxShadow: `0 5px 0 ${colors.purpleDark}` },
-  default: {
-    shadowColor: colors.purpleDark,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 0,
-  },
-});
-
-const buttonShadowPressed = Platform.select({
-  web: { boxShadow: `0 2px 0 ${colors.purpleDark}` },
-  default: {
-    shadowOffset: { width: 0, height: 2 },
-  },
-});
 
 const styles = StyleSheet.create({
   page: {
@@ -99,25 +68,23 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: colors.background,
     borderRadius: 28,
     paddingVertical: 32,
     paddingHorizontal: 28,
-    ...cardShadow,
   },
   logoWrap: {
     alignSelf: 'center',
     marginBottom: 16,
   },
   title: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 22,
     color: colors.ink,
     textAlign: 'center',
     marginBottom: 8,
   },
   subtext: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: fonts.body.regular,
     fontSize: 14,
     color: colors.inkSoft,
     textAlign: 'center',
@@ -132,7 +99,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionLabel: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 12,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
@@ -144,32 +111,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   bulletDot: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 14,
     lineHeight: 20,
     color: colors.purple,
   },
   bulletText: {
     flex: 1,
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: fonts.body.regular,
     fontSize: 14,
     lineHeight: 20,
     color: colors.ink,
-  },
-  button: {
-    backgroundColor: colors.purple,
-    borderRadius: 18,
-    paddingVertical: 18,
-    alignItems: 'center',
-    ...buttonShadow,
-  },
-  buttonPressed: {
-    transform: [{ translateY: 3 }],
-    ...buttonShadowPressed,
-  },
-  buttonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
-    color: colors.white,
   },
 });

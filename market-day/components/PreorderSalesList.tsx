@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   savedBanner: {
-    backgroundColor: '#E8F9EF',
+    backgroundColor: colors.successSurface,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#B8EBCE',
+    borderColor: colors.borderSuccess,
     alignItems: 'center',
   },
   savedBannerText: {
@@ -117,8 +117,8 @@ const styles = StyleSheet.create({
   },
   saleCardOverdue: {
     borderWidth: 1,
-    borderColor: '#F5C2C2',
-    backgroundColor: '#FFF8F8',
+    borderColor: colors.borderDanger,
+    backgroundColor: colors.dangerSurface,
   },
   saleRow: {
     flexDirection: 'row',

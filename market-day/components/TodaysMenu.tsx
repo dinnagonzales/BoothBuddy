@@ -5,6 +5,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { OutlineAddButton } from '@/components/ExpandableCard';
 import { colors } from '@/constants/theme';
+import { tokens } from '@/theme/tokens';
 import type { MenuItem, RemovedMenuItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
 import { formatMoney } from '@/lib/money';
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   emptyCardEmbedded: {
-    backgroundColor: '#F3EFFA',
+    backgroundColor: colors.surfaceMuted,
   },
   emptyText: {
     fontFamily: 'Nunito_600SemiBold',
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   itemRowEmbedded: {
-    backgroundColor: '#F3EFFA',
+    backgroundColor: colors.surfaceMuted,
   },
   itemRowSoldOut: {
     opacity: 0.55,
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 22,
     borderRadius: 12,
-    backgroundColor: '#E4DDF5',
+    backgroundColor: colors.borderSubtle,
     justifyContent: 'center',
     paddingHorizontal: 2,
   },
@@ -245,7 +246,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     backgroundColor: colors.white,
-    shadowColor: '#000',
+    shadowColor: tokens.shadow.color,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.15,
     shadowRadius: 2,

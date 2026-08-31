@@ -736,8 +736,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   textInputRequired: {
-    borderColor: '#F5C2C2',
-    backgroundColor: '#FFF8F8',
+    borderColor: colors.borderDanger,
+    backgroundColor: colors.dangerSurface,
   },
   notesInput: {
     minHeight: 88,
@@ -879,13 +879,13 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: colors.white,
+    color: colors.ink,
   },
   removeButton: {
     marginTop: 10,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#FFD3D3',
+    borderColor: colors.borderDanger,
     backgroundColor: colors.white,
     paddingVertical: 14,
     alignItems: 'center',
@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FAF8FF',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -951,7 +951,7 @@ const styles = StyleSheet.create({
   },
   statusBar: {
     marginTop: 12,
-    backgroundColor: '#F3E9FF',
+    backgroundColor: colors.screen,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 16,

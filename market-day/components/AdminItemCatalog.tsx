@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: '#F3EFFA',
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3EFFA',
+    borderBottomColor: colors.surfaceMuted,
   },
   fieldInputEmoji: {
     fontSize: 24,
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: colors.white,
+    color: colors.ink,
   },
   archiveButton: {
     width: '100%',
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: '#FFD3D3',
+    borderColor: colors.borderDanger,
     borderRadius: 16,
     paddingVertical: 13,
     alignItems: 'center',

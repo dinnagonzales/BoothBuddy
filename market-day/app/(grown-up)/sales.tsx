@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
   },
   dateButton: {
-    backgroundColor: '#FAF8FF',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   exportButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
-    color: colors.white,
+    color: colors.ink,
   },
   salesSection: {
     marginTop: 4,

@@ -195,7 +195,7 @@ export default function PaymentScreen() {
                   accessibilityLabel="Add one dollar"
                   style={styles.plusButton}
                   onPress={() => setCashReceivedCents((value) => value + 100)}>
-                  <Text style={styles.stepButtonLabel}>+</Text>
+                  <Text style={styles.stepButtonLabelLight}>+</Text>
                 </Pressable>
               </View>
 
@@ -210,7 +210,7 @@ export default function PaymentScreen() {
                     setKeepChange(false);
                     setCashReceivedCents(totalCents);
                   }}>
-                  <Text style={styles.chipLabel}>Exact amount</Text>
+                  <Text style={styles.chipLabelLight}>Exact amount</Text>
                 </Pressable>
                 {BILLS.map((cents) => (
                   <Pressable
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   completeButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 17,
-    color: colors.white,
+    color: colors.ink,
   },
   valuePaidLabel: {
     fontFamily: fonts.body.extraBold,
@@ -458,6 +458,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepButtonLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 24,
+    color: colors.ink,
+    lineHeight: 28,
+  },
+  stepButtonLabelLight: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 24,
     color: colors.white,
@@ -519,9 +525,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderWidth: 2,
-    borderColor: '#E4DDF5',
+    borderColor: colors.borderSubtle,
   },
   chipLabel: {
+    fontFamily: fonts.heading.semiBold,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  chipLabelLight: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 14,
     color: colors.white,
@@ -533,7 +544,7 @@ const styles = StyleSheet.create({
   },
   statusBar: {
     marginTop: 16,
-    backgroundColor: '#F3E9FF',
+    backgroundColor: colors.screen,
     borderRadius: 16,
     paddingVertical: 18,
     paddingHorizontal: 16,

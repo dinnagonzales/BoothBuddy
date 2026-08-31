@@ -78,11 +78,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EDE9F5',
+    backgroundColor: colors.background,
   },
   lockedPage: {
     flex: 1,
-    backgroundColor: '#EDE9F5',
+    backgroundColor: colors.background,
   },
   page: {
     flex: 1,

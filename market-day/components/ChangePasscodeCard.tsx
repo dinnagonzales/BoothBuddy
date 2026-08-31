@@ -226,6 +226,6 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 15,
-    color: colors.white,
+    color: colors.ink,
   },
 });

@@ -122,13 +122,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#C9B8F0',
+    borderColor: colors.borderFocus,
     alignItems: 'center',
     justifyContent: 'center',
   },
   boxFilled: {
     borderColor: colors.purple,
-    backgroundColor: '#F8F4FF',
+    backgroundColor: colors.surfaceMuted,
   },
   dot: {
     width: 14,

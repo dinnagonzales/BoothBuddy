@@ -52,7 +52,7 @@ function HeroCard({ children }: { children: ReactNode }) {
         <Defs>
           <SvgGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <Stop offset="0%" stopColor={colors.pink} />
-            <Stop offset="100%" stopColor={colors.purple} />
+            <Stop offset="100%" stopColor={colors.pink600} />
           </SvgGradient>
         </Defs>
         <Rect width="100%" height="100%" fill="url(#heroGradient)" />
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   heroEyebrow: {
     fontFamily: fonts.body.bold,
     fontSize: 12,
-    color: colors.white,
+    color: colors.ink,
     opacity: 0.85,
     letterSpacing: 0.6,
     textAlign: 'center',
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     fontFamily: fonts.body.bold,
     fontSize: 13,
-    color: colors.white,
+    color: colors.ink,
     opacity: 0.9,
     textAlign: 'center',
   },

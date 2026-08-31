@@ -187,10 +187,10 @@ const styles = StyleSheet.create({
   buttonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: colors.white,
+    color: colors.ink,
   },
   dangerButton: {
-    backgroundColor: colors.pinkDark,
+    backgroundColor: colors.danger,
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',

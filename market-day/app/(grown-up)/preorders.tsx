@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   exportButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
-    color: colors.white,
+    color: colors.ink,
   },
   emptyCard: {
     backgroundColor: colors.white,

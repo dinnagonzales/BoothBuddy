@@ -1,8 +1,13 @@
+import { BrandButton } from '@/components/ui/BrandButton';
+import { BrandCard } from '@/components/ui/BrandCard';
+import { BrandInput } from '@/components/ui/BrandInput';
+import { IconTile } from '@/components/ui/IconTile';
 import type { ComponentProps } from 'react';
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/theme';
+import { fonts } from '@/constants/visual';
 import { parseMoneyInput } from '@/lib/money';
 
 type ItemSetupCardProps = {
@@ -33,10 +38,8 @@ export function ItemSetupCard({
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
-        <View style={styles.card}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconEmoji}>📦</Text>
-          </View>
+        <BrandCard surface="peach" style={styles.card}>
+          <IconTile emoji="📦" size={56} style={styles.iconTile} />
 
           <Text style={styles.title}>Add your first Item</Text>
           <Text style={styles.subtext}>
@@ -61,20 +64,14 @@ export function ItemSetupCard({
               keyboardType="decimal-pad"
             />
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !canSave }}
-              disabled={!canSave}
+            <BrandButton
+              label="Save Item and finish"
               onPress={onSave}
-              style={({ pressed }) => [
-                styles.button,
-                !canSave && styles.buttonDisabled,
-                pressed && canSave && styles.buttonPressed,
-              ]}>
-              <Text style={styles.buttonLabel}>Save Item and finish</Text>
-            </Pressable>
+              disabled={!canSave}
+              style={[!canSave && styles.buttonDisabled, styles.saveButton]}
+            />
           </View>
-        </View>
+        </BrandCard>
       </View>
     </SafeAreaView>
   );
@@ -85,48 +82,19 @@ function Field({
   ...props
 }: {
   label: string;
-} & ComponentProps<typeof TextInput>) {
+} & ComponentProps<typeof BrandInput>) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput {...props} style={styles.input} placeholderTextColor={colors.inkSoft} />
+      <BrandInput {...props} />
     </View>
   );
 }
 
-const cardShadow = Platform.select({
-  web: { boxShadow: '0 10px 0 rgba(43, 35, 64, 0.06)' },
-  default: {
-    shadowColor: '#2B2340',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.06,
-    shadowRadius: 0,
-    elevation: 2,
-  },
-});
-
-const buttonShadow = Platform.select({
-  web: { boxShadow: `0 5px 0 ${colors.purpleDark}` },
-  default: {
-    shadowColor: colors.purpleDark,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 0,
-  },
-});
-
-const buttonShadowPressed = Platform.select({
-  web: { boxShadow: `0 2px 0 ${colors.purpleDark}` },
-  default: {
-    shadowOffset: { width: 0, height: 2 },
-  },
-});
-
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#EDE9F5',
+    backgroundColor: colors.background,
   },
   center: {
     flex: 1,
@@ -137,34 +105,23 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: colors.background,
     borderRadius: 28,
     paddingVertical: 32,
     paddingHorizontal: 28,
-    ...cardShadow,
   },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.purple,
+  iconTile: {
     alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
-  iconEmoji: {
-    fontSize: 26,
-  },
   title: {
-    fontFamily: 'Fredoka_600SemiBold',
+    fontFamily: fonts.heading.semiBold,
     fontSize: 22,
     color: colors.ink,
     textAlign: 'center',
     marginBottom: 8,
   },
   subtext: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: fonts.body.regular,
     fontSize: 14,
     color: colors.inkSoft,
     textAlign: 'center',
@@ -178,43 +135,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: fonts.body.bold,
     fontSize: 12,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: colors.inkSoft,
   },
-  input: {
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 16,
-    color: colors.ink,
-  },
-  button: {
-    backgroundColor: colors.purple,
-    borderRadius: 18,
-    paddingVertical: 18,
-    alignItems: 'center',
+  saveButton: {
     marginTop: 4,
-    ...buttonShadow,
   },
   buttonDisabled: {
     opacity: 0.45,
-    ...Platform.select({
-      web: { boxShadow: 'none' },
-      default: { shadowOpacity: 0 },
-    }),
-  },
-  buttonPressed: {
-    transform: [{ translateY: 3 }],
-    ...buttonShadowPressed,
-  },
-  buttonLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
-    color: colors.white,
   },
 });

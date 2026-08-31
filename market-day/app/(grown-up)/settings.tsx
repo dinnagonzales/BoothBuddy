@@ -237,16 +237,16 @@ const styles = StyleSheet.create({
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
-    color: colors.white,
+    color: colors.ink,
   },
   reexportBanner: {
-    backgroundColor: '#FFF4D6',
+    backgroundColor: colors.warningSurface,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#F5DFA0',
+    borderColor: colors.warningBorder,
   },
   reexportTitle: {
     fontFamily: fonts.body.extraBold,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: '#FFD3D3',
+    borderColor: colors.borderDanger,
     borderRadius: radii.settingsRow,
     paddingVertical: 13,
     alignItems: 'center',
