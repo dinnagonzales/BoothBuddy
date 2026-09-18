@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { SaleDetailScreen } from '@/components/SaleDetailScreen';
+import { safeBack } from '@/lib/navigation';
 
 export default function AdminEditSaleScreen() {
   const router = useRouter();
@@ -20,7 +21,14 @@ export default function AdminEditSaleScreen() {
           router.replace('/preorders');
           return;
         }
-        router.back();
+        if (params.returnTo === 'past' && params.marketDayId) {
+          safeBack(router, {
+            pathname: '/past/[id]',
+            params: { id: params.marketDayId },
+          });
+          return;
+        }
+        safeBack(router, '/sales');
       }}
       onSaved={(savedSaleNumber) => {
         if (params.returnTo === 'preorders') {

@@ -11,6 +11,7 @@ import {
   getMarketDaySales,
   getMarketDayStats,
 } from '@/lib/db/queries';
+import { safeBack } from '@/lib/navigation';
 import type { MarketDay, SaleSummary } from '@/lib/types';
 
 export default function MarketDayDashboardScreen() {
@@ -59,7 +60,7 @@ export default function MarketDayDashboardScreen() {
   return (
     <Screen>
       <View style={styles.page}>
-        <ScreenHeader title="🎪 Market Day" onBack={() => router.back()} />
+        <ScreenHeader title="🎪 Market Day" onBack={() => safeBack(router)} />
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <MarketDaySummaryCard
             variant="viewOnly"

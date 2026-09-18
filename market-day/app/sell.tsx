@@ -16,6 +16,7 @@ import {
   localDayFromExportDate,
   toExportDate,
 } from '@/lib/market-day';
+import { safeBack } from '@/lib/navigation';
 import { preorderMetadataValid } from '@/lib/sale-edit';
 import type { Item } from '@/lib/types';
 
@@ -129,7 +130,7 @@ export default function SellScreen() {
     <Screen>
       <View style={styles.page}>
         <View style={styles.container}>
-          <ScreenHeader title={screenTitle} onBack={() => router.back()} />
+          <ScreenHeader title={screenTitle} onBack={() => safeBack(router)} />
 
           <FlatList
             data={items}

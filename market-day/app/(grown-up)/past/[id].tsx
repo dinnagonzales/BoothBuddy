@@ -16,6 +16,7 @@ import {
   undoCloseMostRecentMarketDay,
 } from '@/lib/db/queries';
 import { shareMarketDayCsv } from '@/lib/market-day-export';
+import { safeBack } from '@/lib/navigation';
 import type { MarketDay, SaleSummary } from '@/lib/types';
 
 export default function PastMarketDayScreen() {
@@ -159,7 +160,7 @@ export default function PastMarketDayScreen() {
   if (!marketDay?.closedAt) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader title="Past Event" onBack={() => router.back()} />
+        <ScreenHeader title="Past Event" onBack={() => safeBack(router, '/settings')} />
       </View>
     );
   }
@@ -168,7 +169,7 @@ export default function PastMarketDayScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title={marketDay.name} onBack={() => router.back()} />
+      <ScreenHeader title={marketDay.name} onBack={() => safeBack(router, '/settings')} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <MarketDaySummaryCard
           name={marketDay.name}

@@ -13,6 +13,7 @@ import type { BusinessSettings } from '@/lib/business-settings';
 import { EMPTY_BUSINESS_SETTINGS } from '@/lib/business-settings';
 import { getBusinessSettings } from '@/lib/db/business-settings';
 import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
+import { safeBack } from '@/lib/navigation';
 import { paymentCanComplete, preorderMetadataValid, cashChangeCents, cashChangeStatusLabel } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/types';
@@ -157,7 +158,7 @@ export default function PaymentScreen() {
             title={
               invoiceNumber != null ? `Payment: Invoice #${invoiceNumber}` : "How'd they pay?"
             }
-            onBack={() => router.back()}
+            onBack={() => safeBack(router, '/sell')}
           />
 
           <ScrollView

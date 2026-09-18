@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Screen } from '@/components/Screen';
 import { SaleDetailScreen } from '@/components/SaleDetailScreen';
+import { safeBack } from '@/lib/navigation';
 
 export default function ViewOnlySaleScreen() {
   const router = useRouter();
@@ -10,7 +11,11 @@ export default function ViewOnlySaleScreen() {
 
   return (
     <Screen>
-      <SaleDetailScreen saleNumber={saleNumber} readOnly onBack={() => router.back()} />
+      <SaleDetailScreen
+        saleNumber={saleNumber}
+        readOnly
+        onBack={() => safeBack(router, '/market-day')}
+      />
     </Screen>
   );
 }
