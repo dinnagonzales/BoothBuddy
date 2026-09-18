@@ -3,7 +3,7 @@
 Lightweight tracker for **Booth Buddy** MVP work. Not synced to GitHub or any external board.
 
 **Source:** [PRD.md](../PRD.md) · [CONTEXT.md](../CONTEXT.md) · grill session Aug 28, 2026  
-**Branch snapshot:** `master` @ `af16581` + uncommitted **008 item photos** WIP (Sep 18, 2026)
+**Branch snapshot:** `master` (Sep 18, 2026) · Apple Dev enrolled, ASC **Pending** · see [docs/testflight-when-apple-active.md](../docs/testflight-when-apple-active.md)
 
 ## Status key
 
@@ -22,9 +22,9 @@ Lightweight tracker for **Booth Buddy** MVP work. Not synced to GitHub or any ex
 | [005](issues/005-admin-edit-sale.md) | Owner edit Sale | AFK | 004 | done |
 | [006](issues/006-export-market-day-csv.md) | Export Closed Market Day (CSV + share sheet) | AFK | 002, 004 | done |
 | [007](issues/007-running-tab.md) | Running Tab: off-day sales + preorders + date-range export | AFK | 001, 003 | open (near done) |
-| [008](issues/008-item-photos.md) | Optional Item photos | AFK | 003 | in progress (WIP) |
+| [008](issues/008-item-photos.md) | Optional Item photos | AFK | 003 | done (device check left) |
 | [009](issues/009-visual-polish.md) | Visual polish (fonts + Booth Buddy brand) | HITL | — | open (HITL) |
-| [010](issues/010-app-store-submission.md) | App Store submission | HITL | 001–007 | open |
+| [010](issues/010-app-store-submission.md) | App Store / TestFlight | HITL | Apple Active | open (enrolled, Pending) |
 | [011](issues/011-market-day-menu.md) | Market Day Menu (default all Items, remove, sold out) | AFK | 002, 003 | done |
 | [012](issues/012-web-help-site-content.md) | Web help site content (features + FAQ) | HITL | — | open |
 
@@ -32,9 +32,9 @@ Lightweight tracker for **Booth Buddy** MVP work. Not synced to GitHub or any ex
 
 1. ~~001–006, 011~~ shipped  
 2. Finish **007** leftover — mark date-range exported sales (`sales.exported_at`)  
-3. Land **008** WIP (photos + emoji picker) → device permission check  
+3. **008** device permission check  
 4. **009** iPad visual sign-off  
-5. **010** Apple Developer + EAS + TestFlight (fair target was Sep 18)  
+5. **010** — wait Apple **Active**, then → [docs/testflight-when-apple-active.md](../docs/testflight-when-apple-active.md)  
 6. **012** help site anytime  
 
 ## Already shipped (scaffold + post-grill)

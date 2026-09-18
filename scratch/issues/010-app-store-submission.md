@@ -1,14 +1,17 @@
 # 010 — App Store submission
 
 **Type:** HITL  
-**Status:** open  
-**Blocked by:** 001–007 (007 near done — export marking gap only)
+**Status:** open (Apple enrolled — membership **Pending**; ASC not enabled yet)  
+**Blocked by:** Apple Active + 001–007 demo-ready (007 near done)
+
+## Jump here when Active
+
+→ **[docs/testflight-when-apple-active.md](../../docs/testflight-when-apple-active.md)**  
+IDs, ASC create steps, `eas build` command, TestFlight install.
 
 ## What to build
 
-Ship **Booth Buddy** as standalone iOS app (not Expo Go): Apple Developer enrollment, EAS production build, TestFlight on family iPad, privacy policy URL, App Store metadata + screenshots, submit for review.
-
-Original target was ~Sep 8–10 for Sep 18 market — **date passed**; still ship when demo-ready.
+Ship **Booth Buddy** as standalone iOS app (not Expo Go): EAS production build, TestFlight on family iPad, privacy policy URL, App Store metadata + screenshots, submit for review (or stay TestFlight-only).
 
 **Category:** Business (not Kids). Review notes: Pass Code gate; Staff never sees cost/totals; local-only, no login.
 
@@ -16,27 +19,26 @@ Original target was ~Sep 8–10 for Sep 18 market — **date passed**; still shi
 
 - **Source:** [docs/privacy-policy.md](../../docs/privacy-policy.md)
 - **Publishable page:** [web/privacy.html](../../web/privacy.html)
-- **Before submit:** replace `CONTACT_EMAIL`; host `web/privacy.html`; paste URL into App Store Connect
-- **App Privacy labels (v1):** likely **Data Not Collected** — see notes in privacy-policy.md
+- **Before public submit:** replace `CONTACT_EMAIL`; host page; paste URL into ASC
+- **App Privacy labels (v1):** likely **Data Not Collected**
 
 ## Build gaps (repo)
 
-- [x] `ios.bundleIdentifier` in `market-day/app.json` → `com.dinnagonzales.boothbuddy`
-- [x] `eas.json` scaffolded (dev / preview / production)
-- [x] Confirm bundle ID; create App Store Connect app with same ID *(bundle ID set — ASC create still HITL)*
-- [x] Expo project linked: `@titadinna/market-day`
-- [ ] First `eas build --platform ios --profile production`
-- [ ] Camera/photo strings already in `app.json` plugin — verify on device
+- [x] `ios.bundleIdentifier` → `com.dinnagonzales.boothbuddy`
+- [x] `eas.json` + Expo `@titadinna/market-day`
+- [x] Apple Developer enrolled ($99) — waiting for **Active** / ASC access
+- [ ] ASC app record + first `eas build --platform ios --profile production --auto-submit`
+- [ ] Camera/photo prompts verified on device
 
 ## Acceptance criteria
 
-- [ ] Apple Developer Program active ($99)
+- [ ] Apple Developer Program **Active** (not Pending)
 - [ ] TestFlight build runs on family iPad without Expo Go
-- [ ] Privacy policy published + linked in App Store Connect
-- [ ] Screenshots + description submitted
-- [ ] App approved or rejection addressed
+- [ ] Privacy policy published + linked (before public store; optional for internal TF)
+- [ ] Screenshots + description submitted (public store only)
+- [ ] App approved or rejection addressed — or stay private on TestFlight
 
 ## Blocked by
 
-- [001](001-first-run-setup.md)–[007](007-running-tab.md) demo-ready (finish 007 export marking)
-- Soft: [009](009-visual-polish.md) iPad sign-off before store screenshots
+- Apple membership Active + ASC enabled
+- Soft: [007](007-running-tab.md) export marking; [009](009-visual-polish.md) iPad sign-off before store screenshots

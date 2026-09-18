@@ -1,6 +1,8 @@
 # App Store Submission Checklist — Booth Buddy
 
-**Target:** TestFlight on family iPad → App Store. Original ~Sep 8–10 / Sep 18 fair window **passed** — ship when ready.
+> **Membership Pending?** Open **[testflight-when-apple-active.md](./testflight-when-apple-active.md)** when Apple flips to Active — IDs + step-by-step TestFlight.
+
+**Target:** TestFlight on family iPad → App Store (when ready).
 
 **Category:** Business (not Kids Category). Review notes: Pass Code gate on gear icon; Staff never sees cost or totals; local-only data, no login/server.
 
@@ -13,7 +15,7 @@ Issue [010](../scratch/issues/010-app-store-submission.md) blocked by **001–00
 | Issue | Status | Remaining |
 |-------|--------|-----------|
 | [007 — Running Tab](../scratch/issues/007-running-tab.md) | Near done | Stamp `sales.exported_at` on date-range export + re-export flag |
-| [008 — Item photos](../scratch/issues/008-item-photos.md) | WIP uncommitted | Commit + device permission check |
+| [008 — Item photos](../scratch/issues/008-item-photos.md) | Shipped in repo | Device permission smoke test |
 | [009 — Visual polish](../scratch/issues/009-visual-polish.md) | Code shipped | iPad visual sign-off |
 | [005 — Owner edit sale](../scratch/issues/005-admin-edit-sale.md) | **done** | Quantity edit deferred per PRD |
 
@@ -21,23 +23,23 @@ Issue [010](../scratch/issues/010-app-store-submission.md) blocked by **001–00
 
 ---
 
-## 1. Accounts (start today)
+## 1. Accounts
 
-- [ ] Enroll in [Apple Developer Program](https://developer.apple.com/programs/enroll/) ($99/yr) — legal name must match ID exactly
-- [ ] Create [Expo](https://expo.dev) account
-- [ ] Install EAS CLI: `npm install -g eas-cli`
+- [x] Enroll in [Apple Developer Program](https://developer.apple.com/programs/enroll/) ($99) — **paid Sep 18 2026; membership Pending ASC enable**
+- [x] [Expo](https://expo.dev) account (`titadinna`)
+- [x] EAS CLI installed; project linked
+- [ ] Membership **Active** + App Store Connect accessible → then follow [testflight-when-apple-active.md](./testflight-when-apple-active.md)
 
 ---
 
 ## 2. iOS build config
 
-- [x] Add `ios.bundleIdentifier` to `market-day/app.json` → `com.dinnagonzales.boothbuddy`
-- [x] Add `android.package` (same reverse-DNS) for future Android
-- [x] Create `market-day/eas.json` (development / preview / production + submit)
-- [x] Confirm bundle ID before first App Store Connect create (permanent)
-- [x] `eas login` + link Expo project (`@titadinna/market-day`)
-- [ ] First production build: `eas build --platform ios --profile production`
-- [ ] Item photos (008): permission strings already in `app.json` — verify prompts on device
+- [x] `ios.bundleIdentifier` → `com.dinnagonzales.boothbuddy`
+- [x] `android.package` (same)
+- [x] `market-day/eas.json`
+- [x] Expo project `@titadinna/market-day`
+- [ ] First production build + TestFlight — see [testflight-when-apple-active.md](./testflight-when-apple-active.md)
+- [ ] Item photos (008): verify camera/photo prompts on device
 
 ---
 
@@ -54,7 +56,7 @@ Draft ready — [docs/privacy-policy.md](./privacy-policy.md), publishable page 
 
 ## 4. App Store Connect listing
 
-- [ ] Create app record (name **Booth Buddy**, bundle ID, SKU)
+- [ ] Create app record (name **Booth Buddy**, bundle ID, SKU `boothbuddy-001`)
 - [ ] Category: **Business**
 - [ ] Screenshots (iPad required — `supportsTablet: true`; add iPhone if listing as universal)
 - [ ] Description, keywords, support URL
@@ -67,9 +69,9 @@ Draft ready — [docs/privacy-policy.md](./privacy-policy.md), publishable page 
 
 ## 5. TestFlight → review
 
-- [ ] `eas submit --platform ios --latest` (or submit from EAS dashboard)
+- [ ] Build + submit per [testflight-when-apple-active.md](./testflight-when-apple-active.md)
 - [ ] Install on family iPad via TestFlight — runs **without Expo Go**
-- [ ] Submit for App Store review (~Sep 8–10; allow 2–5 days + buffer for one rejection)
+- [ ] (Later) Submit for App Store review — or stay TestFlight-only / unlisted
 
 ---
 
@@ -81,24 +83,24 @@ Draft ready — [docs/privacy-policy.md](./privacy-policy.md), publishable page 
 - Privacy policy draft + HTML page
 - ADR: Business category, local-only, no analytics/ads
 - Change Pass Code in Settings (was v2-002)
-- Item photo permission strings already in `app.json` (008 WIP)
+- Item photo permission strings already in `app.json`
+- Bundle ID + EAS project linked
 
 ---
 
-## Suggested order
+## Suggested order (now)
 
-1. Enroll Apple Developer (blocks everything else)
-2. Finish issue 007 leftover (sale export marking)
-3. Land/commit 008 photos WIP (optional for first TestFlight)
-4. `bundleIdentifier` + `eas build:configure` + first iOS build
-5. Publish privacy policy + TestFlight on iPad
-6. Store listing + submit for review
+1. Wait for Apple membership **Active**
+2. [testflight-when-apple-active.md](./testflight-when-apple-active.md) → ASC app + first build
+3. Finish 007 leftover (sale export marking) when convenient
+4. Privacy policy host + store listing when going public
 
 ---
 
 ## References
 
+- **[TestFlight when Active](./testflight-when-apple-active.md)** ← start here after approval
 - [Issue 010](../scratch/issues/010-app-store-submission.md)
-- [Expo — Submit to Apple App Store](https://docs.expo.dev/submit/ios/)
+- [Expo — TestFlight](https://docs.expo.dev/submit/testflight/)
 - [App Store Release Checklist (HTML)](../reference/app-store-release-checklist.html)
 - [Lesson 0002 — Releasing on the App Store](../lessons/0002-app-store-release.html)
