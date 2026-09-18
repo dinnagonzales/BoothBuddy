@@ -103,7 +103,7 @@ Optional staff action at **Cash** or **Venmo/Zelle** checkout when amount paid e
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:
-The portion of **Change** the customer asked staff to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer) and on market summary cards as part of **Cash** — total cash shown up top, with a **$sales + $tips (tips)** breakdown underneath when tips exist. Sale total and profit exclude kept change — tips are tracked separately for end-of-day cash counts.
+The portion of **Change** the customer asked staff to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer) and on market summary cards with the matching payment method — Cash tips roll into the **Cash** tile and Venmo/Zelle tips into **Zelle / Venmo**, each showing a **$sales + $tips (tips)** breakdown when tips exist for that method. Switching payment method between Cash and Venmo/Zelle preserves tender and change kept. Sale total and profit exclude kept change — tips are tracked separately for reconciliation.
 _Avoid_: Tip, bonus, extra revenue
 
 **Active Market Day**:
