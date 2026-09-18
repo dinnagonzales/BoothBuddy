@@ -1,6 +1,6 @@
 import { Redirect, useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,10 +21,14 @@ import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getAdminProfile } from '@/lib/db/admin-profile';
-import { getHomeItems, getActiveMarketDay } from '@/lib/db/queries';
+import {
+  getHomeItems,
+  getActiveMarketDay,
+  getMarketDaySaleCount,
+  getMarketDayStats,
+} from '@/lib/db/queries';
 import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
-import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
@@ -47,21 +51,61 @@ function chunkMenuRows(items: HomeItem[]): MenuRow[] {
 type ActiveMarketSummary = {
   name: string;
   dateLabel: string;
+  totalCents: number;
+  saleCount: number;
 };
 
-function HeroCard({ children }: { children: ReactNode }) {
+const TICKET_PINK = '#FB6AA3';
+const TICKET_PURPLE = '#9B5DE6';
+const TICKET_DIVIDER = '#E4DDF5';
+const TICKET_MUTED = '#8C86A0';
+const TICKET_PILL = '#3DBE7A';
+
+function formatTicketDate(iso: string): string {
+  return new Date(iso)
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    .toUpperCase();
+}
+
+function TicketMarketBanner({
+  name,
+  dateLabel,
+  totalCents,
+  saleCount,
+}: ActiveMarketSummary) {
+  const saleLabel = saleCount === 1 ? '1 sale' : `${saleCount} sales`;
+
   return (
-    <View style={styles.heroCard}>
-      <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
-        <Defs>
-          <SvgGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor={colors.pink} />
-            <Stop offset="100%" stopColor={colors.purple} />
-          </SvgGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#heroGradient)" />
-      </Svg>
-      <View style={styles.heroContent}>{children}</View>
+    <View style={styles.ticketCard}>
+      <View style={styles.ticketStrip}>
+        <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+          <Defs>
+            <SvgGradient id="ticketStripGradient" x1="0%" y1="15%" x2="100%" y2="85%">
+              <Stop offset="0%" stopColor={TICKET_PINK} />
+              <Stop offset="100%" stopColor={TICKET_PURPLE} />
+            </SvgGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#ticketStripGradient)" />
+        </Svg>
+        <View style={styles.ticketStripContent}>
+          <Text style={styles.ticketStripText} numberOfLines={1}>
+            {name.toUpperCase()} · {dateLabel}
+          </Text>
+          <Text style={styles.ticketStripAction}>Sales →</Text>
+        </View>
+      </View>
+
+      <View style={styles.ticketDivider} />
+
+      <View style={styles.ticketBody}>
+        <View style={styles.ticketTotals}>
+          <Text style={styles.ticketTotalAmount}>{formatMoney(totalCents)}</Text>
+          <Text style={styles.ticketSoldLabel}>sold today</Text>
+        </View>
+        <View style={styles.ticketSalePill}>
+          <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -117,9 +161,15 @@ export default function HomeScreen() {
             setItems(await getHomeItems(db));
             const marketDay = await getActiveMarketDay(db);
             if (marketDay) {
+              const [dayStats, saleCount] = await Promise.all([
+                getMarketDayStats(db, marketDay.id),
+                getMarketDaySaleCount(db, marketDay.id),
+              ]);
               setActiveMarket({
                 name: marketDay.name,
-                dateLabel: formatMarketDayDate(marketDay.startedAt),
+                dateLabel: formatTicketDate(marketDay.startedAt),
+                totalCents: dayStats.totalCents,
+                saleCount,
               });
             } else {
               setActiveMarket(null);
@@ -195,13 +245,8 @@ export default function HomeScreen() {
               accessibilityRole="button"
               accessibilityLabel={`View ${activeMarket.name} sales`}
               onPress={() => router.push('/market-day')}
-              style={({ pressed }) => [styles.heroCardWrap, pressed && styles.heroCardPressed]}>
-              <HeroCard>
-                <Text style={styles.heroEyebrow}>
-                  {activeMarket.name.toUpperCase()} · {activeMarket.dateLabel.toUpperCase()}
-                </Text>
-                <Text style={styles.heroSubtitle}>Tap for today&apos;s sales · sell something below</Text>
-              </HeroCard>
+              style={({ pressed }) => [styles.ticketWrap, pressed && styles.ticketPressed]}>
+              <TicketMarketBanner {...activeMarket} />
             </Pressable>
           ) : null}
 
@@ -373,36 +418,85 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.green,
   },
-  heroCard: {
-    borderRadius: 26,
-    overflow: 'hidden',
-  },
-  heroCardPressed: {
-    opacity: 0.92,
-  },
-  heroCardWrap: {
+  ticketWrap: {
     marginBottom: 18,
   },
-  heroContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    alignItems: 'center',
+  ticketPressed: {
+    opacity: 0.92,
   },
-  heroEyebrow: {
+  ticketCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: colors.white,
+  },
+  ticketStrip: {
+    overflow: 'hidden',
+  },
+  ticketStripContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  ticketStripText: {
+    flex: 1,
+    fontFamily: fonts.body.extraBold,
+    fontSize: 10.5,
+    color: colors.white,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    opacity: 0.9,
+  },
+  ticketStripAction: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 10.5,
+    color: colors.white,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    opacity: 0.9,
+  },
+  ticketDivider: {
+    marginHorizontal: 16,
+    borderTopWidth: 2,
+    borderColor: TICKET_DIVIDER,
+    borderStyle: 'dashed',
+  },
+  ticketBody: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+    backgroundColor: colors.white,
+  },
+  ticketTotals: {
+    flexShrink: 1,
+  },
+  ticketTotalAmount: {
+    fontFamily: fonts.heading.bold,
+    fontSize: 32,
+    color: colors.ink,
+  },
+  ticketSoldLabel: {
     fontFamily: fonts.body.bold,
+    fontSize: 11.5,
+    color: TICKET_MUTED,
+    marginTop: 2,
+  },
+  ticketSalePill: {
+    backgroundColor: TICKET_PILL,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  ticketSalePillText: {
+    fontFamily: fonts.heading.semiBold,
     fontSize: 12,
     color: colors.white,
-    opacity: 0.95,
-    letterSpacing: 0.6,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  heroSubtitle: {
-    fontFamily: fonts.body.bold,
-    fontSize: 13,
-    color: colors.white,
-    opacity: 0.95,
-    textAlign: 'center',
   },
   menuLabelRow: {
     flexDirection: 'row',

@@ -2,7 +2,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Home, Tent, XCircle } from 'lucide-react-native';
+import { Home, Store, XCircle } from 'lucide-react-native';
 
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { AdminSalesList } from '@/components/AdminSalesList';
@@ -115,7 +115,7 @@ export default function SettingsScreen() {
       <View style={styles.screen}>
         <ScreenHeader
           title="Events"
-          titleIcon={<UiIcon icon={Tent} size={20} color={colors.ink} />}
+          titleIcon={<UiIcon icon={Store} size={20} color={colors.ink} />}
           onBack={() => leaveGrownUpArea(router)}
         />
         <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
@@ -146,7 +146,7 @@ export default function SettingsScreen() {
     <View style={styles.screen}>
       <ScreenHeader
         title="Events"
-        titleIcon={<UiIcon icon={Tent} size={20} color={colors.ink} />}
+        titleIcon={<UiIcon icon={Store} size={20} color={colors.ink} />}
         onBack={() => leaveGrownUpArea(router)}
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

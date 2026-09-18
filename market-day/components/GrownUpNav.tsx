@@ -1,7 +1,7 @@
 import { usePathname, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ClipboardList, Package, Receipt, Settings, Tent } from 'lucide-react-native';
+import { ClipboardList, Package, Receipt, Settings, Store } from 'lucide-react-native';
 
 import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
@@ -25,7 +25,7 @@ export function GrownUpNav() {
   return (
     <View style={styles.nav}>
       <NavItem
-        icon={<UiIcon icon={Tent} size={22} color={iconColor(current === 'events')} />}
+        icon={<UiIcon icon={Store} size={22} color={iconColor(current === 'events')} />}
         label="Events"
         active={current === 'events'}
         onPress={() => router.replace('/settings')}
