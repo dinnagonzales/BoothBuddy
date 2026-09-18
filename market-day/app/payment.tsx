@@ -5,7 +5,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-n
 
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { VenmoZellePaymentInfo } from '@/components/VenmoZellePaymentInfo';
-import { Button, Card, Checkbox, cn } from '@/components/ui';
+import { BrandButton, Card, Checkbox, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -353,16 +353,12 @@ export default function PaymentScreen() {
           </ScrollView>
 
           <View style={styles.endDock}>
-            <Button
-              size="lg"
-              className="w-full"
+            <BrandButton
+              label={preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
+              disabled={!canComplete}
+              onPress={completeSale}
               style={styles.completeButton}
-              isDisabled={!canComplete}
-              onPress={completeSale}>
-              <Button.Label style={styles.completeButtonLabel}>
-                {preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
-              </Button.Label>
-            </Button>
+            />
           </View>
         </View>
       </View>
@@ -390,6 +386,9 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 16,
   },
+  completeButton: {
+    width: '100%',
+  },
   totalBlock: {
     alignItems: 'center',
     marginVertical: 10,
@@ -416,14 +415,6 @@ const styles = StyleSheet.create({
   payOptionLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
-    color: colors.ink,
-  },
-  completeButton: {
-    borderRadius: radii.completeBtn,
-  },
-  completeButtonLabel: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 17,
     color: colors.ink,
   },
   valuePaidLabel: {
