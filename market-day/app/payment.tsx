@@ -127,6 +127,7 @@ export default function PaymentScreen() {
         ? styles.cashAmountShort
         : styles.cashAmountGood;
   const showAmountEntry = paymentMethod === 'cash' || paymentMethod === 'venmo_zelle';
+  const canSubtractCash = cashReceivedCents > 0;
   const canComplete =
     paymentCanComplete(paymentMethod, cashReceivedCents, totalCents) &&
     (!preorderCheckout || preorderMetadataValid(saleName, saleNotes, saleCompleteDate));
@@ -237,7 +238,9 @@ export default function PaymentScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Subtract one dollar"
-                  style={styles.minusButton}
+                  accessibilityState={{ disabled: !canSubtractCash }}
+                  disabled={!canSubtractCash}
+                  style={[styles.minusButton, !canSubtractCash ? styles.minusButtonDisabled : null]}
                   onPress={() => setCashReceivedCents((value) => Math.max(value - 100, 0))}>
                   <Text style={styles.stepButtonLabel}>−</Text>
                 </Pressable>
@@ -521,6 +524,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.pinkDark,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  minusButtonDisabled: {
+    opacity: 0.45,
   },
   plusButton: {
     width: 46,

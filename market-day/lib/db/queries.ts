@@ -495,6 +495,17 @@ export async function getNextSaleNumber(db: SQLiteDatabase): Promise<number> {
   return row?.n ?? 1;
 }
 
+function assertValidSaleLines(lines: CartLine[]): void {
+  if (lines.length === 0) {
+    throw new Error('Sale must have at least one line item');
+  }
+  for (const line of lines) {
+    if (!Number.isFinite(line.quantity) || line.quantity <= 0) {
+      throw new Error('Sale line quantities must be positive');
+    }
+  }
+}
+
 function normalizeOptionalText(value: string | null | undefined): string | null {
   if (value == null) return null;
   const trimmed = value.trim();
@@ -547,6 +558,8 @@ export async function createSale(
     saleNumber?: number;
   },
 ): Promise<Sale> {
+  assertValidSaleLines(params.lines);
+
   const totalCents = cartTotal(params.lines);
   const name = normalizeOptionalText(params.name);
   const notes = normalizeOptionalText(params.notes);
@@ -641,9 +654,7 @@ export async function replaceSaleContents(
     completeDate?: string | null;
   },
 ): Promise<Sale> {
-  if (params.lines.length === 0) {
-    throw new Error('Sale must have at least one line item');
-  }
+  assertValidSaleLines(params.lines);
 
   const existing = await getSale(db, saleId);
   if (!existing) {
@@ -849,9 +860,14 @@ export async function updateSale(
     const received = cashReceivedCents ?? 0;
     changeKept = updates.changeKept === true && received > sale.totalCents;
   } else if (updates.paymentMethod !== undefined) {
-    cashReceivedCents =
-      paymentMethod === 'cash' ? (sale.cashReceivedCents ?? sale.totalCents) : null;
-    changeKept = false;
+    if (paymentMethod === 'cash' || paymentMethod === 'venmo_zelle') {
+      cashReceivedCents = sale.cashReceivedCents ?? sale.totalCents;
+      changeKept =
+        sale.changeKept && cashReceivedCents != null && cashReceivedCents > sale.totalCents;
+    } else {
+      cashReceivedCents = null;
+      changeKept = false;
+    }
   } else {
     cashReceivedCents = sale.cashReceivedCents;
     changeKept = sale.changeKept;

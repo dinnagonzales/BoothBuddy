@@ -778,9 +778,14 @@ export function createCatalog(): Catalog {
       if (!sale) return;
 
       sale.paymentMethod = paymentMethod;
-      sale.cashReceivedCents =
-        paymentMethod === 'cash' ? (sale.cashReceivedCents ?? cartTotal(sale.lines)) : null;
-      sale.changeKept = false;
+      if (paymentMethod === 'cash' || paymentMethod === 'venmo_zelle') {
+        sale.cashReceivedCents = sale.cashReceivedCents ?? cartTotal(sale.lines);
+        sale.changeKept =
+          sale.changeKept && sale.cashReceivedCents > cartTotal(sale.lines);
+      } else {
+        sale.cashReceivedCents = null;
+        sale.changeKept = false;
+      }
 
       const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
@@ -793,11 +798,14 @@ export function createCatalog(): Catalog {
 
       if (updates.paymentMethod !== undefined) {
         sale.paymentMethod = updates.paymentMethod;
-        sale.cashReceivedCents =
-          updates.paymentMethod === 'cash'
-            ? (sale.cashReceivedCents ?? cartTotal(sale.lines))
-            : null;
-        sale.changeKept = false;
+        if (updates.paymentMethod === 'cash' || updates.paymentMethod === 'venmo_zelle') {
+          sale.cashReceivedCents = sale.cashReceivedCents ?? cartTotal(sale.lines);
+          sale.changeKept =
+            sale.changeKept && sale.cashReceivedCents > cartTotal(sale.lines);
+        } else {
+          sale.cashReceivedCents = null;
+          sale.changeKept = false;
+        }
       }
       if (updates.cashReceivedCents !== undefined) {
         sale.cashReceivedCents = updates.cashReceivedCents;

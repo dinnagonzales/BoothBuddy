@@ -145,7 +145,13 @@ export function SaleDetailScreen({
   const changePaymentMethod = (paymentMethod: PaymentMethod) => {
     if (readOnly || !sale || busy || draftPaymentMethod === paymentMethod) return;
     setDraftPaymentMethod(paymentMethod);
-    if (paymentMethod === 'venmo_zelle') {
+    // Preserve existing tender/tip when reclassifying cash ↔ Venmo. Only default
+    // Venmo to exact total when nothing over the total has been entered yet.
+    if (
+      paymentMethod === 'venmo_zelle' &&
+      draftCashReceivedCents <= sale.totalCents &&
+      !draftKeepChange
+    ) {
       setDraftCashReceivedCents(sale.totalCents);
       setDraftCashReceivedText(moneyInputFromCents(sale.totalCents));
       setDraftKeepChange(false);

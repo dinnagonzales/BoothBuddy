@@ -117,6 +117,57 @@ test('admin can change payment method on a Sale', async () => {
   });
 });
 
+test('switching payment method keeps change-kept tip and tender', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 500,
+    changeKept: true,
+  });
+
+  expect((await catalog.getMarketDayStats(marketDay.id)).tipsCents).toBe(100);
+
+  await catalog.updateSalePaymentMethod(saleNumber, 'venmo_zelle');
+
+  expect((await catalog.getMarketDayStats(marketDay.id)).tipsCents).toBe(100);
+  const afterVenmo = await catalog.listSalesExportRows('2000-01-01', '2100-01-01');
+  expect(afterVenmo[0]).toMatchObject({
+    paymentMethod: 'venmo_zelle',
+    cashReceivedCents: 500,
+    changeKeptCents: 100,
+  });
+
+  await catalog.updateSalePaymentMethod(saleNumber, 'cash');
+
+  expect((await catalog.getMarketDayStats(marketDay.id)).tipsCents).toBe(100);
+  const afterCash = await catalog.listSalesExportRows('2000-01-01', '2100-01-01');
+  expect(afterCash[0]).toMatchObject({
+    paymentMethod: 'cash',
+    cashReceivedCents: 500,
+    changeKeptCents: 100,
+  });
+});
+
 test('exported Market Day is flagged for re-export after a payment method edit', async () => {
   const catalog = createCatalog();
 
