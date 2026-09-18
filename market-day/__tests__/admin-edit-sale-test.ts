@@ -62,6 +62,8 @@ test('admin can remove a mis-logged Sale', async () => {
     cashCents: 0,
     venmoCents: 800,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
 });
 
@@ -114,6 +116,8 @@ test('admin can change payment method on a Sale', async () => {
     cashCents: 0,
     venmoCents: 400,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
 });
 
@@ -149,7 +153,13 @@ test('switching payment method keeps change-kept tip and tender', async () => {
 
   await catalog.updateSalePaymentMethod(saleNumber, 'venmo_zelle');
 
-  expect((await catalog.getMarketDayStats(marketDay.id)).tipsCents).toBe(100);
+  expect(await catalog.getMarketDayStats(marketDay.id)).toMatchObject({
+    tipsCents: 100,
+    cashTipsCents: 0,
+    venmoTipsCents: 100,
+    cashCents: 0,
+    venmoCents: 400,
+  });
   const afterVenmo = await catalog.listSalesExportRows('2000-01-01', '2100-01-01');
   expect(afterVenmo[0]).toMatchObject({
     paymentMethod: 'venmo_zelle',
@@ -159,7 +169,13 @@ test('switching payment method keeps change-kept tip and tender', async () => {
 
   await catalog.updateSalePaymentMethod(saleNumber, 'cash');
 
-  expect((await catalog.getMarketDayStats(marketDay.id)).tipsCents).toBe(100);
+  expect(await catalog.getMarketDayStats(marketDay.id)).toMatchObject({
+    tipsCents: 100,
+    cashTipsCents: 100,
+    venmoTipsCents: 0,
+    cashCents: 400,
+    venmoCents: 0,
+  });
   const afterCash = await catalog.listSalesExportRows('2000-01-01', '2100-01-01');
   expect(afterCash[0]).toMatchObject({
     paymentMethod: 'cash',

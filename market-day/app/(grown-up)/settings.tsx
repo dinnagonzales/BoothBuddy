@@ -39,6 +39,8 @@ export default function SettingsScreen() {
     cashCents: 0,
     venmoCents: 0,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [menuOpen, setMenuOpen] = useState(true);
@@ -54,7 +56,16 @@ export default function SettingsScreen() {
       setSales(await getMarketDaySales(db, day.id));
     } else {
       setPastEvents(await getClosedMarketDays(db));
-      setStats({ totalCents: 0, itemCount: 0, profitCents: 0, cashCents: 0, venmoCents: 0, tipsCents: 0 });
+      setStats({
+        totalCents: 0,
+        itemCount: 0,
+        profitCents: 0,
+        cashCents: 0,
+        venmoCents: 0,
+        tipsCents: 0,
+        cashTipsCents: 0,
+        venmoTipsCents: 0,
+      });
       setSales([]);
     }
   }, [db]);
@@ -160,7 +171,8 @@ export default function SettingsScreen() {
             saleCount={sales.length}
             cashCents={stats.cashCents}
             venmoCents={stats.venmoCents}
-            tipsCents={stats.tipsCents}
+            cashTipsCents={stats.cashTipsCents}
+            venmoTipsCents={stats.venmoTipsCents}
           />
         </View>
 

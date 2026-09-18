@@ -34,6 +34,8 @@ test('admin dashboard shows total revenue and item count for the active Market D
     cashCents: 800,
     venmoCents: 0,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
 });
 
@@ -257,5 +259,7 @@ test('admin dashboard shows an empty Sale list before any Sales are logged', asy
     cashCents: 0,
     venmoCents: 0,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
 });

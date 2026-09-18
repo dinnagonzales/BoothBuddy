@@ -996,6 +996,8 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
     cash_cents: number;
     venmo_cents: number;
     tips_cents: number;
+    cash_tips_cents: number;
+    venmo_tips_cents: number;
   }>(
     `SELECT
        COALESCE(SUM(s.total_cents), 0) AS total_cents,
@@ -1013,7 +1015,27 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
            THEN s.cash_received_cents - s.total_cents
            ELSE 0
          END
-       ), 0) AS tips_cents
+       ), 0) AS tips_cents,
+       COALESCE(SUM(
+         CASE
+           WHEN s.payment_method = 'cash'
+             AND s.change_kept = 1
+             AND s.cash_received_cents IS NOT NULL
+             AND s.cash_received_cents > s.total_cents
+           THEN s.cash_received_cents - s.total_cents
+           ELSE 0
+         END
+       ), 0) AS cash_tips_cents,
+       COALESCE(SUM(
+         CASE
+           WHEN s.payment_method = 'venmo_zelle'
+             AND s.change_kept = 1
+             AND s.cash_received_cents IS NOT NULL
+             AND s.cash_received_cents > s.total_cents
+           THEN s.cash_received_cents - s.total_cents
+           ELSE 0
+         END
+       ), 0) AS venmo_tips_cents
      FROM sales s
      WHERE s.market_day_id = ?`,
     marketDayId,
@@ -1026,6 +1048,8 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
     cashCents: row?.cash_cents ?? 0,
     venmoCents: row?.venmo_cents ?? 0,
     tipsCents: row?.tips_cents ?? 0,
+    cashTipsCents: row?.cash_tips_cents ?? 0,
+    venmoTipsCents: row?.venmo_tips_cents ?? 0,
   };
 }
 
@@ -1037,6 +1061,8 @@ export async function getAllTimeStats(db: SQLiteDatabase) {
     cash_cents: number;
     venmo_cents: number;
     tips_cents: number;
+    cash_tips_cents: number;
+    venmo_tips_cents: number;
   }>(
     `SELECT
        COALESCE(SUM(s.total_cents), 0) AS total_cents,
@@ -1054,7 +1080,27 @@ export async function getAllTimeStats(db: SQLiteDatabase) {
            THEN s.cash_received_cents - s.total_cents
            ELSE 0
          END
-       ), 0) AS tips_cents
+       ), 0) AS tips_cents,
+       COALESCE(SUM(
+         CASE
+           WHEN s.payment_method = 'cash'
+             AND s.change_kept = 1
+             AND s.cash_received_cents IS NOT NULL
+             AND s.cash_received_cents > s.total_cents
+           THEN s.cash_received_cents - s.total_cents
+           ELSE 0
+         END
+       ), 0) AS cash_tips_cents,
+       COALESCE(SUM(
+         CASE
+           WHEN s.payment_method = 'venmo_zelle'
+             AND s.change_kept = 1
+             AND s.cash_received_cents IS NOT NULL
+             AND s.cash_received_cents > s.total_cents
+           THEN s.cash_received_cents - s.total_cents
+           ELSE 0
+         END
+       ), 0) AS venmo_tips_cents
      FROM sales s
      WHERE s.is_preorder = 0`,
   );
@@ -1066,6 +1112,8 @@ export async function getAllTimeStats(db: SQLiteDatabase) {
     cashCents: row?.cash_cents ?? 0,
     venmoCents: row?.venmo_cents ?? 0,
     tipsCents: row?.tips_cents ?? 0,
+    cashTipsCents: row?.cash_tips_cents ?? 0,
+    venmoTipsCents: row?.venmo_tips_cents ?? 0,
   };
 }
 

@@ -36,6 +36,8 @@ export default function PastMarketDayScreen() {
     cashCents: 0,
     venmoCents: 0,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
   const [sales, setSales] = useState<SaleSummary[]>([]);
   const [savedSaleNumber, setSavedSaleNumber] = useState<number | null>(null);
@@ -53,7 +55,16 @@ export default function PastMarketDayScreen() {
     setMarketDay(day);
     if (!day?.closedAt) {
       setCanReopen(false);
-      setStats({ totalCents: 0, itemCount: 0, profitCents: 0, cashCents: 0, venmoCents: 0, tipsCents: 0 });
+      setStats({
+        totalCents: 0,
+        itemCount: 0,
+        profitCents: 0,
+        cashCents: 0,
+        venmoCents: 0,
+        tipsCents: 0,
+        cashTipsCents: 0,
+        venmoTipsCents: 0,
+      });
       setSales([]);
       return;
     }
@@ -181,7 +192,8 @@ export default function PastMarketDayScreen() {
           saleCount={sales.length}
           cashCents={stats.cashCents}
           venmoCents={stats.venmoCents}
-          tipsCents={stats.tipsCents}
+          cashTipsCents={stats.cashTipsCents}
+          venmoTipsCents={stats.venmoTipsCents}
         />
 
         {marketDay.needsReexport ? (

@@ -51,6 +51,8 @@ test('all-time sales aggregates stats across every market day', async () => {
     cashCents: 400,
     venmoCents: 800,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
 });
 
@@ -127,6 +129,8 @@ test('all-time sales list is empty before any sales are logged', async () => {
     cashCents: 0,
     venmoCents: 0,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
   });
   expect(await catalog.listAllTimeSales()).toEqual([]);
 });

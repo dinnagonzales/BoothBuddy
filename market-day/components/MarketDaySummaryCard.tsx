@@ -38,7 +38,8 @@ type MarketDaySummaryCardProps = {
   saleCount: number;
   cashCents: number;
   venmoCents: number;
-  tipsCents?: number;
+  cashTipsCents?: number;
+  venmoTipsCents?: number;
   variant?: 'admin' | 'viewOnly' | 'allTime';
   totalCents?: number;
   profitCents?: number;
@@ -52,13 +53,19 @@ export function MarketDaySummaryCard({
   saleCount,
   cashCents,
   venmoCents,
-  tipsCents = 0,
+  cashTipsCents = 0,
+  venmoTipsCents = 0,
   variant = 'admin',
 }: MarketDaySummaryCardProps) {
-  const cashTotalCents = cashCents + tipsCents;
+  const cashTotalCents = cashCents + cashTipsCents;
+  const venmoTotalCents = venmoCents + venmoTipsCents;
   const cashSubValue =
-    tipsCents > 0
-      ? `${formatMoney(cashCents)} + ${formatMoney(tipsCents)} (tips)`
+    cashTipsCents > 0
+      ? `${formatMoney(cashCents)} + ${formatMoney(cashTipsCents)} (tips)`
+      : undefined;
+  const venmoSubValue =
+    venmoTipsCents > 0
+      ? `${formatMoney(venmoCents)} + ${formatMoney(venmoTipsCents)} (tips)`
       : undefined;
 
   return (
@@ -80,7 +87,8 @@ export function MarketDaySummaryCard({
           <StatBox
             icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
             label="Zelle / Venmo"
-            value={formatMoney(venmoCents)}
+            value={formatMoney(venmoTotalCents)}
+            subValue={venmoSubValue}
             backgroundColor={colors.grayLight}
             fullWidth
           />
@@ -114,7 +122,8 @@ export function MarketDaySummaryCard({
             <StatBox
               icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
               label="Zelle / Venmo"
-              value={formatMoney(venmoCents)}
+              value={formatMoney(venmoTotalCents)}
+              subValue={venmoSubValue}
               backgroundColor={colors.grayLight}
             />
             <StatBox
