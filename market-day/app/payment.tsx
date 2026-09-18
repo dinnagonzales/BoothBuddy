@@ -42,8 +42,21 @@ const chipShadow = (shadowColor: string) =>
 export default function PaymentScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { lines, totalCents, clearCart, editingSaleId, editingPaymentMethod, editingCashReceivedCents, invoiceNumber, saleName, saleNotes, saleCompleteDate, isQuickSale, isPreorder } =
-    useCart();
+  const {
+    lines,
+    totalCents,
+    clearCart,
+    editingSaleId,
+    editingPaymentMethod,
+    editingCashReceivedCents,
+    editingChangeKept,
+    invoiceNumber,
+    saleName,
+    saleNotes,
+    saleCompleteDate,
+    isQuickSale,
+    isPreorder,
+  } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
   const [keepChange, setKeepChange] = useState(false);
@@ -62,6 +75,19 @@ export default function PaymentScreen() {
     }
   }, [preorderCheckout]);
 
+  const changeCents = useMemo(
+    () => cashChangeCents(cashReceivedCents, totalCents),
+    [cashReceivedCents, totalCents],
+  );
+
+  // Clear before edit restore so a same-tick restore of Keep change is not wiped
+  // while cash is still at the default $0 (changeCents === 0).
+  useEffect(() => {
+    if (changeCents === 0) {
+      setKeepChange(false);
+    }
+  }, [changeCents]);
+
   useEffect(() => {
     if (editingSaleId == null) return;
 
@@ -73,21 +99,22 @@ export default function PaymentScreen() {
       editingCashReceivedCents != null
     ) {
       setCashReceivedCents(editingCashReceivedCents);
+      setKeepChange(
+        editingChangeKept && cashChangeCents(editingCashReceivedCents, totalCents) > 0,
+      );
     } else if (editingPaymentMethod === 'venmo_zelle') {
       setCashReceivedCents(totalCents);
-    }
-  }, [editingSaleId, editingPaymentMethod, editingCashReceivedCents, totalCents]);
-
-  const changeCents = useMemo(
-    () => cashChangeCents(cashReceivedCents, totalCents),
-    [cashReceivedCents, totalCents],
-  );
-
-  useEffect(() => {
-    if (changeCents === 0) {
+      setKeepChange(false);
+    } else {
       setKeepChange(false);
     }
-  }, [changeCents]);
+  }, [
+    editingSaleId,
+    editingPaymentMethod,
+    editingCashReceivedCents,
+    editingChangeKept,
+    totalCents,
+  ]);
   const amountDueCents = useMemo(
     () => Math.max(totalCents - cashReceivedCents, 0),
     [cashReceivedCents, totalCents],
@@ -340,8 +367,9 @@ export default function PaymentScreen() {
               className="flex-row justify-between items-center"
               onPress={() => {
                 setPaymentMethod('venmo_zelle');
-                setCashReceivedCents(totalCents);
-                setKeepChange(false);
+                // Preserve existing tender (e.g. cash overpay/tip). Only default to
+                // exact total when nothing has been entered yet.
+                setCashReceivedCents((value) => (value === 0 ? totalCents : value));
               }}>
               <View style={styles.payOptionLabelRow}>
                 <UiIcon icon={Smartphone} size={20} color={colors.ink} />

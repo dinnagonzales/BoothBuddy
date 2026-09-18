@@ -99,7 +99,7 @@ Cash received minus the Sale total, shown in the cash-entry card below the bill 
 _Avoid_: Money back, difference
 
 **Keep change**:
-Optional staff action at **Cash** or **Venmo/Zelle** checkout when amount paid exceeds the total. A centered **Keep change?** outline control with checkbox appears below the change line (always unchecked by default — including when re-editing a sale). When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full amount paid is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
+Optional staff action at **Cash** or **Venmo/Zelle** checkout when amount paid exceeds the total. A centered **Keep change?** outline control with checkbox appears below the change line (unchecked by default on a new sale). When re-editing a sale that already had change kept, payment restores **Keep change?** checked so Completing again does not wipe the tip. When checked, the status shows **Keeping $X — no change back** instead of **Change: $X**. The full amount paid is still recorded; **Change kept** is stored on the Sale for export and reconciliation.
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:
