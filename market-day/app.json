@@ -8,16 +8,21 @@
     "scheme": "marketday",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dinnagonzales.boothbuddy"
     },
     "android": {
+      "package": "com.dinnagonzales.boothbuddy",
       "adaptiveIcon": {
         "backgroundColor": "#FFD9D1",
         "foregroundImage": "./assets/images/logo-app.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -56,6 +61,18 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "headers": {
+          "Cross-Origin-Embedder-Policy": "credentialless",
+          "Cross-Origin-Opener-Policy": "same-origin"
+        }
+      },
+      "eas": {
+        "projectId": "6f82a4d7-8280-466b-8b4c-8cd10aad459a"
+      }
+    },
+    "owner": "titadinna"
   }
 }

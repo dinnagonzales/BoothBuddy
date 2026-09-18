@@ -21,9 +21,12 @@ Original target was ~Sep 8–10 for Sep 18 market — **date passed**; still shi
 
 ## Build gaps (repo)
 
-- [ ] `ios.bundleIdentifier` in `market-day/app.json`
-- [ ] `eas.json` / EAS project configure
-- [ ] If landing 008: camera/photo strings already in `app.json` plugin — verify on device
+- [x] `ios.bundleIdentifier` in `market-day/app.json` → `com.dinnagonzales.boothbuddy`
+- [x] `eas.json` scaffolded (dev / preview / production)
+- [x] Confirm bundle ID; create App Store Connect app with same ID *(bundle ID set — ASC create still HITL)*
+- [x] Expo project linked: `@titadinna/market-day`
+- [ ] First `eas build --platform ios --profile production`
+- [ ] Camera/photo strings already in `app.json` plugin — verify on device
 
 ## Acceptance criteria
 

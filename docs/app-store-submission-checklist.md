@@ -31,12 +31,13 @@ Issue [010](../scratch/issues/010-app-store-submission.md) blocked by **001–00
 
 ## 2. iOS build config
 
-Not set up yet in repo (`bundleIdentifier` missing, no `eas.json`).
-
-- [ ] Add `ios.bundleIdentifier` to `market-day/app.json` (e.g. `com.yourname.boothbuddy`)
-- [ ] In `market-day/`: `eas build:configure`
+- [x] Add `ios.bundleIdentifier` to `market-day/app.json` → `com.dinnagonzales.boothbuddy`
+- [x] Add `android.package` (same reverse-DNS) for future Android
+- [x] Create `market-day/eas.json` (development / preview / production + submit)
+- [x] Confirm bundle ID before first App Store Connect create (permanent)
+- [x] `eas login` + link Expo project (`@titadinna/market-day`)
 - [ ] First production build: `eas build --platform ios --profile production`
-- [ ] If shipping item photos (008): permission strings already in `app.json` — verify prompts on device
+- [ ] Item photos (008): permission strings already in `app.json` — verify prompts on device
 
 ---
 
