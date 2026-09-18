@@ -14,6 +14,7 @@ import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-nati
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
+import { IconTile } from '@/components/ui/IconTile';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -257,7 +258,12 @@ export default function HomeScreen() {
                         item.soldOut ? styles.menuTileSoldOut : null,
                         pressed && !item.soldOut ? styles.menuTilePressed : null,
                       ]}>
-                      <Text style={styles.menuTileIcon}>{item.icon}</Text>
+                      <IconTile
+                        icon={item.icon}
+                        imageSource={item.photoUri ? { uri: item.photoUri } : undefined}
+                        size={40}
+                        style={styles.menuTileIconWrap}
+                      />
                       <Text
                         style={[styles.menuTileName, item.soldOut ? styles.menuTileNameSoldOut : null]}
                         numberOfLines={2}>
@@ -444,10 +450,8 @@ const styles = StyleSheet.create({
   menuTileSoldOut: {
     opacity: 0.65,
   },
-  menuTileIcon: {
-    fontSize: 52,
-    lineHeight: 58,
-    textAlign: 'center',
+  menuTileIconWrap: {
+    marginBottom: 2,
   },
   menuTileName: {
     fontFamily: fonts.body.extraBold,

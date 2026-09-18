@@ -10,12 +10,14 @@ export type ItemDraft = {
   icon: string;
   costCents: number;
   priceCents: number;
+  photoUri?: string | null;
 };
 
 export type SellerItem = {
   id: number;
   name: string;
   icon: string;
+  photoUri: string | null;
   priceCents: number;
   soldOut?: boolean;
 };
@@ -39,6 +41,7 @@ export type AdminItem = {
   id: number;
   name: string;
   icon: string;
+  photoUri: string | null;
   costCents: number;
   priceCents: number;
   archived: boolean;
@@ -160,7 +163,7 @@ export type SalesExportRow = {
   customerName: string | null;
 };
 
-type StoredItem = ItemDraft & { id: number; archived: boolean };
+type StoredItem = ItemDraft & { id: number; archived: boolean; photoUri: string | null };
 
 type StoredMarketDay = {
   id: number;
@@ -347,7 +350,12 @@ export function createCatalog(): Catalog {
 
   return {
     async createItem(draft: ItemDraft) {
-      const item = { id: nextItemId++, archived: false, ...draft };
+      const item = {
+        id: nextItemId++,
+        archived: false,
+        photoUri: draft.photoUri ?? null,
+        ...draft,
+      };
       items.push(item);
       const active = getActiveMarketDayRecord();
       if (active) {
@@ -413,24 +421,32 @@ export function createCatalog(): Catalog {
       item.icon = draft.icon;
       item.costCents = draft.costCents;
       item.priceCents = draft.priceCents;
+      if (draft.photoUri !== undefined) {
+        item.photoUri = draft.photoUri;
+      }
     },
     async listForSeller(): Promise<SellerItem[]> {
       const active = getActiveMarketDayRecord();
       if (active) {
-        return listMenuItemsForMarketDay(active.id).map(({ id, name, icon, priceCents, soldOut }) => ({
-          id,
-          name,
-          icon,
-          priceCents,
-          soldOut,
-        }));
+        return listMenuItemsForMarketDay(active.id).map(({ id, name, icon, priceCents, soldOut }) => {
+          const item = items.find((candidate) => candidate.id === id);
+          return {
+            id,
+            name,
+            icon,
+            photoUri: item?.photoUri ?? null,
+            priceCents,
+            soldOut,
+          };
+        });
       }
       return items
         .filter((item) => !item.archived)
-        .map(({ id, name, icon, priceCents }) => ({
+        .map(({ id, name, icon, photoUri, priceCents }) => ({
           id,
           name,
           icon,
+          photoUri,
           priceCents,
         }));
     },
@@ -439,37 +455,44 @@ export function createCatalog(): Catalog {
       if (!active) {
         return items
           .filter((item) => !item.archived)
-          .map(({ id, name, icon, priceCents }) => ({
+          .map(({ id, name, icon, photoUri, priceCents }) => ({
             id,
             name,
             icon,
+            photoUri,
             priceCents,
           }));
       }
       return listMenuItemsForMarketDay(active.id)
         .filter((item) => !item.soldOut)
-        .map(({ id, name, icon, priceCents }) => ({
-          id,
-          name,
-          icon,
-          priceCents,
-        }));
+        .map(({ id, name, icon, priceCents }) => {
+          const item = items.find((candidate) => candidate.id === id);
+          return {
+            id,
+            name,
+            icon,
+            photoUri: item?.photoUri ?? null,
+            priceCents,
+          };
+        });
     },
     async listForRunningTab(): Promise<SellerItem[]> {
       return items
         .filter((item) => !item.archived)
-        .map(({ id, name, icon, priceCents }) => ({
+        .map(({ id, name, icon, photoUri, priceCents }) => ({
           id,
           name,
           icon,
+          photoUri,
           priceCents,
         }));
     },
     async listForAdmin(): Promise<AdminItem[]> {
-      return items.map(({ id, name, icon, costCents, priceCents, archived }) => ({
+      return items.map(({ id, name, icon, photoUri, costCents, priceCents, archived }) => ({
         id,
         name,
         icon,
+        photoUri,
         costCents,
         priceCents,
         archived,

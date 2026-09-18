@@ -2,21 +2,22 @@
 
 **Type:** HITL  
 **Status:** open  
-**Audience:** Web page agent building Market Day help / FAQ pages  
-**Tone:** Simple words a kid can read. Grown-up steps are clearly labeled.
+**Audience:** Web page agent building **Booth Buddy** help / FAQ pages  
+**Tone:** Simple words a kid can read. Owner steps clearly labeled.  
+**Sync note (Sep 18 2026):** App rebranded to Booth Buddy (Owner / Staff). Prefer those labels over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
 
 ---
 
 ## How to use this doc
 
-Build one page per **Page slug** below. Copy the headings and body text as-is (light editing for web layout is fine). Use short sentences, big friendly headings, and emoji sparingly as shown.
+Build one page per **Page slug** below. Copy headings/body (light layout edits ok). Short sentences, big friendly headings.
 
 **Two audiences:**
 
 | Who | Label on site | What they need |
 |-----|---------------|----------------|
-| **Seller (kid)** | “For sellers” | Sell things, take payment, fix a sale right after checkout |
-| **Grown-up (admin)** | “For grown-ups” | Pass Code, inventory, start/end Market Day, menu, sales |
+| **Staff (kid)** | “For staff” / “For sellers” | Sell, take payment, fix a sale right after checkout |
+| **Owner** | “For owners” / “For grown-ups” | Pass Code, inventory, start/end Market Day, menu, sales |
 
 Kids never see **cost** (what you paid) or **profit**.
 
@@ -26,7 +27,7 @@ Kids never see **cost** (what you paid) or **profit**.
 
 | Page slug | Title | Audience |
 |-----------|-------|----------|
-| `/` | Welcome to Market Day | Everyone |
+| `/` | Welcome to Booth Buddy | Everyone |
 | `/sell` | How to sell something | Seller |
 | `/payment` | How to take payment | Seller |
 | `/invoice-numbers` | What are invoice numbers? | Seller |
@@ -67,7 +68,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | Word | Simple meaning |
 |------|----------------|
 | **Market Day** | “The shop is open today!” — one selling day with a name and date |
-| **Menu** | What you’re selling today (emoji, name, price) |
+| **Menu** | What you’re selling today (icon/photo, name, price) |
 | **Inventory** | All the things in your shop (grown-ups manage this) |
 | **Cart** | What the customer is buying right now |
 | **Invoice #** | The order number for this sale (#1, #2, #3…) |
@@ -85,11 +86,11 @@ Kids never see **cost** (what you paid) or **profit**.
 
 ---
 
-## `/` — Welcome to Market Day
+## `/` — Welcome to Booth Buddy
 
-**For sellers**
+**For staff**
 
-Market Day is your pretend shop on a phone or tablet.
+Booth Buddy is your shop on a phone or tablet. A **Market Day** is one fair/booth day.
 
 1. Tap **Make a Sale** to ring up a customer anytime.
 2. When a grown-up has started a **Market Day**, you see today's **Menu** and a colorful banner at the top — those sales count for that day.
@@ -230,6 +231,7 @@ Open preorders waiting for pickup.
 4. Each order shows the customer **name** (or **#N**), **notes**, and **Complete date**.
 5. **Export preorders for printing** — tap the button to get a checklist file. Print it and cross off each `[ ]` line as you fulfill orders.
 6. Tap an order to record how the customer paid and **Mark complete**. It then moves to the **Sales** tab.
+7. Paid orders waiting for handoff can use **Mark Delivered** on the list.
 
 Pending preorders do **not** appear in the **Sales** tab or in CSV export until marked complete.
 
@@ -547,7 +549,7 @@ Grown-ups configure Zelle/Venmo under **⚙️ → Pass Code → Settings** (bot
 
 **Name** and **notes** are optional for normal sales — leave them blank for a walk-up sale. **+ Pre-order** requires name, notes, and complete date at checkout.
 
-*(Coming later: edit item quantities on a saved sale.)*
+To change items/quantities on a saved sale: **Remove sale** and ring it up again (or use staff **Edit this sale** right after checkout).
 
 ---
 
@@ -593,20 +595,18 @@ This works only for the **most recently** closed day, and only until you **expor
 
 ## Visual / brand notes for web agent
 
-Match app personality from mocks: friendly, colorful, kid-safe.
+Friendly, colorful, kid-safe — match **Booth Buddy** logo palette (peach/coral), not old purple mock.
 
-- Fonts (web): **Fredoka** headings, **Nunito** body (see `mocks/screens.html`)
-- Colors: pink `#FF6B9D`, purple `#9B5DE5`, green `#4CD787`, cream `#FFFDF6`, ink `#2B2340`
-- App name: **Market Day**
-- Icon motifs: 🎪 shop, 🛒 sell, ⚙️ grown-up settings, 📦 inventory
+- Fonts (web): **Fredoka** headings, **Nunito** body
+- App name: **Booth Buddy**
+- Domain event: **Market Day** (still the selling-day concept)
+- Icon motifs: logo, 🛒 sell, ⚙️ owner settings, 📦 inventory
 
 ---
 
 ## Out of scope for help site (don’t document as available)
 
-- Item photos
-- Change Pass Code without full reset
-- Biometric unlock
-- Edit item quantities on a saved sale (grown-up)
+- Biometric / Face ID Pass Code recovery (v2)
+- Edit item quantities on a saved sale (deferred — remove + re-log)
 
-Mention these only as “coming soon” where noted above.
+**Now in app (document when help site ships):** change Pass Code in Settings; optional Item photos (008 WIP — confirm before publishing); **Mark Delivered** on paid preorders.

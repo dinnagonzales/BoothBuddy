@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { IconTile } from '@/components/ui/IconTile';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing, touchTargets } from '@/constants/visual';
 
@@ -50,6 +51,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 
 type ItemCardProps = {
   icon: string;
+  photoUri?: string | null;
   name: string;
   priceLabel: string;
   quantity?: number;
@@ -60,6 +62,7 @@ type ItemCardProps = {
 
 export function ItemCard({
   icon,
+  photoUri = null,
   name,
   priceLabel,
   quantity = 0,
@@ -71,7 +74,12 @@ export function ItemCard({
 
   return (
     <View style={styles.itemCard}>
-      <Text style={styles.itemIcon}>{icon}</Text>
+      <IconTile
+        icon={icon}
+        imageSource={photoUri ? { uri: photoUri } : undefined}
+        size={36}
+        style={styles.itemIconWrap}
+      />
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemPrice}>{priceLabel}</Text>
       {useStepper ? (
@@ -163,10 +171,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.itemRowPaddingH,
     paddingVertical: spacing.itemRowPaddingV,
   },
-  itemIcon: {
-    width: 32,
-    fontSize: 24,
-    textAlign: 'center',
+  itemIconWrap: {
+    width: 36,
   },
   itemName: {
     flex: 1,

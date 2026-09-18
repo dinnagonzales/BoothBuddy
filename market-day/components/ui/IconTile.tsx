@@ -17,9 +17,9 @@ export function IconTile({ icon, imageSource, size = 56, style }: IconTileProps)
     <View style={[styles.tile, { width: size, height: size, borderRadius: tokens.radius.md }, style]}>
       {imageSource ? (
         <Image source={imageSource} style={{ width: size, height: size, borderRadius: tokens.radius.md }} />
-      ) : (
-        <Text style={[styles.icon, { fontSize: size * 0.55, lineHeight: size * 0.62 }]}>{icon ?? '🐻'}</Text>
-      )}
+      ) : icon ? (
+        <Text style={[styles.icon, { fontSize: size * 0.55, lineHeight: size * 0.62 }]}>{icon}</Text>
+      ) : null}
     </View>
   );
 }

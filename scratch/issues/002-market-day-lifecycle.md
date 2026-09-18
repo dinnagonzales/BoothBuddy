@@ -1,23 +1,23 @@
-# 002 — Market Day lifecycle (start, end, undo close)
+# 002 — Market Day lifecycle (start, end, reopen)
 
 **Type:** AFK  
 **Status:** done  
 **Blocked by:** 001
 
-## What to build
+## What shipped
 
-From **Grown-up settings**, the **Admin** can **start** a **Market Day** with a **name** and **date** (date defaults to today), which becomes the sole **Active Market Day**. While active, **Make a Sale** attaches new **Sales** to that **Market Day** and Home shows today's **Menu**. **Make a Sale** remains available when no day is active — those sales save to the **Running Tab** (`marketDayId` null). The **Admin** can **end** the **Market Day**, making it a **Closed Market Day** listed under **Past Events**. **Reopen** is available on the most recently closed day (from its past-event detail view) until that **Market Day** is exported.
+From **Owner settings → Events**, owner **starts** a **Market Day** (name + date, date defaults today) — sole **Active Market Day**. While active, **Make a Sale** attaches to that day; Home shows today's **Menu**. With no active day, **Make a Sale** still works → **Running Tab**. Owner **ends** day → **Closed Market Day** under **Past Events**. **Reopen** on most recently closed day until export.
 
-Only one **Active Market Day** at a time. Starting a new one requires closing the current one first (or explicit replace flow with confirmation).
+Only one active day at a time.
 
 ## Acceptance criteria
 
-- [x] Admin starts a **Market Day** with a **name** (required) and **date** (defaults to today)
-- [x] **Make a Sale** always available; attaches to **Active Market Day** when one is open
-- [x] Admin ends **Market Day** → becomes **Closed Market Day** in **Past Events**
-- [x] **Reopen** works on the most recently closed **Market Day** (past-event detail) until export
-- [x] **Sales** logged during active session belong to that **Market Day** (not **Running Tab**)
+- [x] Owner starts **Market Day** with name (required) + date (defaults today)
+- [x] **Make a Sale** always available; attaches to **Active Market Day** when open
+- [x] Owner ends day → **Closed Market Day** in **Past Events**
+- [x] **Reopen** on most recently closed day (past-event detail) until export
+- [x] **Sales** during active session belong to that **Market Day** (not Running Tab)
 
 ## Blocked by
 
-- [001 — First-run setup: parental gate + first Item](./001-first-run-setup.md)
+- [001 — First-run setup](./001-first-run-setup.md)

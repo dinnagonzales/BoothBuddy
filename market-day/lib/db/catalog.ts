@@ -62,29 +62,32 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async listForSeller(): Promise<SellerItem[]> {
       const items = await getHomeItems(db);
-      return items.map(({ id, name, icon, priceCents, soldOut }) => ({
+      return items.map(({ id, name, icon, photoUri, priceCents, soldOut }) => ({
         id,
         name,
         icon,
+        photoUri,
         priceCents,
         ...(soldOut ? { soldOut } : {}),
       }));
     },
     async listForCheckout(): Promise<SellerItem[]> {
       const items = await getCheckoutItems(db);
-      return items.map(({ id, name, icon, priceCents }) => ({
+      return items.map(({ id, name, icon, photoUri, priceCents }) => ({
         id,
         name,
         icon,
+        photoUri,
         priceCents,
       }));
     },
     async listForRunningTab(): Promise<SellerItem[]> {
       const items = await getRunningTabItems(db);
-      return items.map(({ id, name, icon, priceCents }) => ({
+      return items.map(({ id, name, icon, photoUri, priceCents }) => ({
         id,
         name,
         icon,
+        photoUri,
         priceCents,
       }));
     },
@@ -94,6 +97,7 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         id: item.id,
         name: item.name,
         icon: item.icon,
+        photoUri: item.photoUri,
         costCents: item.costCents,
         priceCents: item.priceCents,
         archived: item.archived,

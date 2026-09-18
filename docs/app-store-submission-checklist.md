@@ -1,6 +1,6 @@
 # App Store Submission Checklist — Booth Buddy
 
-**Target:** TestFlight on family iPad, submit for review by **~Sep 8–10** for **Sep 18** market.
+**Target:** TestFlight on family iPad → App Store. Original ~Sep 8–10 / Sep 18 fair window **passed** — ship when ready.
 
 **Category:** Business (not Kids Category). Review notes: Pass Code gate on gear icon; Staff never sees cost or totals; local-only data, no login/server.
 
@@ -8,15 +8,16 @@
 
 ## Before submit — app work still open
 
-Issue [010](../scratch/issues/010-app-store-submission.md) is blocked by **001–007**.
+Issue [010](../scratch/issues/010-app-store-submission.md) blocked by **001–007** (007 near done).
 
 | Issue | Status | Remaining |
 |-------|--------|-----------|
-| [007 — Running Tab](../scratch/issues/007-running-tab.md) | Partial | Off-day sales in Sales tab; date-range export; export marks sales exported |
-| [005 — Admin edit sale](../scratch/issues/005-admin-edit-sale.md) | Partial | PIN before edit; quantity stepper |
-| [009 — Visual polish](../scratch/issues/009-visual-polish.md) | Code shipped | iPad visual sign-off with staff |
+| [007 — Running Tab](../scratch/issues/007-running-tab.md) | Near done | Stamp `sales.exported_at` on date-range export + re-export flag |
+| [008 — Item photos](../scratch/issues/008-item-photos.md) | WIP uncommitted | Commit + device permission check |
+| [009 — Visual polish](../scratch/issues/009-visual-polish.md) | Code shipped | iPad visual sign-off |
+| [005 — Owner edit sale](../scratch/issues/005-admin-edit-sale.md) | **done** | Quantity edit deferred per PRD |
 
-**Not blockers for v1:** [008 item photos](../scratch/issues/008-item-photos.md), [012 help site](../scratch/issues/012-web-help-site-content.md).
+**Not blockers for v1 store submit:** [012 help site](../scratch/issues/012-web-help-site-content.md).
 
 ---
 
@@ -35,7 +36,7 @@ Not set up yet in repo (`bundleIdentifier` missing, no `eas.json`).
 - [ ] Add `ios.bundleIdentifier` to `market-day/app.json` (e.g. `com.yourname.boothbuddy`)
 - [ ] In `market-day/`: `eas build:configure`
 - [ ] First production build: `eas build --platform ios --profile production`
-- [ ] If shipping item photos (008): add iOS camera/photo permission strings to `app.json`
+- [ ] If shipping item photos (008): permission strings already in `app.json` — verify prompts on device
 
 ---
 
@@ -73,20 +74,24 @@ Draft ready — [docs/privacy-policy.md](./privacy-policy.md), publishable page 
 
 ## Already done
 
-- Core MVP: setup wizard, market days, catalog, sales dashboard, CSV export, menu (issues 001–004, 006, 011)
+- Core MVP: setup, market days, catalog, sales dashboard, CSV export, menu, owner edit, Running Tab UI, preorders (001–006, 011, most of 007, 005)
+- Rebrand Booth Buddy + Owner/Staff copy + brand palette
 - App name, icon, splash in `market-day/assets/`
 - Privacy policy draft + HTML page
 - ADR: Business category, local-only, no analytics/ads
+- Change Pass Code in Settings (was v2-002)
+- Item photo permission strings already in `app.json` (008 WIP)
 
 ---
 
 ## Suggested order
 
 1. Enroll Apple Developer (blocks everything else)
-2. Finish issue 007 (demo-ready blocker)
-3. `bundleIdentifier` + `eas build:configure` + first iOS build
-4. Publish privacy policy + TestFlight on iPad
-5. Store listing + submit for review
+2. Finish issue 007 leftover (sale export marking)
+3. Land/commit 008 photos WIP (optional for first TestFlight)
+4. `bundleIdentifier` + `eas build:configure` + first iOS build
+5. Publish privacy policy + TestFlight on iPad
+6. Store listing + submit for review
 
 ---
 

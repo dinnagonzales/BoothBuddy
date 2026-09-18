@@ -1,24 +1,24 @@
-# 003 — Admin Item catalog (add, edit, archive)
+# 003 — Owner Item catalog (add, edit, archive)
 
 **Type:** AFK  
 **Status:** done  
 **Blocked by:** 001
 
-## What to build
+## What shipped
 
-From **Grown-up settings**, the **Admin** manages the **Item** catalog: add and edit name, emoji icon, cost, and price. **Archive** hides an **Item** from **Home** and checkout but preserves it in past **Sales** and exports. **UnArchive** restores it. The **Seller**'s **Items** menu and checkout picker update immediately when Items change.
+From **Owner settings → Inventory**: add/edit name, **icon** (emoji; optional photo → [008](./008-item-photos.md)), cost, price. **Archive** hides from Home/checkout; keeps history. **UnArchive** restores. Staff views update immediately. Cost owner-only.
 
-Cost is admin-only and never shown on **Home** or in the sell flow.
+Also: delete Item when never used in past sales.
 
 ## Acceptance criteria
 
-- [x] Admin can add a new **Item** (emoji icon, name, cost, price)
-- [x] Admin can edit an existing **Item**
-- [x] Admin can archive an **Item** — hidden from kid views, still in history
-- [x] Admin can UnArchive an **Item** — visible to seller again
-- [x] Archived **Items** cannot be added to new **Sales**
-- [x] **Home** and checkout reflect catalog changes without app restart
+- [x] Owner can add **Item** (icon, name, cost, price)
+- [x] Owner can edit existing **Item**
+- [x] Owner can archive — hidden from staff views, still in history
+- [x] Owner can UnArchive
+- [x] Archived **Items** cannot join new **Sales**
+- [x] **Home** / checkout reflect catalog changes without restart
 
 ## Blocked by
 
-- [001 — First-run setup: parental gate + first Item](./001-first-run-setup.md)
+- [001 — First-run setup](./001-first-run-setup.md)

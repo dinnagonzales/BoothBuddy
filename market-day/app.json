@@ -42,6 +42,13 @@
           "backgroundColor": "#FFD9D1"
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Booth Buddy uses your photo library so you can add pictures of items for staff and customers to see.",
+          "cameraPermission": "Booth Buddy uses the camera so you can photograph items for staff and customers to see."
+        }
+      ],
       "expo-sqlite",
       "expo-secure-store",
       "expo-sharing",

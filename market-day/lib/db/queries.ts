@@ -271,12 +271,19 @@ export async function addToMenu(db: SQLiteDatabase, itemId: number): Promise<voi
 
 export async function createItem(
   db: SQLiteDatabase,
-  draft: { name: string; icon: string; costCents: number; priceCents: number },
+  draft: {
+    name: string;
+    icon: string;
+    costCents: number;
+    priceCents: number;
+    photoUri?: string | null;
+  },
 ): Promise<{ id: number }> {
   const result = await db.runAsync(
-    'INSERT INTO items (name, icon, cost_cents, price_cents) VALUES (?, ?, ?, ?)',
+    'INSERT INTO items (name, icon, photo_uri, cost_cents, price_cents) VALUES (?, ?, ?, ?, ?)',
     draft.name,
     draft.icon,
+    draft.photoUri ?? null,
     draft.costCents,
     draft.priceCents,
   );
@@ -295,12 +302,19 @@ export async function getAllItems(db: SQLiteDatabase): Promise<Item[]> {
 export async function updateItem(
   db: SQLiteDatabase,
   id: number,
-  draft: { name: string; icon: string; costCents: number; priceCents: number },
+  draft: {
+    name: string;
+    icon: string;
+    costCents: number;
+    priceCents: number;
+    photoUri?: string | null;
+  },
 ): Promise<void> {
   await db.runAsync(
-    'UPDATE items SET name = ?, icon = ?, cost_cents = ?, price_cents = ? WHERE id = ?',
+    'UPDATE items SET name = ?, icon = ?, photo_uri = ?, cost_cents = ?, price_cents = ? WHERE id = ?',
     draft.name,
     draft.icon,
+    draft.photoUri ?? null,
     draft.costCents,
     draft.priceCents,
     id,

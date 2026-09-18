@@ -10,5 +10,6 @@ export { Badge, Pill } from './Badge';
 export { BrandButton } from './BrandButton';
 export { BrandCard } from './BrandCard';
 export { BrandInput } from './BrandInput';
+export { IconInput } from './IconInput';
 export { IconTile } from './IconTile';
 export { ListRow } from './ListRow';

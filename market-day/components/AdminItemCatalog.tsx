@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { ExpandableCard, OutlineAddButton } from '@/components/ExpandableCard';
+import { IconInput } from '@/components/ui/IconInput';
+import { IconTile } from '@/components/ui/IconTile';
 import { colors } from '@/constants/theme';
 import type { AdminItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
+import { deleteItemPhoto, persistItemPhoto, pickItemPhoto } from '@/lib/local-image';
 import { ItemHasSalesError } from '@/lib/market-day';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
 
@@ -21,13 +24,15 @@ type ItemFormState = {
   name: string;
   cost: string;
   price: string;
+  photoUri: string | null;
 };
 
 const emptyForm = (): ItemFormState => ({
-  icon: '📦',
+  icon: '',
   name: '',
   cost: '',
   price: '',
+  photoUri: null,
 });
 
 const formCardStyle = { borderRadius: 24 };
@@ -69,6 +74,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
       name: item.name,
       cost: formatMoney(item.costCents),
       price: formatMoney(item.priceCents),
+      photoUri: item.photoUri,
     });
     setFormMode({ type: 'edit', item });
   };
@@ -83,15 +89,24 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
       const catalog = createSqliteCatalog(db);
       const draft = {
         name: form.name.trim(),
-        icon: form.icon.trim() || '📦',
+        icon: form.icon.trim(),
         costCents: parseMoneyInput(form.cost),
         priceCents: parseMoneyInput(form.price),
+        photoUri: form.photoUri,
       };
       if (!draft.name || draft.priceCents <= 0) return;
 
       if (formMode?.type === 'add') {
-        await catalog.createItem(draft);
+        const created = await catalog.createItem({ ...draft, photoUri: null });
+        if (form.photoUri) {
+          const persisted = await persistItemPhoto(form.photoUri, created.id);
+          await catalog.updateItem(created.id, { ...draft, photoUri: persisted });
+        }
       } else if (formMode?.type === 'edit') {
+        const previousPhotoUri = formMode.item.photoUri;
+        if (previousPhotoUri && previousPhotoUri !== draft.photoUri) {
+          await deleteItemPhoto(previousPhotoUri);
+        }
         await catalog.updateItem(formMode.item.id, draft);
       }
 
@@ -234,7 +249,15 @@ function ItemRow({
 }) {
   return (
     <>
-      <Text style={[styles.icon, editing && styles.iconEdit]}>{item.icon}</Text>
+      {item.photoUri ? (
+        <IconTile
+          imageSource={{ uri: item.photoUri }}
+          size={editing ? 28 : 24}
+          style={editing ? styles.iconTileEdit : styles.iconTile}
+        />
+      ) : (
+        <Text style={[styles.icon, editing && styles.iconEdit]}>{item.icon}</Text>
+      )}
       <View style={styles.meta}>
         <Text style={[styles.name, editing && styles.nameEdit]}>
           {item.name}
@@ -280,14 +303,43 @@ function ItemForm({
   onDelete?: () => void;
   onCancel: () => void;
 }) {
+  const pickPhoto = () => {
+    void (async () => {
+      try {
+        const uri = await pickItemPhoto();
+        if (!uri) return;
+
+        if (mode.type === 'edit') {
+          const persisted = await persistItemPhoto(uri, mode.item.id);
+          setForm((f) => ({ ...f, photoUri: persisted }));
+          return;
+        }
+
+        setForm((f) => ({ ...f, photoUri: uri }));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Could not pick that image.';
+        Alert.alert('Photo error', message);
+      }
+    })();
+  };
+
+  const removePhoto = () => {
+    setForm((f) => ({ ...f, photoUri: null }));
+  };
+
   return (
     <View style={styles.formBody}>
+      <PhotoField
+        icon={form.icon}
+        photoUri={form.photoUri}
+        onPick={pickPhoto}
+        onRemove={removePhoto}
+      />
       <Field
         label="Icon"
         value={form.icon}
         onChangeText={(icon) => setForm((f) => ({ ...f, icon }))}
         icon
-        first
       />
       <Field label="Name" value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} />
       <Field
@@ -367,6 +419,39 @@ function ItemForm({
   );
 }
 
+function PhotoField({
+  icon,
+  photoUri,
+  onPick,
+  onRemove,
+}: {
+  icon: string;
+  photoUri: string | null;
+  onPick: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <View style={styles.photoField}>
+      <Text style={styles.fieldLabel}>Photo</Text>
+      <Text style={styles.photoHint}>Optional. Shows on Home and checkout instead of the emoji.</Text>
+      <View style={styles.photoActions}>
+        <Pressable accessibilityRole="button" onPress={onPick} style={styles.photoPreview}>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.photoImage} resizeMode="cover" />
+          ) : (
+            <IconTile icon={icon || '📷'} size={72} />
+          )}
+        </Pressable>
+        {photoUri ? (
+          <Pressable accessibilityRole="button" onPress={onRemove} style={styles.removePhotoButton}>
+            <Text style={styles.removePhotoLabel}>Remove photo</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
 function Field({
   label,
   value,
@@ -385,13 +470,22 @@ function Field({
   return (
     <View style={[styles.field, first && styles.fieldFirst]}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        placeholderTextColor={colors.inkSoft}
-        style={[styles.fieldInput, icon && styles.fieldInputIcon]}
-      />
+      {icon ? (
+        <IconInput
+          value={value}
+          onChangeText={onChangeText}
+          branded={false}
+          style={[styles.fieldInput, styles.fieldInputIcon]}
+        />
+      ) : (
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          keyboardType={keyboardType}
+          placeholderTextColor={colors.inkSoft}
+          style={styles.fieldInput}
+        />
+      )}
     </View>
   );
 }
@@ -448,6 +542,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     width: 24,
     textAlign: 'center',
+  },
+  iconTile: {
+    width: 24,
+  },
+  iconTileEdit: {
+    width: 28,
   },
   iconEdit: {
     fontSize: 22,
@@ -506,6 +606,41 @@ const styles = StyleSheet.create({
   },
   fieldFirst: {
     marginTop: 0,
+  },
+  photoField: {
+    marginBottom: 14,
+  },
+  photoHint: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    color: colors.inkSoft,
+    marginBottom: 10,
+  },
+  photoActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  photoPreview: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  photoImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+  },
+  removePhotoButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.surfaceMuted,
+  },
+  removePhotoLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: colors.inkSoft,
   },
   fieldLabel: {
     fontFamily: 'Nunito_800ExtraBold',

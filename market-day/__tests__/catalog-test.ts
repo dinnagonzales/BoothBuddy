@@ -23,6 +23,7 @@ test('creating an Item makes it available to the seller without cost', async () 
       id: expect.any(Number),
       name: 'Dragon',
       icon: '🐉',
+      photoUri: null,
       priceCents: 400,
     },
   ]);

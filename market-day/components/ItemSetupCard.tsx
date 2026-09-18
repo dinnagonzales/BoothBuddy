@@ -1,7 +1,7 @@
 import { BrandButton } from '@/components/ui/BrandButton';
 import { BrandCard } from '@/components/ui/BrandCard';
 import { BrandInput } from '@/components/ui/BrandInput';
-import { IconTile } from '@/components/ui/IconTile';
+import { IconInput } from '@/components/ui/IconInput';
 import type { ComponentProps } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,15 +39,13 @@ export function ItemSetupCard({
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
         <BrandCard surface="peach" style={styles.card}>
-          <IconTile icon="📦" size={56} style={styles.iconTile} />
-
           <Text style={styles.title}>Add your first Item</Text>
           <Text style={styles.subtext}>
             Staff need at least one item on Home. Cost is owner-only.
           </Text>
 
           <View style={styles.form}>
-            <Field label="Icon" value={icon} onChangeText={onIconChange} />
+            <Field label="Icon" value={icon} onChangeText={onIconChange} iconInput />
             <Field label="Name" value={name} onChangeText={onNameChange} placeholder="Dragon" />
             <Field
               label="Cost — not shown to staff"
@@ -79,14 +77,16 @@ export function ItemSetupCard({
 
 function Field({
   label,
+  iconInput = false,
   ...props
 }: {
   label: string;
+  iconInput?: boolean;
 } & ComponentProps<typeof BrandInput>) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
-      <BrandInput {...props} />
+      {iconInput ? <IconInput {...props} /> : <BrandInput {...props} />}
     </View>
   );
 }
@@ -108,10 +108,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     paddingVertical: 32,
     paddingHorizontal: 28,
-  },
-  iconTile: {
-    alignSelf: 'center',
-    marginBottom: 16,
   },
   title: {
     fontFamily: fonts.heading.semiBold,

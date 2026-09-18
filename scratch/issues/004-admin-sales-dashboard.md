@@ -1,25 +1,23 @@
-# 004 — Admin sales dashboard (totals + Sale list)
+# 004 — Owner sales dashboard (totals + Sale list)
 
 **Type:** AFK  
 **Status:** done  
 **Blocked by:** 002
 
-## What to build
+## What shipped
 
-The **Settings** tab (grown-up area, PIN-gated) shows a dashboard for the **Active Market Day** only: total revenue, **Item** count sold, breakdown by **Payment method** (Cash vs Venmo/Zelle — Cash includes kept change with a tips breakdown subline when applicable), and **Sale** count. Below totals, a scrollable list of **Sales** for that day — each row shows **Sale number** (or optional **Sale name** when set), time, total, and payment method.
+**Events** tab (Pass Code gated): dashboard for **Active Market Day** — revenue, item count sold, Cash vs Venmo/Zelle (Cash includes tips subline when kept change), sale count, scrollable **Sales** list (sale # / optional name, time, total, payment).
 
-When no **Active Market Day**, Settings shows the “No market day yet” empty state with a **start form** (name + date) and a **Past Events** list of all closed days (newest first). Tapping a past event opens its admin dashboard (totals + sales, no menu). Closed-day **export** and **Reopen** live on that past-event screen — see [006](./006-export-market-day-csv.md).
-
-Totals and **Sale numbers** are admin-only — not on the **Seller**'s **Home** or **Celebration** overlay. The master **Item** catalog is on the separate **Inventory** tab.
+No active day → empty state with start form + **Past Events**. Past event detail = totals + sales + export/reopen. Catalog lives on **Inventory**. Totals not on staff Home/Celebration.
 
 ## Acceptance criteria
 
-- [x] Dashboard shows total revenue and item count for the **Active Market Day**
-- [x] Cash vs Venmo/Zelle totals shown separately; kept change appears as a tips breakdown under **Cash**
-- [x] Sale list shows every **Sale** with **Sale number**, timestamp, total, payment method
-- [x] Optional **Sale name** shown on list rows when set (falls back to **Sale number**)
-- [x] No sales totals visible on **Home** or kid-facing screens
-- [x] Empty state when no **Sales** yet (within an active day)
+- [x] Dashboard shows total revenue + item count for **Active Market Day**
+- [x] Cash vs Venmo/Zelle separate; tips breakdown under Cash when applicable
+- [x] Sale list: every **Sale** with #, timestamp, total, payment
+- [x] Optional **Sale name** on rows when set
+- [x] No sales totals on **Home** / staff screens
+- [x] Empty state when no **Sales** yet (within active day)
 
 ## Blocked by
 

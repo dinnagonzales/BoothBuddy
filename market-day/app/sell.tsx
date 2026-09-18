@@ -273,6 +273,7 @@ export default function SellScreen() {
               return (
                 <ItemCard
                   icon={item.icon}
+                  photoUri={item.photoUri}
                   name={item.name}
                   priceLabel={formatMoney(item.priceCents)}
                   quantity={quantity}

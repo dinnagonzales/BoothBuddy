@@ -1,34 +1,45 @@
 # 007 — Running Tab: off-day sales + preorders + date-range export
 
 **Type:** AFK  
-**Status:** open (partial — checkout shipped)  
+**Status:** open (near done — sale-level export marking left)  
 **Blocked by:** 001, 003
 
-## What to build
+## What shipped
 
-**Running Tab** is the bucket for misc **Sales** outside an **Active Market Day** (porch sales, one-offs). **Sales** save with no **Market Day** (`marketDayId` null). There is no separate **Running Tab** section on **Settings** — off-day **Sales** appear in the **Sales** tab alongside **Market Day** **Sales** (all-time totals and list). **Export** for off-day **Sales** uses a date-range picker on the **Sales** tab; exported **Sales** are marked exported.
+**Running Tab** = misc **Sales** with no **Market Day** (`marketDayId` null). Completed off-day sales appear in **Sales** tab (all-time). No separate Running Tab section on Events.
 
 ### Off-day Make a Sale
 
-When no **Active Market Day** is open, **Make a Sale** still works. Checkout uses the global non-archived catalog (not today's **Menu**). Optional **Sale name** and **Sale notes** appear above the cart. Sale saves to **Running Tab** (`marketDayId` null) with Cash or Venmo/Zelle payment.
+No active day → **Make a Sale** uses global non-archived catalog. Optional name/notes above cart. Cash or Venmo/Zelle → Running Tab.
 
 ### + Pre-order
 
-The **+ Pre-order** button next to ⚙️ on **Home** launches preorder checkout — always **Running Tab** (`marketDayId` null), whether or not an **Active Market Day** is running. Required **Sale name**, **Sale notes**, and **Complete date** above the cart; payment at creation is **Pay on pickup** only. Pending preorders appear in the **Preorders tab** until **Mark complete**. The **Preorders tab** shows a **Prepare** summary (total quantity per item), **Overdue** and **Upcoming** sections (sorted by complete date), and **Export preorders for printing** (checklist with prep summary + per-order `[ ]` lines). Uses the global non-archived catalog (not today's **Menu**). After **Celebration**, dismiss returns to **Home**.
+Always Running Tab. Required name, notes, complete date. Payment at create = **Pay on pickup** only. **Preorders** tab: Prepare summary, Overdue/Upcoming, printable export. Pickup: record Cash/Venmo/Zelle → **Mark complete**; paid list supports **Mark Delivered**. Celebration dismiss → Home.
+
+### Sales tab export
+
+Date-range pickers + **Export sales as CSV** share sheet — **shipped**.  
+**Gap:** `shareSalesCsv` does **not** yet set `sales.exported_at` / re-export flags (column exists; write path missing). PRD/CONTEXT still require marking.
 
 ## Acceptance criteria
 
-- [x] **Make a Sale** with no **Active Market Day** → **Running Tab** (`marketDayId` null) with optional name/notes
-- [x] **+ Pre-order** on **Home** → preorder checkout → **Running Tab** (`marketDayId` null); name/notes/complete date required
-- [x] **+ Pre-order** during an **Active Market Day** still saves to **Running Tab**, not today's day
-- [x] **Preorders tab** shows **Prepare** summary (quantities per item), **Overdue**/**Upcoming** sections, and printable export
-- [ ] Off-day **Sales** appear in the **Sales** tab (all-time stats and list; no **Market Day** name on row)
-- [ ] Date-range picker on **Sales** tab before off-day export
-- [ ] Export marks included **Sales** as exported
-- [ ] No **Running Tab** summary on **Settings**
-- [x] Dismissing **Celebration** after off-day sale or preorder returns to **Home**
+- [x] **Make a Sale** with no active day → Running Tab + optional name/notes
+- [x] **+ Pre-order** → Running Tab; name/notes/complete date required
+- [x] **+ Pre-order** during active day still → Running Tab
+- [x] **Preorders** tab: Prepare, Overdue/Upcoming, printable export
+- [x] Pickup payment + **Mark complete** / **Mark Delivered** → Sales
+- [x] Off-day **Sales** in **Sales** tab (all-time; no Market Day name on row)
+- [x] Date-range picker on **Sales** tab before export
+- [ ] Export marks included **Sales** as exported (`exported_at` + edit re-flag)
+- [x] No **Running Tab** summary on Events/Settings
+- [x] Celebration dismiss after off-day/preorder → Home
+
+## Remaining
+
+1. On date-range CSV export, stamp `exported_at` on included completed sales  
+2. Editing an exported Running Tab sale should recommend re-export (parity with Market Day flag)
 
 ## Blocked by
 
 - [001 — First-run setup](./001-first-run-setup.md)
-- [003 — Admin Item catalog](./003-admin-item-catalog.md)
+- [003 — Owner Item catalog](./003-admin-item-catalog.md)
