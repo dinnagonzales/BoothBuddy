@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booth Buddy Help</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#FF6B9D; --pink-dark:#D6497A; --pink-light:#FFE3ED;
+    --blue:#4FC3F7; --blue-dark:#1E93C6; --blue-light:#E3F6FF;
+    --yellow:#FFD93D; --yellow-dark:#E0AC00; --yellow-light:#FFF3C4;
+    --purple:#9B5DE5; --purple-dark:#7333BE; --purple-light:#F3E9FF;
+    --green:#4CD787; --green-dark:#1FA85C; --green-light:#E4FBEE;
+    --red:#FF6B6B; --red-dark:#E14545; --red-light:#FFEDED;
+    --cream:#FFFDF6;
+    --ink:#2B2340;
+    --ink-soft:#6E6480;
+    --bg:#EDE9F5;
+    --card-bg:#F3E9FF;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); font-family:'Nunito',sans-serif; color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{ font-family:'Fredoka',sans-serif; margin:0; font-weight:600; color:var(--ink); }
+  p{ margin:0 0 12px; line-height:1.55; font-weight:600; color:var(--ink); }
+  a{ color:var(--purple-dark); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  ul{ margin:0 0 12px; padding-left:20px; }
+  li{ margin-bottom:6px; font-weight:600; line-height:1.5; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* ===== layout shell ===== */
+  .shell{ display:flex; min-height:100vh; max-width:1180px; margin:0 auto; }
+  .sidebar{
+    width:270px; flex-shrink:0; padding:22px 16px 40px; position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 18px; }
+  .brand .logo{ display:flex; align-items:center; flex-shrink:0; }
+  .brand .logo img{
+    width:40px; height:40px; border-radius:12px; display:block;
+    box-shadow:0 2px 6px rgba(43,35,64,0.1);
+  }
+  .brand .word{ font-family:'Fredoka'; font-size:19px; font-weight:600; }
+  .brand .sub{ display:block; font-family:'Nunito'; font-size:11px; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; }
+  .mobilebar .brand .logo img{ width:28px; height:28px; border-radius:8px; }
+
+  .search-wrap{ padding:0 8px 16px; }
+  .search-wrap input{
+    width:100%; border:none; border-radius:14px; padding:11px 14px; font-family:'Nunito'; font-weight:700;
+    font-size:13px; background:#fff; color:var(--ink); outline:none; box-shadow:0 1px 3px rgba(43,35,64,0.08);
+  }
+  .search-wrap input::placeholder{ color:var(--ink-soft); }
+
+  .navgroup{ margin-bottom:16px; }
+  .navgroup-title{
+    font-family:'Fredoka',sans-serif; font-size:14px; font-weight:600; color:var(--ink);
+    text-transform:uppercase; letter-spacing:0.4px;
+    padding:4px 10px 8px; margin-bottom:4px; display:flex; align-items:center; gap:6px;
+  }
+  .navgroup-title .ui-icon{ color:var(--ink); width:16px; height:16px; }
+  .navlink{
+    display:flex; align-items:center; gap:9px; padding:11px 10px; border-radius:0; font-size:13.5px;
+    font-weight:800; color:var(--ink); margin-bottom:0;
+    background:#fff; border-bottom:1px solid #E4DDF5;
+  }
+  .navlink:hover{ background:var(--purple-light); text-decoration:none; }
+  .navlink.active{ background:var(--purple); color:#fff; border-bottom-color:var(--purple-dark); }
+  .navlink .ic{ font-size:15px; width:18px; text-align:center; flex-shrink:0; }
+  /* Indent items under For staff / For owners group titles */
+  .navgroup:has(> .navgroup-title) > .navlink{ padding-left:26px; }
+  .navlink .tag{
+    margin-left:auto; font-size:9px; font-weight:900; padding:2px 6px; border-radius:8px; flex-shrink:0;
+  }
+  .tag-staff{ background:var(--pink-light); color:var(--pink-dark); }
+  .tag-owner{ background:var(--purple-light); color:var(--purple-dark); }
+  .tag-everyone{ background:var(--blue-light); color:var(--blue-dark); }
+  .navlink.active .tag-staff{ background:#fff; color:var(--pink-dark); }
+  .navlink.active .tag-owner{ background:#fff; color:var(--purple-dark); }
+  .navlink.active .tag-everyone{ background:#fff; color:var(--blue-dark); }
+
+  .faq-sub{ padding-left:22px; }
+  .faq-toggle{ display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:12px; font-size:13.5px; font-weight:800; width:100%; background:none; border:none; text-align:left; color:var(--ink); }
+  .faq-toggle:hover{ background:#fff; }
+  .faq-toggle .chev{ margin-left:auto; font-size:11px; color:var(--ink-soft); transition:transform .15s; }
+  .faq-toggle.open .chev{ transform:rotate(90deg); }
+  .faq-sub{ display:none; }
+  .faq-sub.open{ display:block; }
+
+  .sidebar-hide{ display:none; }
+
+  /* ===== main ===== */
+  .main{ flex:1; min-width:0; padding:26px 34px 80px; }
+  .mobilebar{ display:none; }
+
+  .crumbs{ font-size:12px; font-weight:800; color:var(--ink-soft); margin-bottom:14px; }
+  .crumbs a{ color:var(--ink-soft); }
+  .crumbs a:hover{ color:var(--purple-dark); }
+
+  .page-head{ display:flex; align-items:flex-start; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+  .page-head .emoji{
+    width:52px; height:52px; border-radius:16px; background:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:26px; flex-shrink:0; box-shadow:0 2px 6px rgba(43,35,64,0.08);
+  }
+  .page-head h1{ font-size:28px; }
+  .badge-row{ display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .audience-badge{
+    display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:900; padding:4px 10px 4px 8px;
+    border-radius:999px; text-transform:uppercase; letter-spacing:0.3px;
+  }
+  .audience-badge.staff{ background:var(--pink-light); color:var(--pink-dark); }
+  .audience-badge.owner{ background:var(--purple-light); color:var(--purple-dark); }
+  .audience-badge.everyone{ background:var(--blue-light); color:var(--blue-dark); }
+
+  .card{ background:#fff; border-radius:20px; padding:20px 22px; margin-bottom:18px; box-shadow:0 2px 10px rgba(43,35,64,0.06); }
+  .card h2{ font-size:19px; margin-bottom:10px; }
+  .card h3{ font-size:15px; margin:14px 0 8px; color:var(--purple-dark); }
+  .card:last-child{ margin-bottom:0; }
+
+  .section-audience-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .section-audience-head h2{ font-size:17px; }
+
+  .steps{ list-style:none; margin:0 0 6px; padding:0; counter-reset:step; }
+  .steps li{
+    display:flex; gap:12px; align-items:flex-start; background:var(--cream); border-radius:14px; padding:12px 14px;
+    margin-bottom:8px; font-weight:700; font-size:14px; line-height:1.5;
+  }
+  .steps li .num{
+    counter-increment:step; content:counter(step); flex-shrink:0; width:26px; height:26px; border-radius:50%;
+    background:var(--purple); color:#fff; font-family:'Fredoka'; font-weight:600; font-size:13px;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .steps li .txt b{ color:var(--purple-dark); }
+  .steps li .note{ display:block; margin-top:4px; font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+
+  .callout{ border-radius:14px; padding:12px 14px; margin:10px 0; font-weight:700; font-size:13.5px; display:flex; gap:10px; align-items:flex-start; }
+  .callout .ic{ font-size:17px; flex-shrink:0; }
+  .callout-tip{ background:var(--yellow-light); color:#7a5b00; }
+  .callout-warn{ background:var(--red-light); color:var(--red-dark); }
+  .callout-info{ background:var(--blue-light); color:var(--blue-dark); }
+  .callout-soon{ background:var(--purple-light); color:var(--purple-dark); }
+
+  .pill-btn{
+    display:inline-flex; align-items:center; gap:6px; font-family:'Fredoka'; font-weight:600; font-size:12.5px;
+    padding:6px 12px; border-radius:999px; color:#fff; white-space:nowrap;
+  }
+  .pill-purple{ background:var(--purple); }
+  .pill-green{ background:var(--green); }
+  .pill-blue{ background:var(--blue); }
+  .pill-pink{ background:var(--pink); }
+  .pill-white{ background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(43,35,64,0.12); }
+
+  .rows{ display:flex; flex-direction:column; gap:8px; margin:10px 0; }
+  .row-item{ background:var(--purple-light); border-radius:14px; padding:11px 14px; display:flex; align-items:center; gap:12px; }
+  .row-item .r-ic{ font-size:18px; flex-shrink:0; }
+  .row-item .r-body{ flex:1; min-width:0; }
+  .row-item .r-title{ font-weight:900; font-size:13.5px; }
+  .row-item .r-desc{ font-size:12.5px; color:var(--ink-soft); font-weight:700; margin-top:1px; }
+
+  .glossary-row{ background:var(--cream); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
+  .glossary-row .term{ font-family:'Fredoka'; font-weight:600; font-size:14px; color:var(--purple-dark); }
+  .glossary-row .def{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-top:2px; }
+
+  .link-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:8px; }
+  .link-card{
+    background:#fff; border-radius:18px; padding:16px 16px; display:flex; flex-direction:column; gap:6px;
+    box-shadow:0 2px 8px rgba(43,35,64,0.07); border:2px solid transparent;
+  }
+  .link-card:hover{ border-color:var(--purple); text-decoration:none; }
+  .link-card .lc-top{ display:flex; align-items:center; gap:8px; }
+  .link-card .lc-ic{ font-size:20px; }
+  .link-card .lc-title{ font-family:'Fredoka'; font-weight:600; font-size:14.5px; color:var(--ink); }
+  .link-card .lc-desc{ font-size:12.5px; color:var(--ink-soft); font-weight:700; }
+
+  .faq-list{ display:flex; flex-direction:column; gap:8px; }
+  .faq-list a{
+    display:flex; align-items:center; gap:10px; background:#fff; border-radius:14px; padding:12px 14px;
+    font-weight:800; font-size:13.5px; color:var(--ink); box-shadow:0 2px 6px rgba(43,35,64,0.05);
+  }
+  .faq-list a:hover{ text-decoration:none; background:var(--purple-light); }
+  .faq-list a .chev{ margin-left:auto; color:var(--ink-soft); }
+
+  .hero{
+    background:linear-gradient(135deg,var(--pink),var(--purple)); border-radius:26px; padding:32px 28px;
+    color:#fff; margin-bottom:22px; text-align:center;
+  }
+  .hero .kicker{ font-size:12px; font-weight:900; opacity:0.85; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .hero h1{ color:#fff; font-size:32px; margin-bottom:8px; }
+  .hero p{ color:#fff; opacity:0.95; font-size:15px; max-width:520px; margin:0 auto; }
+
+  .who-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+  .who-card{ border-radius:20px; padding:20px; color:#fff; }
+  .who-card.staff{ background:linear-gradient(135deg,var(--pink),var(--pink-dark)); }
+  .who-card.owner{ background:linear-gradient(135deg,var(--purple),var(--purple-dark)); }
+  .who-card h3{ color:#fff; font-size:16px; margin-bottom:4px; }
+  .who-card p{ color:#fff; opacity:0.9; font-size:13px; margin-bottom:12px; }
+  .who-card a{ color:#fff; font-weight:900; font-size:12.5px; background:rgba(255,255,255,0.22); padding:7px 12px; border-radius:999px; display:inline-block; }
+  .who-card a:hover{ text-decoration:none; background:rgba(255,255,255,0.34); }
+
+  .checklist-group{ margin-bottom:16px; }
+  .checklist-group h3{ font-size:14px; color:var(--purple-dark); margin-bottom:8px; }
+  .chk-row{ display:flex; align-items:center; gap:10px; background:var(--cream); border-radius:12px; padding:10px 12px; margin-bottom:6px; font-weight:700; font-size:13.5px; }
+  .chk-box{ width:22px; height:22px; border-radius:7px; border:2px solid var(--purple); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; }
+  .chk-row.done .chk-box{ background:var(--purple); }
+  .chk-row.done span.chk-label{ text-decoration:line-through; color:var(--ink-soft); }
+
+  .footer-nav{ margin-top:26px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-top:18px; border-top:2px solid #E4DDF5; }
+  .footer-nav .fn-left{ display:flex; gap:10px; flex-wrap:wrap; }
+  .glossary-link{
+    display:inline-flex; align-items:center; gap:6px; background:#fff; border-radius:999px; padding:8px 14px;
+    font-weight:900; font-size:12.5px; color:var(--purple-dark); box-shadow:0 2px 6px rgba(43,35,64,0.06); border:none;
+  }
+  .glossary-link:hover{ background:var(--purple-light); }
+  .home-link{ font-weight:900; font-size:12.5px; color:var(--ink-soft); }
+
+  /* modal */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(43,35,64,0.55); display:none; align-items:center; justify-content:center;
+    padding:20px; z-index:50;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-card{
+    width:100%; max-width:460px; max-height:80vh; overflow-y:auto; background:var(--bg); border-radius:26px;
+    padding:24px 22px; box-shadow:0 16px 40px rgba(43,35,64,0.3);
+  }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .modal-head h2{ font-size:19px; }
+  .modal-close{ width:32px; height:32px; border-radius:50%; background:#fff; border:none; font-size:15px; font-weight:800; color:var(--ink-soft); flex-shrink:0; }
+  .modal-close:hover{ background:var(--red-light); color:var(--red-dark); }
+
+  .menu-toggle{
+    display:none; width:40px; height:40px; border-radius:12px; background:#fff; border:none; font-size:18px;
+    align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(43,35,64,0.08);
+  }
+
+  /* mobile */
+  @media (max-width: 880px){
+    .shell{ flex-direction:column; }
+    .sidebar{
+      position:fixed; top:0; left:0; height:100vh; width:270px; background:var(--bg); z-index:40; box-shadow:2px 0 16px rgba(43,35,64,0.18);
+      transform:translateX(-105%); transition:transform .2s ease; display:flex; flex-direction:column;
+    }
+    .sidebar.open{ transform:translateX(0); }
+    .mobilebar{
+      display:flex; align-items:center; justify-content:space-between; padding:16px 18px; position:sticky; top:0;
+      background:var(--bg); z-index:20;
+    }
+    .menu-toggle{ display:flex; }
+    .main{ padding:8px 18px 70px; }
+    .who-grid{ grid-template-columns:1fr; }
+    .page-head h1{ font-size:23px; }
+    .hero h1{ font-size:25px; }
+  }
+
+  ::-webkit-scrollbar{ width:9px; }
+  ::-webkit-scrollbar-thumb{ background:#D3C8EE; border-radius:8px; }
+
+  /* Lucide UI icons — match app UiIcon (20–24px, stroke 2.5) */
+  .ui-icon{
+    display:inline-block; vertical-align:-0.2em; flex-shrink:0;
+    width:22px; height:22px; stroke-width:2.5; color:var(--ink);
+  }
+  .ui-icon.soft{ color:var(--ink-soft); }
+  .ui-icon.on-dark, .navlink.active .ui-icon, .who-card .ui-icon,
+  .pill-btn .ui-icon, .hero .ui-icon{ color:currentColor; }
+  .navlink .ui-icon, .faq-toggle .ui-icon{ width:20px; height:20px; color:var(--ink); }
+  .navlink.active .ui-icon{ color:#fff; }
+  .page-head .emoji .ui-icon{ width:26px; height:26px; }
+  .brand .logo .ui-icon{ width:24px; height:24px; color:var(--purple); }
+  .brand-mark{
+    display:inline-block; vertical-align:-0.25em; flex-shrink:0;
+    width:22px; height:22px; border-radius:6px; object-fit:cover;
+  }
+  .brand-mark.lg{ width:28px; height:28px; border-radius:8px; }
+  .page-head .emoji .brand-mark{ width:32px; height:32px; border-radius:10px; }
+  .navlink .brand-mark{ width:20px; height:20px; border-radius:5px; }
+  .crumbs .brand-mark{ width:14px; height:14px; border-radius:4px; vertical-align:-0.15em; }
+  .hero .brand-mark{ width:36px; height:36px; border-radius:10px; vertical-align:-0.35em; margin-right:4px; }
+  .row-item .r-ic .ui-icon{ width:20px; height:20px; }
+  .callout .ic .ui-icon{ width:20px; height:20px; }
+  .callout-tip .ui-icon{ color:#7a5b00; }
+  .callout-warn .ui-icon{ color:var(--red-dark); }
+  .callout-info .ui-icon{ color:var(--blue-dark); }
+  .callout-soon .ui-icon{ color:var(--purple-dark); }
+  .search-wrap{ position:relative; }
+  .search-wrap .search-ic{
+    position:absolute; left:20px; top:50%; transform:translateY(-50%);
+    pointer-events:none; color:var(--ink-soft); width:18px; height:18px;
+  }
+  .search-wrap input{ padding-left:40px; }
+  .link-card .lc-ic .ui-icon{ width:22px; height:22px; color:var(--purple-dark); }
+  .section-audience-head .ui-icon{ width:22px; height:22px; color:var(--purple-dark); }
+  .audience-badge .ui-icon{ width:14px; height:14px; color:inherit; }
+  .crumbs .ui-icon{ width:14px; height:14px; color:inherit; vertical-align:-0.15em; }
+  .glossary-link .ui-icon{ width:18px; height:18px; color:inherit; }
+  .modal-head .ui-icon{ width:22px; height:22px; color:var(--purple-dark); }
+  .menu-toggle .ui-icon{ width:22px; height:22px; color:var(--ink); }
+  .modal-close .ui-icon{ width:16px; height:16px; color:inherit; }
+  .faq-list a .ui-icon:first-child{ width:20px; height:20px; color:var(--ink); }
+  .faq-list a .chev .ui-icon{ width:18px; height:18px; color:var(--ink-soft); }
+  .chk-box .ui-icon{ width:14px; height:14px; color:#fff; }
+  .pill-btn{ gap:6px; }
+  .pill-btn .ui-icon{ width:16px; height:16px; }
+</style>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="logo"><img src="images/logo-app.png" alt="Booth Buddy" width="40" height="40"></span>
+      <div>
+        <span class="word">Booth Buddy</span>
+        <span class="sub">Help center</span>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <i data-lucide="search" class="ui-icon search-ic soft"></i>
+      <input type="text" id="navSearch" placeholder="Search help pages...">
+    </div>
+    <nav id="navList"></nav>
+  </aside>
+
+  <div class="main">
+    <div class="mobilebar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu"><i data-lucide="menu" class="ui-icon"></i></button>
+      <span class="brand" style="padding:0;"><span class="logo"><img src="images/logo-app.png" alt="" width="28" height="28"></span><span class="word" style="font-size:16px;">Booth Buddy Help</span></span>
+      <span style="width:40px;"></span>
+    </div>
+    <div id="pageRoot"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="glossaryModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2><i data-lucide="book-open" class="ui-icon"></i> Words we use</h2>
+      <button class="modal-close" id="glossaryClose" aria-label="Close"><i data-lucide="x" class="ui-icon"></i></button>
+    </div>
+    <div id="glossaryList"></div>
+  </div>
+</div>
+
+<script>
+/* ============ helpers ============ */
+function icon(name, size, extraClass){
+  size = size || 22;
+  if(name === 'brand') return brandMark(size, extraClass);
+  var cls = 'ui-icon' + (extraClass ? ' ' + extraClass : '');
+  return '<i data-lucide="' + name + '" class="' + cls + '" style="width:' + size + 'px;height:' + size + 'px;"></i>';
+}
+function brandMark(size, extraClass){
+  size = size || 22;
+  var cls = 'brand-mark' + (extraClass ? ' ' + extraClass : '');
+  return '<img class="' + cls + '" src="images/logo-app.png" alt="" width="' + size + '" height="' + size + '" style="width:' + size + 'px;height:' + size + 'px;">';
+}
+function refreshIcons(){
+  if(window.lucide && typeof lucide.createIcons === 'function'){
+    lucide.createIcons({ attrs: { 'stroke-width': 2.5 } });
+  }
+}
+function steps(items){
+  return '<ol class="steps">' + items.map(function(s){
+    var text = typeof s === 'string' ? s : s.text;
+    var note = typeof s === 'object' && s.note ? '<span class="note">' + s.note + '</span>' : '';
+    return '<li><span class="num"></span><span class="txt">' + text + note + '</span></li>';
+  }).join('') + '</ol>';
+}
+function callout(type, iconName, html){
+  return '<div class="callout callout-' + type + '"><span class="ic">' + icon(iconName, 20) + '</span><div>' + html + '</div></div>';
+}
+function tip(html){ return callout('tip','lightbulb',html); }
+function warn(html){ return callout('warn','triangle-alert',html); }
+function info(html){ return callout('info','info',html); }
+function soon(html){ return callout('soon','clock',html); }
+function pill(cls, html){ return '<span class="pill-btn ' + cls + '">' + html + '</span>'; }
+function rows(items){
+  return '<div class="rows">' + items.map(function(r){
+    return '<div class="row-item"><span class="r-ic">' + icon(r.ic, 20) + '</span><div class="r-body"><div class="r-title">' + r.title + '</div><div class="r-desc">' + r.desc + '</div></div></div>';
+  }).join('') + '</div>';
+}
+function linkGrid(items){
+  return '<div class="link-grid">' + items.map(function(l){
+    return '<a class="link-card" href="#/' + l.href + '"><div class="lc-top"><span class="lc-ic">' + icon(l.ic, 22) + '</span><span class="lc-title">' + l.title + '</span></div><div class="lc-desc">' + l.desc + '</div></a>';
+  }).join('') + '</div>';
+}
+function faqList(items){
+  return '<div class="faq-list">' + items.map(function(f){
+    return '<a href="#/' + f.href + '">' + icon(f.ic, 20) + ' ' + f.title + '<span class="chev">' + icon('chevron-right', 18, 'soft') + '</span></a>';
+  }).join('') + '</div>';
+}
+function sectionHead(iconName, title){
+  return '<div class="section-audience-head">' + icon(iconName, 22) + '<h2>' + title + '</h2></div>';
+}
+
+/* ============ glossary data ============ */
+var GLOSSARY = [
+  {term:'Market Day', def:'One fair or booth day — a named selling day with a date.'},
+  {term:'Events', def:'Owner tab for the active Market Day, Today’s Menu, Past Events, and ending the day.'},
+  {term:'Running Tab', def:'Sales made when no Market Day is open (porch or one-offs). Always available.'},
+  {term:'Menu', def:'What you are selling today (icon or photo, name, price).'},
+  {term:'Inventory', def:'The full list of items the shop can sell (owners manage this).'},
+  {term:'Cart', def:'What the customer is buying right now.'},
+  {term:'Invoice #', def:'The order number for this sale (#1, #2, #3…).'},
+  {term:'Sale name', def:'Optional label for a sale (for example, a customer name).'},
+  {term:'Sale notes', def:'Optional note on a sale — not shown on staff screens.'},
+  {term:'Complete date', def:'When a preorder should be ready for pickup.'},
+  {term:'Pass Code', def:'4-digit owner password that unlocks Events, Inventory, Preorders, Sales, and Settings.'},
+  {term:'Sold out', def:'Still on the menu, but you cannot add it to a sale today.'},
+  {term:'Preorder', def:'A sale for later pickup. Defaults to Pay on pickup; can also take Cash or Venmo/Zelle now.'},
+  {term:'+ Pre-order', def:'Button on Home to start a preorder (uses the full catalog, not only today’s Menu).'},
+  {term:'Archive', def:'Hide an item from the menu while keeping old sales that used it.'}
+];
+
+/* ============ page content ============ */
+var PAGES = {};
+
+PAGES['home'] = {
+  title:'Welcome to Booth Buddy', icon:'brand', section:'home', audience:'everyone', crumb:'Welcome',
+  body:
+    '<div class="hero"><div class="kicker">Booth Buddy help center</div><h1>' + brandMark(36) + ' Welcome to Booth Buddy</h1>' +
+    '<p>Booth-ready point of sale for craft fairs and markets — big taps for staff, Pass Code tools for owners, everything on your device.</p></div>' +
+    '<div class="card"><h2>What it is</h2>' +
+    '<p>Booth Buddy helps you ring up a multi-item sale in seconds — no spreadsheets, formulas, or cost math at the booth.</p>' +
+    '<p><b>Staff</b> get big taps: pick items, take cash or Venmo/Zelle, celebrate the sale.</p>' +
+    '<p><b>Owners</b> get inventory, Market Days, preorders, and Excel-ready exports behind a Pass Code — so staff never see costs or profit.</p>' +
+    '<p>Everything stays on your device. No accounts or cloud login. Sales do not leave the iPad for a server. You keep them in local storage and export when you want reconciliation.</p>' +
+    '<p>One device, one Pass Code for owners, and a selling flow staff can run alone when the booth is busy.</p></div>' +
+    '<div class="card">' + sectionHead('shopping-cart','For staff') +
+    '<p>Booth Buddy is your shop on a phone or tablet. A <b>Market Day</b> is one fair or booth day.</p>' +
+    steps([
+      'Tap ' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + ' to ring up a customer anytime.',
+      'When an owner has started a <b>Market Day</b>, you see today’s <b>Menu</b> and a banner at the top — those sales count for that day.',
+      'Take <b>payment</b>, then celebrate — <b>Sold!</b> 🎉',
+      'For orders to pick up later, tap ' + pill('pill-green', icon('plus', 16, 'on-dark') + ' Pre-order') + ' (top right).'
+    ]) + '</div>' +
+    '<div class="card">' + sectionHead('settings','For owners') +
+    '<p>You set up items, start and end Market Days, and check sales behind a <b>4-digit Pass Code</b>. Tap ' + icon('settings', 18) + ' on the home screen and enter the code.</p>' +
+    '<p>Starting a Market Day is optional for porch or one-off sales, but it helps organize fair-day totals.</p></div>' +
+    '<div class="who-grid">' +
+      '<div class="who-card staff"><h3>' + icon('shopping-cart', 20, 'on-dark') + ' Staff</h3><p>Ring up sales, take payment, and fix a sale.</p><a href="#/sell">Start selling →</a></div>' +
+      '<div class="who-card owner"><h3>' + icon('settings', 20, 'on-dark') + ' Owner</h3><p>Set up items, run the day, and check sales.</p><a href="#/start-market-day">Start a Market Day →</a></div>' +
+    '</div>' +
+    '<div class="card"><h2>Quick links</h2>' +
+    linkGrid([
+      {ic:'shopping-cart', title:'How to sell', desc:'Ring up your first sale', href:'sell'},
+      {ic:'clipboard-list', title:'Take a preorder', desc:'Order now, pay at pickup', href:'preorder'},
+      {ic:'play', title:'Start a Market Day', desc:'Open the shop for the day', href:'start-market-day'},
+      {ic:'package', title:'Add inventory', desc:'Add things to sell', href:'inventory'}
+    ]) +
+    '<p style="margin-top:14px;"><a href="privacy.html">' + icon('shield', 16) + ' Privacy Policy</a></p></div>'
+};
+
+PAGES['sell'] = {
+  title:'How to make a sale', icon:'shopping-cart', section:'staff', audience:'staff', crumb:'How to make a sale',
+  body:
+    '<div class="card">' +
+    steps([
+      'Open Booth Buddy on the home screen.',
+      'Tap ' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale'),
+      'At the top you’ll see <b>CART: Invoice #___</b>. That’s this order’s number.',
+      'Use <b>−</b> and <b>+</b> on each menu row to set quantities (the box in the middle shows the count).',
+      'Check the cart summary — each line is <b>Name(qty)</b> and subtotal; the footer shows <b>N items</b> and the total.',
+      'Tap ' + pill('pill-green', 'Checkout ' + icon('arrow-right', 16, 'on-dark'))
+    ]) +
+    '<h3>When a Market Day is open</h3>' +
+    '<p>You sell from today’s <b>Menu</b>. Sold-out items can’t be added.</p>' +
+    '<h3>When no Market Day is open</h3>' +
+    '<p>' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + ' still works. You can optionally add <b>Name</b> and <b>Notes</b> above the cart (for example, porch-sale context). Payment is Cash or Venmo/Zelle as usual.</p>' +
+    '<h3>If an item is gray</h3>' +
+    '<p>It might be <b>Sold out</b> for today. Pick something else, or ask an owner to mark it available again.</p>' +
+    '</div>'
+};
+
+PAGES['payment'] = {
+  title:'How to take payment', icon:'banknote', section:'staff', audience:'staff', crumb:'How to take payment',
+  body:
+    '<div class="card">' +
+    steps([
+      'See <b>Order Total</b> — that’s what the customer owes.',
+      '<b>Cash</b> is selected by default. The amount-entry card also appears for <b>Venmo / Zelle</b>.',
+      'Set <b>Amount Paid</b> with bill chips ($1, $5, $10, $20, $100), <b>Exact amount</b>, <b>Clear</b>, or <b>− / +</b>.',
+      'Read <b>Change</b> (money back) or <b>Still $X due</b> (not enough yet). If they overpaid, you can tap <b>Keep change?</b>.',
+      'Pick how they paid — ' + pill('pill-purple', icon('banknote', 16, 'on-dark') + ' Cash') + ' or ' + pill('pill-purple', icon('smartphone', 16, 'on-dark') + ' Venmo / Zelle') + '.',
+      'Tap ' + pill('pill-purple', icon('check', 16, 'on-dark') + ' Complete sale'),
+      'You did it! <b>Sold!</b> 🎉'
+    ]) +
+    info('For Venmo / Zelle, if an owner set up payment info, a <b>Scan or send payment</b> card shows who to pay so the customer can pay on their phone first.') +
+    '</div>'
+};
+
+PAGES['invoice-numbers'] = {
+  title:'What are invoice numbers?', icon:'hash', section:'staff', audience:'staff', crumb:'What are invoice numbers?',
+  body:
+    '<div class="card">' +
+    '<p>Every sale gets a number: <b>Invoice #1</b>, <b>Invoice #2</b>, <b>Invoice #3</b>, and so on.</p>' +
+    rows([
+      {ic:'eye', title:'While selling', desc:'You see it at the top: CART: Invoice #3'},
+      {ic:'trending-up', title:'Always going up', desc:'Numbers go up one at a time. They never repeat.'},
+      {ic:'pencil', title:'Editing right after', desc:'If you Edit this sale right after checkout, you keep the same invoice number.'}
+    ]) +
+    '<h3>Why it matters</h3>' +
+    '<p>Invoice numbers help staff and owners talk about an order: “Fix invoice #5!”</p>' +
+    info('For owners: in Events or Sales, the same number appears as <b>Sale #N</b> (or a custom name if one was added).') +
+    '</div>'
+};
+
+PAGES['see-todays-sales'] = {
+  title:'See today’s sales', icon:'eye', section:'staff', audience:'staff', crumb:'See today’s sales',
+  body:
+    '<div class="card">' +
+    steps([
+      'On the home screen, tap the colorful <b>Market Day</b> banner at the top (market name, date, amount sold today, and sale count).',
+      'On the next screen, see <b>Cash</b> and <b>Venmo/Zelle</b> totals (no profit).',
+      'Tap a sale to see what was in it.'
+    ]) +
+    info('This is <b>look only</b> — you can’t change sales here. To fix something right after selling, use <b>Edit this sale</b> on the celebration screen. Staff never see cost or profit.') +
+    '</div>'
+};
+
+PAGES['fix-a-sale'] = {
+  title:'Fix a sale', icon:'pencil', section:'staff', audience:'staff', crumb:'Fix a sale',
+  body:
+    '<div class="card">' + sectionHead('shopping-cart','Right after checkout') +
+    steps([
+      'On the <b>Sold!</b> screen, tap ' + pill('pill-white', icon('pencil', 16) + ' Edit this sale'),
+      'Your cart opens again with the <b>same invoice number</b>.',
+      'Fix the items or amounts.',
+      'Tap ' + pill('pill-green', 'Checkout ' + icon('arrow-right', 16, 'on-dark')) + ' and complete payment again.',
+      'The old sale is replaced with the fixed one.'
+    ]) + '</div>' +
+    '<div class="card">' + sectionHead('settings','Later in the day (owners)') +
+    '<p>See <a href="#/faq/edit-sale-later">Change a sale later</a>.</p></div>'
+};
+
+PAGES['preorder'] = {
+  title:'How to take a preorder', icon:'clipboard-list', section:'staff', audience:'staff', crumb:'How to take a preorder',
+  body:
+    '<div class="card">' +
+    '<p>Use this when someone wants to order now and pay when they pick up.</p>' +
+    steps([
+      'On the home screen, tap ' + pill('pill-green', icon('plus', 16, 'on-dark') + ' Pre-order') + ' (top right).',
+      'Fill in <b>Name</b>, <b>Notes</b>, and <b>Complete date</b> — all required.',
+      'Use <b>−</b> and <b>+</b> on the item list (full catalog — not limited to today’s Menu).',
+      'Tap ' + pill('pill-green', 'Checkout ' + icon('arrow-right', 16, 'on-dark')),
+      'Payment defaults to <b>Pay on pickup</b>. You can also choose <b>Cash</b> or <b>Venmo / Zelle</b> if they pay now.',
+      'Tap ' + pill('pill-purple', icon('check', 16, 'on-dark') + ' Save preorder'),
+      '<b>Preorder saved!</b> 🎉 If they still owe money, an owner marks it complete when they pay.'
+    ]) +
+    info('Preorders always save separately from today’s <b>Market Day</b> (they go to the Running Tab), even during a fair. Right after saving, tap <b>Edit preorder</b> on the celebration screen if you need to fix it.') +
+    '</div>'
+};
+
+PAGES['preorders'] = {
+  title:'Preorders tab', icon:'clipboard-list', section:'owner', audience:'owner', crumb:'Preorders tab',
+  body:
+    '<div class="card">' +
+    '<p>Open preorders waiting for pickup.</p>' +
+    steps([
+      icon('settings', 18) + ' → <b>Pass Code</b> → tap ' + pill('pill-purple', icon('clipboard-list', 16, 'on-dark') + ' Preorders') + ' at the bottom.',
+      '<b>Prepare</b> — at the top, see how many of each item to make across all open orders.',
+      '<b>Overdue</b> orders (past their Complete date) appear first. <b>Upcoming</b> lists the rest.',
+      'Each order shows the customer <b>name</b> (or #N), <b>notes</b>, and <b>Complete date</b>.',
+      'Tap <b>Export preorders for printing</b> for a checklist file.',
+      'Tap an order to record payment and <b>Mark complete</b>. It then moves to the <b>Sales</b> tab.',
+      'Paid orders waiting for handoff can use <b>Mark Delivered</b> on the list.'
+    ]) +
+    info('Pending preorders do <b>not</b> appear in the Sales tab or in CSV export until marked complete.') +
+    '</div>'
+};
+
+PAGES['start-market-day'] = {
+  title:'How to start a Market Day', icon:'play', section:'owner', audience:'owner', crumb:'How to start a Market Day',
+  body:
+    '<div class="card">' +
+    '<p>This opens the shop so staff can sell against today’s menu and totals.</p>' +
+    steps([
+      'On the home screen, tap ' + icon('settings', 18) + '.',
+      'Enter your <b>4-digit Pass Code</b> (it unlocks when all four digits are in).',
+      'You’ll land on the <b>Events</b> tab. If it says <b>No market day yet</b>, fill in <b>Market Name</b> (required) and <b>Date</b> (defaults to today).',
+      'Tap ' + pill('pill-purple', icon('play', 16, 'on-dark') + ' Start Market Day'),
+      'The shop is open! All your items are on <b>Today’s Menu</b> automatically.',
+      '(Optional) Open <b>Today’s Menu</b> to mark things sold out or remove them for today.',
+      'Hand the device back to staff — they can sell now.'
+    ]) +
+    warn('Only one Market Day can be open at a time. End the current day before starting a new one.') +
+    '</div>'
+};
+
+PAGES['menu'] = {
+  title:'Today’s menu', icon:'clipboard-list', section:'owner', audience:'owner', crumb:'Today’s menu',
+  body:
+    '<div class="card">' +
+    '<p>The <b>Menu</b> is what you’re selling <b>today</b>. When you start a Market Day, every non-archived item joins the menu automatically.</p>' +
+    '<p>Open ' + icon('settings', 18) + ' → Pass Code → <b>Events</b> → <b>Today’s Menu</b> (only while a Market Day is active).</p>' +
+    rows([
+      {ic:'circle-off', title:'Sold out toggle', desc:'Item stays on Home with “Sold out” — staff can’t add it to a cart'},
+      {ic:'trash-2', title:'Remove', desc:'Item hidden from Home and checkout for today only'},
+      {ic:'plus', title:'Add item to today’s menu', desc:'Bring a removed item back'}
+    ]) +
+    info('Sold out and Remove are opposites — use one or the other, not both.') +
+    '<p>New items you add to <b>Inventory</b> during an open Market Day join today’s menu right away.</p>' +
+    '</div>'
+};
+
+PAGES['inventory'] = {
+  title:'How to add inventory', icon:'package', section:'owner', audience:'owner', crumb:'How to add inventory',
+  body:
+    '<div class="card">' +
+    '<p><b>Inventory</b> is your master list of everything the shop could ever sell.</p>' +
+    '<h3>Add a new item</h3>' +
+    steps([
+      'Tap ' + icon('settings', 18) + ' → enter <b>Pass Code</b>.',
+      'Tap ' + pill('pill-purple', icon('package', 16, 'on-dark') + ' Inventory') + ' at the bottom.',
+      'Tap ' + pill('pill-purple', icon('plus', 16, 'on-dark') + ' Add Item'),
+      'Fill in: emoji or photo, <b>Name</b>, <b>Cost</b> (what you paid — staff never see this), and <b>Price</b> (what you charge).',
+      'Tap ' + pill('pill-green', icon('check', 16, 'on-dark') + ' Save Item')
+    ]) +
+    info('If a Market Day is already open, the new item appears on today’s menu right away.') +
+    '<h3>Hide an item you’re done selling</h3>' +
+    '<p>Tap ' + pill('pill-white', icon('archive', 16) + ' Archive Item') + '. It disappears from the menu, but old sales still show it. To bring it back: <b>UnArchive Item</b>.</p>' +
+    '</div>'
+};
+
+PAGES['edit-items'] = {
+  title:'How to edit items', icon:'pencil', section:'owner', audience:'owner', crumb:'How to edit items',
+  body:
+    '<div class="card">' +
+    steps([
+      icon('settings', 18) + ' → <b>Pass Code</b> → ' + icon('package', 18) + ' <b>Inventory</b>.',
+      'Tap ' + icon('pencil', 18) + ' on the item you want to change.',
+      'Update emoji or photo, name, cost, or price.',
+      'Tap ' + pill('pill-green', icon('check', 16, 'on-dark') + ' Save Item')
+    ]) +
+    info('Changes show up on Home and in checkout right away — no restart needed.') +
+    '<p><b>Archive</b> if you want to stop selling something without deleting its history.</p>' +
+    '</div>'
+};
+
+PAGES['end-market-day'] = {
+  title:'How to end a Market Day', icon:'circle-x', section:'owner', audience:'owner', crumb:'How to end a Market Day',
+  body:
+    '<div class="card">' +
+    steps([
+      icon('settings', 18) + ' → <b>Pass Code</b> → <b>Events</b>.',
+      'Scroll down. Tap ' + pill('pill-white', icon('circle-x', 16) + ' End Market Day'),
+      'Confirm.'
+    ]) +
+    '<p>Sales for that day are saved under <b>Past Events</b>. Staff can still <b>Make a Sale</b> anytime — those sales go to the <b>Running Tab</b> until you start a new Market Day.</p>' +
+    tip('Ended by mistake? See <a href="#/faq/reopen">I ended the day by mistake</a>.') +
+    '</div>'
+};
+
+PAGES['past-events'] = {
+  title:'Past Events', icon:'calendar', section:'owner', audience:'owner', crumb:'Past Events',
+  body:
+    '<div class="card">' +
+    '<p>After you <b>End Market Day</b>, that day moves to <b>Past Events</b> on the <b>Events</b> tab (when no day is active).</p>' +
+    '<p>Each row shows the <b>name</b>, <b>date</b>, and <b>number of sales</b>. Tap one to open its dashboard:</p>' +
+    rows([
+      {ic:'receipt', title:'Totals and profit', desc:'Same summary as an active day, including cash tips when kept change exists'},
+      {ic:'pencil', title:'Sales list', desc:'Tap a sale to edit or remove'},
+      {ic:'download', title:'Export sales as CSV', desc:'Or Re-export if you already exported'},
+      {ic:'undo-2', title:'Reopen Market Day', desc:'Only on the most recently closed day, and only before export'}
+    ]) +
+    info('There is no Today’s Menu on past events — the menu was for that day only.') +
+    '</div>'
+};
+
+PAGES['export-sales'] = {
+  title:'Export sales (CSV)', icon:'download', section:'owner', audience:'owner', crumb:'Export sales (CSV)',
+  body:
+    '<div class="card">' +
+    '<h3>Market Day sales</h3>' +
+    steps([
+      icon('settings', 18) + ' → Pass Code → <b>Events</b>.',
+      'Under <b>Past Events</b>, tap the Market Day you want.',
+      'Tap ' + pill('pill-purple', icon('download', 16, 'on-dark') + ' Export sales as CSV') + ' (or <b>Re-export</b>).',
+      'Use the share sheet to save or email the file (Mail, AirDrop, Files, and so on).'
+    ]) +
+    '<h3>Running Tab / off-day sales</h3>' +
+    steps([
+      icon('settings', 18) + ' → Pass Code → <b>Sales</b>.',
+      'Pick a date range, then tap <b>Export sales as CSV</b>.'
+    ]) +
+    '<p>The CSV is ready for Excel: sale numbers, times, items, prices, costs, payment method, cash received, change kept, and profit — plus summary totals and tips.</p>' +
+    warn('After you export a Market Day, <b>Reopen</b> is no longer available for that day. If you edit a sale later, the app may show <b>Re-export recommended</b>.') +
+    '</div>'
+};
+
+PAGES['sales-dashboard'] = {
+  title:'Sales & profit', icon:'receipt', section:'owner', audience:'owner', crumb:'Sales & profit',
+  body:
+    '<div class="card">' +
+    '<p>While a Market Day is active:</p>' +
+    steps([
+      icon('settings', 18) + ' → <b>Pass Code</b> → <b>Events</b>.',
+      'See totals: number of sales, <b>profit</b>, gross revenue, <b>Cash</b> vs <b>Venmo/Zelle</b>.',
+      'Scroll the sales list on Events — or open the <b>Sales</b> tab for all-time history.',
+      'Tap a sale to change payment, add a name or notes, or remove the sale.'
+    ]) +
+    info('Staff see a simpler view (no profit) from the Market Day banner on Home.') +
+    '<p>When no day is active, open a closed day from <a href="#/past-events">Past Events</a> (on the Events tab) to review, edit, export, or reopen.</p>' +
+    '</div>'
+};
+
+PAGES['first-time-setup'] = {
+  title:'First-time setup', icon:'sparkles', section:'owner', audience:'owner', crumb:'First-time setup',
+  body:
+    '<div class="card">' + sectionHead('party-popper','First launch only') +
+    steps([
+      'Open the app. You’ll see <b>Booth Buddy</b> — tap <b>Get started</b>.',
+      'On <b>Owner setup</b>, pick a <b>4-digit Pass Code</b>. Type it again. Tap <b>Save Pass Code</b>.',
+      'Add your first item: emoji or photo, name, cost, price. Tap <b>Save Item and finish</b>.',
+      'You’re on <b>Home</b>! Staff can browse items and <b>Make a Sale</b> anytime. Start a <b>Market Day</b> from Events when you’re ready to track a fair day.'
+    ]) +
+    info('The ' + icon('settings', 18) + ' gear asks for the Pass Code by default — even after setup (you can turn that off later in Settings).') +
+    '</div>'
+};
+
+PAGES['faq'] = {
+  title:'FAQ', icon:'circle-help', section:'faq', audience:'everyone', crumb:'FAQ',
+  body:
+    '<div class="card">' + sectionHead('shopping-cart','For staff') +
+    faqList([
+      {ic:'ban', title:'Why can’t I add this item?', href:'faq/cant-sell'},
+      {ic:'circle-off', title:'What does “Sold out” mean?', href:'faq/sold-out'},
+      {ic:'hash', title:'What are invoice numbers?', href:'invoice-numbers'},
+      {ic:'banknote', title:'How does cash change work?', href:'faq/cash-change'},
+      {ic:'smartphone', title:'Venmo / Zelle payments', href:'faq/venmo-zelle'},
+      {ic:'pencil', title:'Fix a sale', href:'fix-a-sale'},
+      {ic:'clipboard-list', title:'Take a preorder', href:'preorder'}
+    ]) + '</div>' +
+    '<div class="card">' + sectionHead('settings','For owners') +
+    faqList([
+      {ic:'settings', title:'Owner Settings tab', href:'faq/owner-settings'},
+      {ic:'key-round', title:'What is the Pass Code?', href:'faq/pass-code'},
+      {ic:'frown', title:'I forgot the Pass Code', href:'faq/forgot-pass-code'},
+      {ic:'archive', title:'What is Archive?', href:'faq/archive'},
+      {ic:'refresh-cw', title:'Change a sale later', href:'faq/edit-sale-later'},
+      {ic:'clipboard-list', title:'Prepare and print preorders', href:'preorders'},
+      {ic:'tent', title:'Can I run two Market Days?', href:'faq/one-market-day'},
+      {ic:'undo-2', title:'I ended the day by mistake', href:'faq/reopen'}
+    ]) + '</div>' +
+    '<div class="card">' + sectionHead('users','Everyone') +
+    faqList([{ic:'settings', title:'What is the gear?', href:'faq/gear-icon'}]) + '</div>'
+};
+
+PAGES['faq/cant-sell'] = {
+  title:'Why can’t I add this item?', icon:'ban', section:'faq', audience:'staff', crumb:'Why can’t I add this item?',
+  body:
+    '<div class="card">' +
+    '<p>' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + ' is always available. If you can’t add something, it’s usually <b>Sold out</b> for today.</p>' +
+    tip('<b>What to do:</b> pick another item, or ask an owner to mark it available again in <b>Today’s Menu</b> (' + icon('settings', 18) + ' → Pass Code → <b>Events</b>).') +
+    '<p>If there are no items on the list at all, ask an owner to add inventory.</p>' +
+    '</div>'
+};
+
+PAGES['faq/sold-out'] = {
+  title:'What does “Sold out” mean?', icon:'circle-off', section:'faq', audience:'everyone', crumb:'What does “Sold out” mean?',
+  body:
+    '<div class="card">' +
+    '<p><b>Sold out</b> means the item still shows on the menu, but you can’t add it to a sale today.</p>' +
+    '<p>It might look gray and say <b>Sold out</b> next to the name.</p>' +
+    info('An owner can turn sold out off in Today’s Menu if more stock arrives.') +
+    '</div>'
+};
+
+PAGES['faq/pass-code'] = {
+  title:'What is the Pass Code?', icon:'key-round', section:'faq', audience:'everyone', crumb:'What is the Pass Code?',
+  body:
+    '<div class="card">' +
+    '<p>A <b>4-digit code</b> only owners know. When <b>Require Pass Code for Settings</b> is on (default), it unlocks Events, Inventory, Preorders, Sales, and Settings.</p>' +
+    '<p>Staff use the shop without the Pass Code. They never see <b>cost</b> or <b>profit</b>.</p>' +
+    '<p>Owners can change the code or turn the gate off in ' + icon('settings', 18) + ' → <b>Settings</b>. Changing <b>Require Pass Code for Settings</b> also requires the current code.</p>' +
+    '</div>'
+};
+
+PAGES['faq/forgot-pass-code'] = {
+  title:'I forgot the Pass Code', icon:'frown', section:'faq', audience:'owner', crumb:'I forgot the Pass Code',
+  body:
+    '<div class="card">' +
+    '<p>There is no “email my code” option. On the Pass Code screen, tap <b>Forgot Pass Code?</b></p>' +
+    warn('That erases everything and lets you set up again from scratch. Only do this if you mean to reset — you’ll lose saved sales.') +
+    soon('Device unlock / Face ID recovery without resetting is coming later.') +
+    '</div>'
+};
+
+PAGES['faq/gear-icon'] = {
+  title:'What is the gear?', icon:'settings', section:'faq', audience:'everyone', crumb:'What is the gear?',
+  body:
+    '<div class="card">' +
+    '<p>The ' + icon('settings', 20) + ' on the home screen is for <b>owners</b>.</p>' +
+    '<p>Tap it → enter the <b>Pass Code</b> → open <b>Events</b>, Inventory, Preorders, Sales, and Settings (including profit).</p>' +
+    info('If you’re ringing up sales, you usually don’t need the gear — use Make a Sale instead.') +
+    '</div>'
+};
+
+PAGES['faq/archive'] = {
+  title:'What is Archive?', icon:'archive', section:'faq', audience:'owner', crumb:'What is Archive?',
+  body:
+    '<div class="card">' +
+    '<p><b>Archive</b> hides an item from the menu. It does <b>not</b> delete old sales that included that item.</p>' +
+    '<p>Use it when you stop selling something but want to keep history.</p>' +
+    '<p><b>UnArchive Item</b> brings the item back.</p>' +
+    info('Only owners can archive items, from ' + icon('package', 18) + ' Inventory.') +
+    '</div>'
+};
+
+PAGES['faq/cash-change'] = {
+  title:'How does cash change work?', icon:'banknote', section:'faq', audience:'staff', crumb:'How does cash change work?',
+  body:
+    '<div class="card">' +
+    steps([
+      'On the payment screen, <b>Cash</b> is selected by default.',
+      'Set <b>Amount Paid</b> with <b>− / +</b> or bill chips ($1, $5, $10, $20, $100) — each chip <b>adds</b> to the running total.',
+      'Or tap <b>Exact amount</b> / <b>Clear</b>.',
+      'The amount turns <b>red</b> if it’s below Order Total, <b>green</b> when it’s enough.'
+    ]) +
+    rows([
+      {ic:'coins', title:'Change: $X', desc:'Give this much back'},
+      {ic:'check', title:'Keeping $X — no change back', desc:'You checked Keep change?'},
+      {ic:'clock', title:'Still $X due', desc:'They didn’t give enough yet'}
+    ]) +
+    '<p>When change is due, tap <b>Keep change?</b> only if the customer says you can keep the extra.</p>' +
+    '<p>Tap ' + pill('pill-purple', icon('check', 16, 'on-dark') + ' Complete sale') + ' when the payment is right.</p>' +
+    '</div>'
+};
+
+PAGES['faq/venmo-zelle'] = {
+  title:'Venmo / Zelle payments', icon:'smartphone', section:'faq', audience:'staff', crumb:'Venmo / Zelle payments',
+  body:
+    '<div class="card">' +
+    steps([
+      'On the payment screen, tap ' + pill('pill-purple', icon('smartphone', 16, 'on-dark') + ' Venmo / Zelle'),
+      'If an owner set up payment info, a card shows who to pay (Zelle name/contact/QR, Venmo handle/QR).',
+      '<b>Amount Paid</b> defaults to the exact order total — bump it up for a tip, then check <b>Keep change?</b> when the extra is a tip.',
+      'After the customer pays on their phone, tap ' + pill('pill-purple', icon('check', 16, 'on-dark') + ' Complete sale')
+    ]) +
+    info('Owners configure Zelle/Venmo under ' + icon('settings', 18) + ' → Pass Code → <b>Settings</b>.') +
+    '</div>'
+};
+
+PAGES['faq/owner-settings'] = {
+  title:'Owner Settings tab', icon:'settings', section:'faq', audience:'owner', crumb:'Owner Settings tab',
+  body:
+    '<div class="card">' +
+    steps([
+      icon('settings', 18) + ' → <b>Pass Code</b> → tap Settings in the bottom nav (last tab).',
+      '<b>Business</b> — shop name and optional logo.',
+      '<b>Passcode</b> — change the 4-digit code. <b>Require Pass Code for Settings</b> is on by default.',
+      '<b>Payment</b> — Zelle full name, email/phone, optional QR; Venmo username, optional QR.',
+      'Tap <b>Save changes</b> at the bottom for payment/business fields. Passcode and gate toggle save on their own.'
+    ]) +
+    '</div>'
+};
+
+PAGES['faq/edit-sale-later'] = {
+  title:'Change a sale later', icon:'refresh-cw', section:'faq', audience:'owner', crumb:'Change a sale later',
+  body:
+    '<div class="card">' + sectionHead('shopping-cart','Staff') +
+    '<p>Right after checkout, use ' + pill('pill-white', icon('pencil', 16) + ' Edit this sale') + ' on the Sold! screen (or <b>Edit preorder</b> for a preorder).</p></div>' +
+    '<div class="card">' + sectionHead('settings','Owners, later') +
+    steps([
+      icon('settings', 18) + ' → Pass Code → <b>Events</b> (active day) or <b>Past Events → tap a day</b>. You can also open a sale from the <b>Sales</b> tab, or a preorder from <b>Preorders</b>.',
+      'Tap the sale.',
+      'Change payment method, add optional <b>name</b> or <b>notes</b>, edit <b>Complete date</b> (preorders), or <b>Remove sale</b>.',
+      'Tap ' + pill('pill-green', icon('check', 16, 'on-dark') + ' Save changes')
+    ]) +
+    info('To change items or quantities on a saved sale: Remove sale and ring it up again (or use staff Edit this sale right after checkout).') +
+    '</div>'
+};
+
+PAGES['faq/one-market-day'] = {
+  title:'Can I run two Market Days at once?', icon:'tent', section:'faq', audience:'owner', crumb:'Can I run two Market Days at once?',
+  body:
+    '<div class="card">' +
+    '<p><b>No.</b> Only <b>one active Market Day</b> at a time.</p>' +
+    info('To start a new day, <b>End Market Day</b> first. You can’t replace an open day in place.') +
+    '</div>'
+};
+
+PAGES['faq/reopen'] = {
+  title:'I ended the day by mistake', icon:'undo-2', section:'faq', audience:'owner', crumb:'I ended the day by mistake',
+  body:
+    '<div class="card">' +
+    steps([
+      icon('settings', 18) + ' → Pass Code → <b>Events</b>.',
+      'Under <b>Past Events</b>, tap the day you just ended.',
+      'Tap ' + pill('pill-white', icon('undo-2', 16) + ' Reopen Market Day')
+    ]) +
+    '<p>That makes it the active day again so selling can continue.</p>' +
+    tip('This works only for the <b>most recently</b> closed day, and only until you <b>export</b> it.') +
+    '</div>'
+};
+
+PAGES['checklist'] = {
+  title:'Day-of checklist', icon:'circle-check', section:'checklist', audience:'everyone', crumb:'Day-of checklist',
+  body:
+    '<div class="card">' +
+    '<div class="checklist-group"><h3>' + icon('settings', 18) + ' Owner — morning</h3><p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:8px;">Optional for porch sales; recommended for fairs.</p><div id="chkA"></div></div>' +
+    '<div class="checklist-group"><h3>' + icon('shopping-cart', 18) + ' Staff — all day</h3><div id="chkB"></div></div>' +
+    '<div class="checklist-group"><h3>' + icon('settings', 18) + ' Owner — evening</h3><div id="chkC"></div></div>' +
+    '</div>'
+};
+
+/* Redirect old FAQ slug */
+PAGES['faq/undo-close'] = PAGES['faq/reopen'];
+PAGES['faq/grown-up-settings'] = PAGES['faq/owner-settings'];
+
+/* ============ nav structure ============ */
+var NAV = [
+  {kind:'link', title:'Welcome', href:'home', ic:'brand', tag:'everyone'},
+  {kind:'group', title:'For staff', titleIcon:'shopping-cart', items:[
+    {title:'How to make a sale', href:'sell', ic:'shopping-cart'},
+    {title:'How to take payment', href:'payment', ic:'banknote'},
+    {title:'Invoice numbers', href:'invoice-numbers', ic:'hash'},
+    {title:'See today’s sales', href:'see-todays-sales', ic:'eye'},
+    {title:'Fix a sale', href:'fix-a-sale', ic:'pencil'},
+    {title:'Take a preorder', href:'preorder', ic:'clipboard-list'}
+  ]},
+  {kind:'group', title:'For owners', titleIcon:'settings', items:[
+    {title:'Start a Market Day', href:'start-market-day', ic:'play'},
+    {title:'Today’s menu', href:'menu', ic:'clipboard-list'},
+    {title:'Add inventory', href:'inventory', ic:'package'},
+    {title:'Edit items', href:'edit-items', ic:'pencil'},
+    {title:'End a Market Day', href:'end-market-day', ic:'circle-x'},
+    {title:'Past Events', href:'past-events', ic:'calendar'},
+    {title:'Export sales (CSV)', href:'export-sales', ic:'download'},
+    {title:'Sales & profit', href:'sales-dashboard', ic:'receipt'},
+    {title:'Preorders tab', href:'preorders', ic:'clipboard-list'},
+    {title:'First-time setup', href:'first-time-setup', ic:'sparkles'}
+  ]},
+  {kind:'faqgroup', title:'FAQ', titleIcon:'circle-help', href:'faq', items:[
+    {title:'Why can’t I add this item?', href:'faq/cant-sell', ic:'ban'},
+    {title:'“Sold out” meaning', href:'faq/sold-out', ic:'circle-off'},
+    {title:'What is the Pass Code?', href:'faq/pass-code', ic:'key-round'},
+    {title:'Forgot the Pass Code', href:'faq/forgot-pass-code', ic:'frown'},
+    {title:'What is the gear?', href:'faq/gear-icon', ic:'settings'},
+    {title:'Owner Settings', href:'faq/owner-settings', ic:'settings'},
+    {title:'What is Archive?', href:'faq/archive', ic:'archive'},
+    {title:'Cash change', href:'faq/cash-change', ic:'banknote'},
+    {title:'Venmo / Zelle', href:'faq/venmo-zelle', ic:'smartphone'},
+    {title:'Change a sale later', href:'faq/edit-sale-later', ic:'refresh-cw'},
+    {title:'Two Market Days?', href:'faq/one-market-day', ic:'tent'},
+    {title:'Undo an ended day', href:'faq/reopen', ic:'undo-2'}
+  ]},
+  {kind:'link', title:'Day-of checklist', href:'checklist', ic:'circle-check', tag:'everyone'}
+];
+
+/* ============ render ============ */
+function tagHtml(a){
+  if(a==='staff') return '<span class="tag tag-staff">STAFF</span>';
+  if(a==='owner') return '<span class="tag tag-owner">OWNER</span>';
+  return '<span class="tag tag-everyone">ALL</span>';
+}
+function badgeHtml(a){
+  if(a==='staff') return '<span class="audience-badge staff">' + icon('shopping-cart', 14) + ' For staff</span>';
+  if(a==='owner') return '<span class="audience-badge owner">' + icon('settings', 14) + ' For owners</span>';
+  return '<span class="audience-badge everyone">' + icon('users', 14) + ' Everyone</span>';
+}
+
+function renderNav(currentHref, filterText){
+  filterText = (filterText||'').toLowerCase().trim();
+  var html = '';
+  NAV.forEach(function(entry){
+    if(entry.kind === 'link'){
+      if(filterText && entry.title.toLowerCase().indexOf(filterText) === -1) return;
+      var active = entry.href === currentHref ? ' active' : '';
+      html += '<a class="navlink' + active + '" href="#/' + entry.href + '"><span class="ic">' + icon(entry.ic, 20) + '</span>' + entry.title + '</a>';
+    } else if(entry.kind === 'group'){
+      var items = entry.items.filter(function(it){ return !filterText || it.title.toLowerCase().indexOf(filterText) > -1; });
+      if(!items.length) return;
+      html += '<div class="navgroup"><div class="navgroup-title">' + icon(entry.titleIcon, 16) + ' ' + entry.title + '</div>';
+      items.forEach(function(it){
+        var active = it.href === currentHref ? ' active' : '';
+        html += '<a class="navlink' + active + '" href="#/' + it.href + '"><span class="ic">' + icon(it.ic, 20) + '</span>' + it.title + '</a>';
+      });
+      html += '</div>';
+    } else if(entry.kind === 'faqgroup'){
+      var fitems = entry.items.filter(function(it){ return !filterText || it.title.toLowerCase().indexOf(filterText) > -1; });
+      var indexMatch = !filterText || entry.title.toLowerCase().indexOf(filterText) > -1;
+      if(!fitems.length && !indexMatch) return;
+      var isOpenBySearch = !!filterText;
+      var currentInGroup = currentHref === entry.href || fitems.some(function(it){return it.href===currentHref;}) || entry.items.some(function(it){return it.href===currentHref;});
+      var open = isOpenBySearch || currentInGroup;
+      html += '<div class="navgroup">';
+      var activeIndex = entry.href === currentHref ? ' active' : '';
+      html += '<a class="navlink' + activeIndex + '" href="#/' + entry.href + '"><span class="ic">' + icon(entry.titleIcon, 20) + '</span>' + entry.title + '<span class="chev" style="margin-left:auto;">' + icon(open ? 'chevron-down' : 'chevron-right', 14, 'soft') + '</span></a>';
+      html += '<div class="faq-sub' + (open?' open':'') + '">';
+      (filterText ? fitems : entry.items).forEach(function(it){
+        var active = it.href === currentHref ? ' active' : '';
+        html += '<a class="navlink' + active + '" href="#/' + it.href + '" style="font-size:12.5px;"><span class="ic">' + icon(it.ic, 18) + '</span>' + it.title + '</a>';
+      });
+      html += '</div></div>';
+    }
+  });
+  document.getElementById('navList').innerHTML = html;
+  refreshIcons();
+}
+
+function crumbTrail(page, slug){
+  if(slug === 'home') return '';
+  var parts = ['<a href="#/home">' + brandMark(14) + ' Home</a>'];
+  if(slug.indexOf('faq/') === 0 || slug === 'faq'){
+    parts.push('<a href="#/faq">' + icon('circle-help', 14) + ' FAQ</a>');
+    if(slug !== 'faq') parts.push(page.crumb);
+  } else {
+    parts.push(page.crumb);
+  }
+  return '<div class="crumbs">' + parts.join(' &nbsp;/&nbsp; ') + '</div>';
+}
+
+function renderChecklist(){
+  var data = {
+    chkA: [icon('settings', 16) + ' → Pass Code → Events → enter Market Day name + Date → Start Market Day', 'Check Today’s Menu (sold out / remove items)', 'Hand device to staff'],
+    chkB: [icon('shopping-cart', 16) + ' Make a Sale → cart → Checkout → pay → Sold!'],
+    chkC: [icon('settings', 16) + ' → Events → review sales & profit', 'End Market Day', '(Optional) Past Events → export CSV for Excel']
+  };
+  Object.keys(data).forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = data[id].map(function(label, i){
+      return '<div class="chk-row" data-idx="' + id + i + '"><span class="chk-box"></span><span class="chk-label">' + label + '</span></div>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.chk-row'), function(row){
+      row.addEventListener('click', function(){
+        row.classList.toggle('done');
+        row.querySelector('.chk-box').innerHTML = row.classList.contains('done') ? icon('check', 14) : '';
+        refreshIcons();
+      });
+    });
+  });
+}
+
+function renderPage(){
+  var hash = window.location.hash.replace(/^#\/?/, '') || 'home';
+  var page = PAGES[hash];
+  if(!page){ page = PAGES['home']; hash = 'home'; }
+
+  var headBadge = hash === 'home' ? '' : '<div class="badge-row">' + badgeHtml(page.audience) + '</div>';
+  var head = hash === 'home' ? '' :
+    '<div class="page-head"><span class="emoji">' + icon(page.icon, 26) + '</span><div><h1>' + page.title + '</h1>' + headBadge + '</div></div>';
+
+  var html = crumbTrail(page, hash) + head + page.body;
+  html += '<div class="footer-nav"><div class="fn-left">' +
+    '<button class="glossary-link" onclick="openGlossary()">' + icon('book-open', 18) + ' Words we use</button>' +
+    (hash !== 'home' ? '<a class="glossary-link" href="#/faq">' + icon('circle-help', 18) + ' Browse FAQ</a>' : '') +
+    '<a class="glossary-link" href="privacy.html">' + icon('shield', 18) + ' Privacy</a>' +
+    '</div>' + (hash !== 'home' ? '<a class="home-link" href="#/home">← Back to Welcome</a>' : '') + '</div>';
+
+  document.getElementById('pageRoot').innerHTML = html;
+  renderNav(hash, document.getElementById('navSearch').value);
+  if(hash === 'checklist') renderChecklist();
+  refreshIcons();
+  window.scrollTo(0,0);
+  closeSidebar();
+}
+
+function openGlossary(){
+  document.getElementById('glossaryList').innerHTML = GLOSSARY.map(function(g){
+    return '<div class="glossary-row"><div class="term">' + g.term + '</div><div class="def">' + g.def + '</div></div>';
+  }).join('');
+  document.getElementById('glossaryModal').classList.add('open');
+  refreshIcons();
+}
+function closeGlossary(){ document.getElementById('glossaryModal').classList.remove('open'); }
+
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); refreshIcons(); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); }
+
+document.getElementById('glossaryClose').addEventListener('click', closeGlossary);
+document.getElementById('glossaryModal').addEventListener('click', function(e){ if(e.target === this) closeGlossary(); });
+document.getElementById('menuToggle').addEventListener('click', function(){
+  var sb = document.getElementById('sidebar');
+  sb.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+document.getElementById('navSearch').addEventListener('input', function(){
+  var hash = window.location.hash.replace(/^#\/?/, '') || 'home';
+  renderNav(hash, this.value);
+});
+
+window.addEventListener('hashchange', renderPage);
+window.addEventListener('DOMContentLoaded', function(){ renderPage(); refreshIcons(); });
+renderPage();
+</script>
+</body>
+</html>
+

@@ -34,7 +34,7 @@ import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
 import { homeVisualSize, resolveItemVisual, iconTileProps, HOME_MENU_ICON_SIZE } from '@/lib/item-visual';
 import type { Item } from '@/lib/types';
-import { Plus, Search, Settings } from 'lucide-react-native';
+import { Plus, Search, Settings, ShoppingCartPlus } from 'lucide-react-native';
 
 type HomeItem = Item & { soldOut?: boolean };
 
@@ -57,7 +57,6 @@ type ActiveMarketSummary = {
 
 const TICKET_PINK = '#FB6AA3';
 const TICKET_PURPLE = '#9B5DE6';
-const TICKET_DIVIDER = '#E4DDF5';
 const TICKET_MUTED = '#8C86A0';
 const TICKET_PILL = '#3DBE7A';
 
@@ -94,8 +93,6 @@ function TicketMarketBanner({
           <Text style={styles.ticketStripAction}>Sales →</Text>
         </View>
       </View>
-
-      <View style={styles.ticketDivider} />
 
       <View style={styles.ticketBody}>
         <View style={styles.ticketTotals}>
@@ -264,6 +261,7 @@ export default function HomeScreen() {
               ]}>
               <View style={styles.sellButtonInner}>
                 <Text style={styles.sellButtonLabel}>Make a Sale</Text>
+                <UiIcon icon={ShoppingCartPlus} size={20} color={colors.white} />
               </View>
             </Pressable>
           </View>
@@ -457,12 +455,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     opacity: 0.9,
   },
-  ticketDivider: {
-    marginHorizontal: 16,
-    borderTopWidth: 2,
-    borderColor: TICKET_DIVIDER,
-    borderStyle: 'dashed',
-  },
   ticketBody: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -610,8 +602,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.purple,
     borderRadius: radii.sellCta,
     paddingVertical: 18,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
   },
   sellButtonLabel: {
     fontFamily: fonts.heading.semiBold,
