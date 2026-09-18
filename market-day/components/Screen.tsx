@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   addButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 22,
-    color: colors.ink,
+    color: colors.white,
     lineHeight: 24,
   },
   stepper: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   stepperButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 20,
-    color: colors.ink,
+    color: colors.white,
     lineHeight: 22,
   },
   qtyBox: {

@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { tokens } from '@/theme/tokens';
 
 import { PassCodeSheet } from '@/components/PassCodeSheet';
@@ -206,6 +206,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
+    ...Platform.select({
+      web: { boxShadow: `0 5px 0 ${colors.yellowDark}` },
+      default: {
+        shadowColor: colors.yellowDark,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 1,
+        shadowRadius: 0,
+        elevation: 0,
+      },
+    }),
   },
   badgeIcon: {
     fontSize: 44,

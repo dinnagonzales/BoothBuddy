@@ -23,12 +23,12 @@ function toneColors(tone: BadgeTone): { bg: BrandColor; fg: BrandColor } {
     case 'danger':
       return { bg: colors.dangerSurface, fg: colors.danger };
     case 'neutral':
-      return { bg: colors.gray400, fg: textOnBackground(colors.gray400) };
+      return { bg: colors.gray, fg: textOnBackground(colors.gray) };
     case 'muted':
       return { bg: colors.surfaceMuted, fg: colors.ink };
     case 'brand':
     default:
-      return { bg: colors.pink, fg: colors.ink };
+      return { bg: colors.yellow, fg: colors.ink };
   }
 }
 

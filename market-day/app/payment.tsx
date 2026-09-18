@@ -24,16 +24,17 @@ const BILL_ROWS = [
 ] as const;
 const BILL_FULL = BILLS[4];
 
-const chipShadow = Platform.select({
-  web: { boxShadow: `0 4px 0 ${colors.purpleDark}` },
-  default: {
-    shadowColor: colors.purpleDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 0,
-  },
-});
+const chipShadow = (shadowColor: string) =>
+  Platform.select({
+    web: { boxShadow: `0 4px 0 ${shadowColor}` },
+    default: {
+      shadowColor,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 1,
+      shadowRadius: 0,
+      elevation: 0,
+    },
+  });
 
 export default function PaymentScreen() {
   const db = useSQLiteContext();
@@ -477,7 +478,7 @@ const styles = StyleSheet.create({
   stepButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 24,
-    color: colors.ink,
+    color: colors.white,
     lineHeight: 28,
   },
   stepButtonLabelLight: {
@@ -522,7 +523,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    ...chipShadow,
+    ...chipShadow(colors.purpleDark),
   },
   chipHalf: {
     flex: 1,
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    ...chipShadow,
+    ...chipShadow(colors.greenDark),
   },
   clearChip: {
     backgroundColor: colors.white,

@@ -54,7 +54,7 @@ function HeroCard({ children }: { children: ReactNode }) {
         <Defs>
           <SvgGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <Stop offset="0%" stopColor={colors.pink} />
-            <Stop offset="100%" stopColor={colors.pink600} />
+            <Stop offset="100%" stopColor={colors.purple} />
           </SvgGradient>
         </Defs>
         <Rect width="100%" height="100%" fill="url(#heroGradient)" />
@@ -389,8 +389,8 @@ const styles = StyleSheet.create({
   heroEyebrow: {
     fontFamily: fonts.body.bold,
     fontSize: 12,
-    color: colors.ink,
-    opacity: 0.85,
+    color: colors.white,
+    opacity: 0.95,
     letterSpacing: 0.6,
     textAlign: 'center',
     marginBottom: 8,
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     fontFamily: fonts.body.bold,
     fontSize: 13,
-    color: colors.ink,
-    opacity: 0.9,
+    color: colors.white,
+    opacity: 0.95,
     textAlign: 'center',
   },
   menuLabel: {
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   },
   sellButtonOuter: {
     borderRadius: radii.sellCta,
-    backgroundColor: colors.greenDark,
+    backgroundColor: colors.purpleDark,
     paddingBottom: 6,
   },
   sellButtonOuterPressed: {
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sellButtonInner: {
-    backgroundColor: colors.green,
+    backgroundColor: colors.purple,
     borderRadius: radii.sellCta,
     paddingVertical: 18,
     alignItems: 'center',

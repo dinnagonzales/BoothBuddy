@@ -14,19 +14,20 @@ export const colors = {
   ink: c.ink,
   white: c.white,
 
-  /** Screen canvas — soft peach tint */
+  /** Screen canvas — soft lavender */
   screen: c.peach50,
-  /** Card / sheet backdrop */
+  /** Card / sheet backdrop — light purple behind white rows */
   background: c.peach100,
-  cream: c.white,
+  /** Soft accent for tips, callouts, empty states */
+  cream: c.cream,
 
   /** Muted body text */
   inkSoft: c.gray400,
 
-  /** Primary brand actions (formerly purple) */
-  purple: c.pink,
-  purpleDark: c.pink600,
-  pinkDark: c.pink600,
+  /** Primary brand actions */
+  purple: c.purple,
+  purpleDark: c.purpleDark,
+  pinkDark: c.purpleDark,
   pink600: c.pink600,
 
   /** POS functional */
@@ -36,23 +37,24 @@ export const colors = {
   warning: c.warning,
   danger: c.danger,
   red: c.danger,
-  redDark: c.danger,
+  redDark: c.dangerDark,
   redLight: c.dangerSurface,
-  yellow: c.warning,
+  yellow: c.yellow,
+  yellowDark: c.yellowDark,
 
   /** Secondary / chart accents */
-  blue: c.gray300,
-  blueDark: c.gray400,
+  blue: c.blue,
+  blueDark: c.blueDark,
   amber: c.warning,
-  amberDark: c.warning,
+  amberDark: c.warningDark,
   amberBorder: c.warningBorder,
 
   /** Surfaces & borders */
   surfaceMuted: c.pink50,
-  surfaceSubtle: c.peach50,
+  surfaceSubtle: c.cream,
   border: c.grayLight,
   borderSubtle: c.peach100,
-  borderFocus: c.pink,
+  borderFocus: c.purple,
   borderDanger: c.dangerBorder,
   borderSuccess: c.successBorder,
   successSurface: c.successSurface,

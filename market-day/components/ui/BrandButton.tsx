@@ -20,7 +20,7 @@ type BrandButtonProps = PressableProps & {
   label: string;
   labelStyle?: TextStyle;
   style?: ViewStyle;
-  /** 3D press depth (primary/success/danger). Default true for filled variants. */
+  /** 3D press depth (primary/secondary/success/danger). Default true for filled variants. */
   depth?: boolean;
 };
 
@@ -36,24 +36,21 @@ const depthShadow = (shadowColor: string) =>
     },
   });
 
-const depthShadowPressed = Platform.select({
-  web: { boxShadow: `0 2px 0 ${colors.purpleDark}` },
-  default: { shadowOffset: { width: 0, height: 2 } },
-});
+const depthShadowPressed = (shadowColor: string) =>
+  Platform.select({
+    web: { boxShadow: `0 2px 0 ${shadowColor}` },
+    default: { shadowOffset: { width: 0, height: 2 } },
+  });
 
 function variantStyles(variant: BrandButtonVariant) {
   switch (variant) {
     case 'secondary':
       return {
-        outer: { backgroundColor: 'transparent' as const, paddingBottom: 0 },
-        inner: {
-          backgroundColor: colors.white,
-          borderWidth: 2,
-          borderColor: colors.gray,
-        },
+        outer: { backgroundColor: colors.blueDark, paddingBottom: 5 },
+        inner: { backgroundColor: colors.blue },
         label: { color: colors.ink },
-        shadow: undefined,
-        shadowColor: colors.purpleDark,
+        shadow: depthShadow(colors.blueDark),
+        shadowColor: colors.blueDark,
       };
     case 'ghost':
       return {
@@ -65,11 +62,11 @@ function variantStyles(variant: BrandButtonVariant) {
       };
     case 'danger':
       return {
-        outer: { backgroundColor: colors.danger, paddingBottom: 5 },
+        outer: { backgroundColor: colors.redDark, paddingBottom: 5 },
         inner: { backgroundColor: colors.danger },
         label: { color: colors.white },
-        shadow: depthShadow(colors.danger),
-        shadowColor: colors.danger,
+        shadow: depthShadow(colors.redDark),
+        shadowColor: colors.redDark,
       };
     case 'success':
       return {
@@ -84,7 +81,7 @@ function variantStyles(variant: BrandButtonVariant) {
       return {
         outer: { backgroundColor: colors.purpleDark, paddingBottom: 5 },
         inner: { backgroundColor: colors.purple },
-        label: { color: colors.ink },
+        label: { color: colors.white },
         shadow: depthShadow(colors.purpleDark),
         shadowColor: colors.purpleDark,
       };
@@ -96,7 +93,10 @@ export function BrandButton({
   label,
   labelStyle,
   style,
-  depth = variant === 'primary' || variant === 'success' || variant === 'danger',
+  depth = variant === 'primary' ||
+    variant === 'secondary' ||
+    variant === 'success' ||
+    variant === 'danger',
   disabled,
   ...props
 }: BrandButtonProps) {
@@ -111,7 +111,7 @@ export function BrandButton({
         depth ? v.outer : null,
         depth && v.shadow,
         depth && pressed ? styles.outerPressed : null,
-        depth && pressed ? depthShadowPressed : null,
+        depth && pressed ? depthShadowPressed(v.shadowColor) : null,
         disabled ? styles.disabled : null,
         style,
       ]}

@@ -4,7 +4,7 @@ import { colors } from '@/constants/theme';
 import { tokens } from '@/theme/tokens';
 
 type BrandCardProps = ViewProps & {
-  /** white (default) or peach-50 surface */
+  /** white (default) or soft cream accent surface */
   surface?: 'white' | 'peach';
   padded?: boolean;
 };

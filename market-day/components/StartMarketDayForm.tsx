@@ -161,6 +161,6 @@ const styles = StyleSheet.create({
   startButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: colors.ink,
+    color: colors.white,
   },
 });

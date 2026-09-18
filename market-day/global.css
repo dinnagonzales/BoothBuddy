@@ -5,49 +5,58 @@
 
 @theme {
   /* Brand palette */
-  --color-peach: #ffd9d1;
-  --color-pink: #ffa0c1;
+  --color-peach: #f3e9ff;
+  --color-pink: #ff6b9d;
+  --color-purple: #9b5de5;
+  --color-purple-dark: #7333be;
+  --color-blue: #4fc3f7;
+  --color-blue-dark: #1e93c6;
+  --color-yellow: #ffd93d;
+  --color-yellow-dark: #e0ac00;
+  --color-cream: #fffdf6;
   --color-gray: #a9a8af;
   --color-gray-light: #d5d5d8;
-  --color-ink: #161616;
+  --color-ink: #2b2340;
   --color-white: #ffffff;
 
-  /* Pink scale */
-  --color-pink-50: #fff6f9;
-  --color-pink-100: #ffe7f0;
-  --color-pink-200: #ffd0e0;
-  --color-pink-300: #ffb8d0;
-  --color-pink-400: #ffa0c1;
-  --color-pink-500: #dc8ba7;
-  --color-pink-600: #b9778e;
+  /* Pink / purple scale */
+  --color-pink-50: #f3e9ff;
+  --color-pink-100: #e8d9f8;
+  --color-pink-200: #d4b8f0;
+  --color-pink-300: #b888e8;
+  --color-pink-400: #9b5de5;
+  --color-pink-500: #8550c8;
+  --color-pink-600: #7333be;
 
-  /* Peach scale */
-  --color-peach-50: #fff0ed;
-  --color-peach-100: #ffe4df;
-  --color-peach-200: #ffd9d1;
-  --color-peach-300: #d0b2ac;
-  --color-peach-400: #a28b86;
+  /* Peach / lavender scale */
+  --color-peach-50: #ede9f5;
+  --color-peach-100: #f3e9ff;
+  --color-peach-200: #f3e9ff;
+  --color-peach-300: #c4b8d4;
+  --color-peach-400: #8a7a9a;
 
   /* Gray scale */
-  --color-gray-50: #dddcdf;
-  --color-gray-100: #c3c2c7;
+  --color-gray-50: #e8e4f0;
+  --color-gray-100: #c9c2d4;
   --color-gray-200: #a9a8af;
-  --color-gray-300: #8c8b90;
-  --color-gray-400: #6e6e72;
-  --color-gray-500: #515053;
+  --color-gray-300: #8c8496;
+  --color-gray-400: #6e6480;
+  --color-gray-500: #4a4356;
 
   /* Ink scale */
-  --color-ink-100: #dcdcdc;
-  --color-ink-200: #adadad;
-  --color-ink-300: #7f7f7f;
-  --color-ink-400: #505050;
-  --color-ink-500: #161616;
+  --color-ink-100: #e8e4f0;
+  --color-ink-200: #b8b0c4;
+  --color-ink-300: #8a8098;
+  --color-ink-400: #5a5268;
+  --color-ink-500: #2b2340;
 
   /* Functional */
-  --color-success: #3f9463;
-  --color-success-dark: #2f7049;
-  --color-warning: #c77a1f;
-  --color-danger: #c64545;
+  --color-success: #4cd787;
+  --color-success-dark: #1fa85c;
+  --color-warning: #ffd93d;
+  --color-warning-dark: #e0ac00;
+  --color-danger: #ff6b6b;
+  --color-danger-dark: #e14545;
 
   /* Shape */
   --radius-sm: 8px;
@@ -66,49 +75,49 @@
   :root {
     @variant light {
       --radius: 1rem;
-      --background: #fff0ed;
-      --foreground: #161616;
+      --background: #ede9f5;
+      --foreground: #2b2340;
       --surface: #ffffff;
-      --surface-foreground: #161616;
-      --accent: #ffa0c1;
-      --accent-foreground: #161616;
-      --success: #3f9463;
+      --surface-foreground: #2b2340;
+      --accent: #9b5de5;
+      --accent-foreground: #ffffff;
+      --success: #4cd787;
       --success-foreground: #ffffff;
-      --warning: #c77a1f;
-      --warning-foreground: #161616;
-      --muted: #6e6e72;
+      --warning: #ffd93d;
+      --warning-foreground: #2b2340;
+      --muted: #6e6480;
       --border: #d5d5d8;
-      --separator: #ffe4df;
+      --separator: #f3e9ff;
       --default: #ffffff;
-      --default-foreground: #161616;
-      --danger: #c64545;
+      --default-foreground: #2b2340;
+      --danger: #ff6b6b;
       --danger-foreground: #ffffff;
       --field-background: #ffffff;
-      --field-border: #ffe4df;
+      --field-border: #f3e9ff;
     }
 
     @variant dark {
       /* Match light tokens so Uniwind/HeroUI stay in sync (app is light-only). */
       --radius: 1rem;
-      --background: #fff0ed;
-      --foreground: #161616;
+      --background: #ede9f5;
+      --foreground: #2b2340;
       --surface: #ffffff;
-      --surface-foreground: #161616;
-      --accent: #ffa0c1;
-      --accent-foreground: #161616;
-      --success: #3f9463;
+      --surface-foreground: #2b2340;
+      --accent: #9b5de5;
+      --accent-foreground: #ffffff;
+      --success: #4cd787;
       --success-foreground: #ffffff;
-      --warning: #c77a1f;
-      --warning-foreground: #161616;
-      --muted: #6e6e72;
+      --warning: #ffd93d;
+      --warning-foreground: #2b2340;
+      --muted: #6e6480;
       --border: #d5d5d8;
-      --separator: #ffe4df;
+      --separator: #f3e9ff;
       --default: #ffffff;
-      --default-foreground: #161616;
-      --danger: #c64545;
+      --default-foreground: #2b2340;
+      --danger: #ff6b6b;
       --danger-foreground: #ffffff;
       --field-background: #ffffff;
-      --field-border: #ffe4df;
+      --field-border: #f3e9ff;
     }
   }
 }

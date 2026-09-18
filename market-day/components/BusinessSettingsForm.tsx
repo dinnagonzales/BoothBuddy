@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.white,
   },
   replayButton: {
     alignItems: 'center',

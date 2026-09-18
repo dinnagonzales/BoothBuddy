@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
   saveButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: colors.ink,
+    color: colors.white,
   },
   removeButton: {
     marginTop: 10,
