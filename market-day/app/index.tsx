@@ -27,6 +27,7 @@ import { formatMarketDayDate } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
+import { homeVisualSize, resolveItemVisual, iconTileProps, HOME_MENU_ICON_SIZE } from '@/lib/item-visual';
 import type { Item } from '@/lib/types';
 
 type HomeItem = Item & { soldOut?: boolean };
@@ -247,7 +248,10 @@ export default function HomeScreen() {
               style={styles.itemListScroll}
               renderItem={({ item: row }) => (
                 <View style={styles.menuGridRow}>
-                  {row.map((item) => (
+                  {row.map((item) => {
+                    const visual = resolveItemVisual(item);
+                    const tileSize = visual ? homeVisualSize(visual) : HOME_MENU_ICON_SIZE;
+                    return (
                     <Pressable
                       key={item.id}
                       accessibilityRole="button"
@@ -259,9 +263,8 @@ export default function HomeScreen() {
                         pressed && !item.soldOut ? styles.menuTilePressed : null,
                       ]}>
                       <IconTile
-                        icon={item.icon}
-                        imageSource={item.photoUri ? { uri: item.photoUri } : undefined}
-                        size={40}
+                        {...iconTileProps(item)}
+                        size={tileSize}
                         style={styles.menuTileIconWrap}
                       />
                       <Text
@@ -278,7 +281,8 @@ export default function HomeScreen() {
                       </Text>
                       {item.soldOut ? <Text style={styles.soldOutLabel}>Sold out</Text> : null}
                     </Pressable>
-                  ))}
+                    );
+                  })}
                   {row.length === 1 ? <View style={styles.menuTileSpacer} /> : null}
                 </View>
               )}

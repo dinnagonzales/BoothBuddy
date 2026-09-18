@@ -8,6 +8,7 @@ import { IconTile } from '@/components/ui/IconTile';
 import { colors } from '@/constants/theme';
 import type { AdminItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
+import { isItemVisualComplete, iconTileProps } from '@/lib/item-visual';
 import { deleteItemPhoto, persistItemPhoto, pickItemPhoto } from '@/lib/local-image';
 import { ItemHasSalesError } from '@/lib/market-day';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
@@ -19,7 +20,10 @@ type AdminItemCatalogProps = {
 
 type FormMode = { type: 'add' } | { type: 'edit'; item: AdminItem };
 
+type VisualMode = 'icon' | 'photo';
+
 type ItemFormState = {
+  visualMode: VisualMode;
   icon: string;
   name: string;
   cost: string;
@@ -28,6 +32,7 @@ type ItemFormState = {
 };
 
 const emptyForm = (): ItemFormState => ({
+  visualMode: 'icon',
   icon: '',
   name: '',
   cost: '',
@@ -70,7 +75,8 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
 
   const openEditForm = (item: AdminItem) => {
     setForm({
-      icon: item.icon,
+      visualMode: item.photoUri ? 'photo' : 'icon',
+      icon: item.photoUri ? '' : item.icon,
       name: item.name,
       cost: formatMoney(item.costCents),
       price: formatMoney(item.priceCents),
@@ -89,17 +95,18 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
       const catalog = createSqliteCatalog(db);
       const draft = {
         name: form.name.trim(),
-        icon: form.icon.trim(),
+        icon: form.visualMode === 'icon' ? form.icon.trim() : '',
         costCents: parseMoneyInput(form.cost),
         priceCents: parseMoneyInput(form.price),
-        photoUri: form.photoUri,
+        photoUri: form.visualMode === 'photo' ? form.photoUri : null,
       };
       if (!draft.name || draft.priceCents <= 0) return;
+      if (!isItemVisualComplete(draft)) return;
 
       if (formMode?.type === 'add') {
         const created = await catalog.createItem({ ...draft, photoUri: null });
-        if (form.photoUri) {
-          const persisted = await persistItemPhoto(form.photoUri, created.id);
+        if (draft.photoUri) {
+          const persisted = await persistItemPhoto(draft.photoUri, created.id);
           await catalog.updateItem(created.id, { ...draft, photoUri: persisted });
         }
       } else if (formMode?.type === 'edit') {
@@ -134,7 +141,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
   const deleteItem = (item: AdminItem) => {
     Alert.alert(
       'Delete this item?',
-      `${item.icon} ${item.name} will be removed. Can't be undone.`,
+      `${item.photoUri ? '📷' : item.icon} ${item.name} will be removed. Can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -161,7 +168,13 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
     );
   };
 
-  const canSave = form.name.trim().length > 0 && parseMoneyInput(form.price) > 0;
+  const canSave =
+    form.name.trim().length > 0 &&
+    parseMoneyInput(form.price) > 0 &&
+    isItemVisualComplete({
+      icon: form.visualMode === 'icon' ? form.icon : '',
+      photoUri: form.visualMode === 'photo' ? form.photoUri : null,
+    });
 
   return (
     <View style={styles.wrap}>
@@ -251,7 +264,7 @@ function ItemRow({
     <>
       {item.photoUri ? (
         <IconTile
-          imageSource={{ uri: item.photoUri }}
+          {...iconTileProps(item)}
           size={editing ? 28 : 24}
           style={editing ? styles.iconTileEdit : styles.iconTile}
         />
@@ -311,11 +324,21 @@ function ItemForm({
 
         if (mode.type === 'edit') {
           const persisted = await persistItemPhoto(uri, mode.item.id);
-          setForm((f) => ({ ...f, photoUri: persisted }));
+          setForm((f) => ({
+            ...f,
+            visualMode: 'photo',
+            photoUri: persisted,
+            icon: '',
+          }));
           return;
         }
 
-        setForm((f) => ({ ...f, photoUri: uri }));
+        setForm((f) => ({
+          ...f,
+          visualMode: 'photo',
+          photoUri: uri,
+          icon: '',
+        }));
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Could not pick that image.';
         Alert.alert('Photo error', message);
@@ -323,24 +346,29 @@ function ItemForm({
     })();
   };
 
-  const removePhoto = () => {
-    setForm((f) => ({ ...f, photoUri: null }));
+  const chooseVisualMode = (visualMode: VisualMode) => {
+    setForm((f) => {
+      if (visualMode === 'icon') {
+        return { ...f, visualMode, photoUri: null };
+      }
+      return { ...f, visualMode, icon: '' };
+    });
   };
 
   return (
     <View style={styles.formBody}>
-      <PhotoField
-        icon={form.icon}
-        photoUri={form.photoUri}
-        onPick={pickPhoto}
-        onRemove={removePhoto}
-      />
-      <Field
-        label="Icon"
-        value={form.icon}
-        onChangeText={(icon) => setForm((f) => ({ ...f, icon }))}
-        icon
-      />
+      <VisualModePicker mode={form.visualMode} onChange={chooseVisualMode} />
+      {form.visualMode === 'photo' ? (
+        <PhotoField photoUri={form.photoUri} onPick={pickPhoto} />
+      ) : (
+        <Field
+          label="Icon"
+          value={form.icon}
+          onChangeText={(icon) => setForm((f) => ({ ...f, icon }))}
+          icon
+          first
+        />
+      )}
       <Field label="Name" value={form.name} onChangeText={(name) => setForm((f) => ({ ...f, name }))} />
       <Field
         label="Cost — not shown to staff"
@@ -419,35 +447,62 @@ function ItemForm({
   );
 }
 
+function VisualModePicker({
+  mode,
+  onChange,
+}: {
+  mode: VisualMode;
+  onChange: (mode: VisualMode) => void;
+}) {
+  return (
+    <View style={styles.visualModeField}>
+      <Text style={styles.fieldLabel}>Look</Text>
+      <Text style={styles.photoHint}>Choose an emoji icon or a photo — not both.</Text>
+      <View style={styles.visualModeRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: mode === 'icon' }}
+          onPress={() => onChange('icon')}
+          style={[styles.visualModeChip, mode === 'icon' && styles.visualModeChipSelected]}>
+          <Text style={[styles.visualModeChipLabel, mode === 'icon' && styles.visualModeChipLabelSelected]}>
+            Icon
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: mode === 'photo' }}
+          onPress={() => onChange('photo')}
+          style={[styles.visualModeChip, mode === 'photo' && styles.visualModeChipSelected]}>
+          <Text
+            style={[styles.visualModeChipLabel, mode === 'photo' && styles.visualModeChipLabelSelected]}>
+            Photo
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function PhotoField({
-  icon,
   photoUri,
   onPick,
-  onRemove,
 }: {
-  icon: string;
   photoUri: string | null;
   onPick: () => void;
-  onRemove: () => void;
 }) {
   return (
     <View style={styles.photoField}>
       <Text style={styles.fieldLabel}>Photo</Text>
-      <Text style={styles.photoHint}>Optional. Shows on Home and checkout instead of the emoji.</Text>
-      <View style={styles.photoActions}>
-        <Pressable accessibilityRole="button" onPress={onPick} style={styles.photoPreview}>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.photoImage} resizeMode="cover" />
-          ) : (
-            <IconTile icon={icon || '📷'} size={72} />
-          )}
-        </Pressable>
+      <Text style={styles.photoHint}>Shows on Home and checkout.</Text>
+      <Pressable accessibilityRole="button" onPress={onPick} style={styles.photoPreview}>
         {photoUri ? (
-          <Pressable accessibilityRole="button" onPress={onRemove} style={styles.removePhotoButton}>
-            <Text style={styles.removePhotoLabel}>Remove photo</Text>
-          </Pressable>
-        ) : null}
-      </View>
+          <Image source={{ uri: photoUri }} style={styles.photoImage} resizeMode="cover" />
+        ) : (
+          <View style={styles.photoPlaceholder}>
+            <Text style={styles.photoPlaceholderLabel}>Tap to add photo</Text>
+          </View>
+        )}
+      </Pressable>
     </View>
   );
 }
@@ -608,7 +663,36 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   photoField: {
-    marginBottom: 14,
+    marginTop: 14,
+    marginBottom: 0,
+  },
+  visualModeField: {
+    marginBottom: 0,
+  },
+  visualModeRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  visualModeChip: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: colors.surfaceMuted,
+    backgroundColor: colors.white,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  visualModeChipSelected: {
+    borderColor: colors.purple,
+    backgroundColor: colors.surfaceMuted,
+  },
+  visualModeChipLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: colors.inkSoft,
+  },
+  visualModeChipLabelSelected: {
+    color: colors.ink,
   },
   photoHint: {
     fontFamily: 'Nunito_700Bold',
@@ -616,31 +700,30 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     marginBottom: 10,
   },
-  photoActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
   photoPreview: {
     borderRadius: 16,
     overflow: 'hidden',
+    alignSelf: 'flex-start',
   },
   photoImage: {
-    width: 72,
-    height: 72,
+    width: 120,
+    height: 120,
     borderRadius: 16,
   },
-  removePhotoButton: {
-    paddingVertical: 8,
+  photoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.surfaceMuted,
   },
-  removePhotoLabel: {
+  photoPlaceholderLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
     color: colors.inkSoft,
+    textAlign: 'center',
   },
   fieldLabel: {
     fontFamily: 'Nunito_800ExtraBold',

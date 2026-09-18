@@ -1,5 +1,27 @@
 import { createCatalog } from '@/lib/catalog';
 
+test('admin can add a photo-only Item without an emoji icon', async () => {
+  const catalog = createCatalog();
+
+  await catalog.createItem({
+    name: 'Tamagotchi',
+    icon: '',
+    costCents: 200,
+    priceCents: 800,
+    photoUri: 'file:///items/tamagotchi.jpg',
+  });
+
+  expect(await catalog.listForSeller()).toEqual([
+    {
+      id: expect.any(Number),
+      name: 'Tamagotchi',
+      icon: '',
+      photoUri: 'file:///items/tamagotchi.jpg',
+      priceCents: 800,
+    },
+  ]);
+});
+
 test('admin can add a photo when creating an Item', async () => {
   const catalog = createCatalog();
 

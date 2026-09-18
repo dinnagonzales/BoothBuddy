@@ -78,7 +78,7 @@ export async function pickBusinessImage(kind: BusinessImageKind): Promise<string
 
 export async function persistItemPhoto(sourceUri: string, itemId: number): Promise<string> {
   if (!FileSystem.documentDirectory) {
-    return sourceUri;
+    throw new Error('This device cannot save item photos. Try again on iPhone or iPad.');
   }
 
   await ensureItemPhotoDir();

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconTile } from '@/components/ui/IconTile';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing, touchTargets } from '@/constants/visual';
+import { checkoutVisualSize, iconTileProps, resolveItemVisual } from '@/lib/item-visual';
 
 type ScreenProps = ViewProps & {
   children: ReactNode;
@@ -71,13 +72,14 @@ export function ItemCard({
   onAdd,
 }: ItemCardProps) {
   const useStepper = onIncrement != null && onDecrement != null;
+  const visual = resolveItemVisual({ icon, photoUri });
+  const tileSize = visual ? checkoutVisualSize(visual) : 36;
 
   return (
     <View style={styles.itemCard}>
       <IconTile
-        icon={icon}
-        imageSource={photoUri ? { uri: photoUri } : undefined}
-        size={36}
+        {...iconTileProps({ icon, photoUri })}
+        size={tileSize}
         style={styles.itemIconWrap}
       />
       <Text style={styles.itemName}>{name}</Text>
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.itemRowPaddingV,
   },
   itemIconWrap: {
-    width: 36,
+    alignSelf: 'center',
   },
   itemName: {
     flex: 1,
