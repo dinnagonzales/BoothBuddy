@@ -548,10 +548,6 @@ export async function createSale(
   },
 ): Promise<Sale> {
   const totalCents = cartTotal(params.lines);
-  const saleNumber =
-    params.saleNumber != null && params.saleNumber > 0
-      ? params.saleNumber
-      : await getNextSaleNumber(db);
   const name = normalizeOptionalText(params.name);
   const notes = normalizeOptionalText(params.notes);
   const completeDate = normalizeOptionalText(params.completeDate);
@@ -563,49 +559,155 @@ export async function createSale(
     throw new Error('Preorder requires name, notes, and complete date');
   }
 
-  const result = await db.runAsync(
-    `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, change_kept, name, notes, complete_date, is_preorder)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    saleNumber,
-    params.marketDayId,
-    totalCents,
-    params.paymentMethod,
-    params.cashReceivedCents,
-    changeKept,
-    name,
-    notes,
-    completeDate,
-    isPreorder,
-  );
+  let created: Sale | null = null;
 
-  const saleId = result.lastInsertRowId;
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    const saleNumber =
+      params.saleNumber != null && params.saleNumber > 0
+        ? params.saleNumber
+        : (
+            await txn.getFirstAsync<{ n: number }>(
+              'SELECT COALESCE(MAX(sale_number), 0) + 1 AS n FROM sales',
+            )
+          )?.n ?? 1;
 
-  for (const line of params.lines) {
-    await db.runAsync(
-      `INSERT INTO line_items (sale_id, item_id, quantity, price_cents, cost_cents)
-       VALUES (?, ?, ?, ?, ?)`,
-      saleId,
-      line.itemId,
-      line.quantity,
-      line.priceCents,
-      line.costCents,
+    const result = await txn.runAsync(
+      `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, change_kept, name, notes, complete_date, is_preorder)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      saleNumber,
+      params.marketDayId,
+      totalCents,
+      params.paymentMethod,
+      params.cashReceivedCents,
+      changeKept,
+      name,
+      notes,
+      completeDate,
+      isPreorder,
     );
+
+    const saleId = result.lastInsertRowId;
+
+    for (const line of params.lines) {
+      await txn.runAsync(
+        `INSERT INTO line_items (sale_id, item_id, quantity, price_cents, cost_cents)
+         VALUES (?, ?, ?, ?, ?)`,
+        saleId,
+        line.itemId,
+        line.quantity,
+        line.priceCents,
+        line.costCents,
+      );
+    }
+
+    const createdAtRow = await txn.getFirstAsync<{ created_at: string }>(
+      'SELECT created_at FROM sales WHERE id = ?',
+      saleId,
+    );
+
+    created = {
+      id: saleId,
+      saleNumber,
+      marketDayId: params.marketDayId,
+      totalCents,
+      paymentMethod: params.paymentMethod,
+      cashReceivedCents: params.cashReceivedCents,
+      changeKept: changeKept === 1,
+      name,
+      notes,
+      completeDate,
+      isPreorder: isPreorder === 1,
+      createdAt: createdAtRow?.created_at ?? new Date().toISOString(),
+    };
+  });
+
+  return created!;
+}
+
+/**
+ * Replace an existing sale's payment fields and line items in one transaction.
+ * Keeps id, sale_number, created_at, market_day_id, and is_preorder.
+ */
+export async function replaceSaleContents(
+  db: SQLiteDatabase,
+  saleId: number,
+  params: {
+    lines: CartLine[];
+    paymentMethod: PaymentMethod;
+    cashReceivedCents: number | null;
+    changeKept?: boolean;
+    name?: string | null;
+    notes?: string | null;
+    completeDate?: string | null;
+  },
+): Promise<Sale> {
+  if (params.lines.length === 0) {
+    throw new Error('Sale must have at least one line item');
   }
 
-  return {
-    id: saleId,
-    saleNumber,
-    marketDayId: params.marketDayId,
-    totalCents,
-    paymentMethod: params.paymentMethod,
-    cashReceivedCents: params.cashReceivedCents,
-    changeKept: changeKept === 1,
-    name,
-    notes,
-    completeDate,
-    isPreorder: isPreorder === 1,
-    createdAt: new Date().toISOString(),
-  };
+  const existing = await getSale(db, saleId);
+  if (!existing) {
+    throw new Error('Sale not found');
+  }
+
+  const totalCents = cartTotal(params.lines);
+  const name = normalizeOptionalText(params.name);
+  const notes = normalizeOptionalText(params.notes);
+  const completeDate = normalizeOptionalText(params.completeDate);
+  const changeKept =
+    params.changeKept === true && (params.cashReceivedCents ?? 0) > totalCents ? 1 : 0;
+
+  let updated: Sale | null = null;
+
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.runAsync(
+      `UPDATE sales
+       SET total_cents = ?, payment_method = ?, cash_received_cents = ?, change_kept = ?,
+           name = ?, notes = ?, complete_date = ?
+       WHERE id = ?`,
+      totalCents,
+      params.paymentMethod,
+      params.cashReceivedCents,
+      changeKept,
+      name,
+      notes,
+      completeDate,
+      saleId,
+    );
+
+    await txn.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
+
+    for (const line of params.lines) {
+      await txn.runAsync(
+        `INSERT INTO line_items (sale_id, item_id, quantity, price_cents, cost_cents)
+         VALUES (?, ?, ?, ?, ?)`,
+        saleId,
+        line.itemId,
+        line.quantity,
+        line.priceCents,
+        line.costCents,
+      );
+    }
+
+    updated = {
+      id: saleId,
+      saleNumber: existing.saleNumber,
+      marketDayId: existing.marketDayId,
+      totalCents,
+      paymentMethod: params.paymentMethod,
+      cashReceivedCents: params.cashReceivedCents,
+      changeKept: changeKept === 1,
+      name,
+      notes,
+      completeDate,
+      isPreorder: existing.isPreorder,
+      createdAt: existing.createdAt,
+    };
+  });
+
+  await flagMarketDayReexportIfExported(db, existing.marketDayId);
+
+  return updated!;
 }
 
 export async function getSale(db: SQLiteDatabase, saleId: number): Promise<Sale | null> {
@@ -656,8 +758,10 @@ export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Prom
 }
 
 export async function deleteSale(db: SQLiteDatabase, saleId: number): Promise<void> {
-  await db.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
-  await db.runAsync('DELETE FROM sales WHERE id = ?', saleId);
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
+    await txn.runAsync('DELETE FROM sales WHERE id = ?', saleId);
+  });
 }
 
 async function flagMarketDayReexportIfExported(

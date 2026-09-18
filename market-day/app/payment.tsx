@@ -14,7 +14,7 @@ import { useCart } from '@/context/CartContext';
 import type { BusinessSettings } from '@/lib/business-settings';
 import { EMPTY_BUSINESS_SETTINGS } from '@/lib/business-settings';
 import { getBusinessSettings } from '@/lib/db/business-settings';
-import { createSale, deleteSale, getActiveMarketDay } from '@/lib/db/queries';
+import { createSale, getActiveMarketDay, replaceSaleContents } from '@/lib/db/queries';
 import { safeBack } from '@/lib/navigation';
 import { paymentCanComplete, preorderMetadataValid, cashChangeCents, cashChangeStatusLabel } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
@@ -110,22 +110,9 @@ export default function PaymentScreen() {
     void (async () => {
       if (lines.length === 0) return;
 
-      let marketDayId: number | null;
-      if (isQuickSale) {
-        marketDayId = null;
-      } else {
-        const marketDay = await getActiveMarketDay(db);
-        marketDayId = marketDay?.id ?? null;
-      }
-
       const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
 
-      if (editingSaleId) {
-        await deleteSale(db, editingSaleId);
-      }
-
-      const sale = await createSale(db, {
-        marketDayId,
+      const paymentFields = {
         lines,
         paymentMethod,
         cashReceivedCents:
@@ -135,10 +122,28 @@ export default function PaymentScreen() {
         name: saleName,
         notes: saleNotes,
         completeDate: saleCompleteDate,
-        isPreorder: preorderCheckout,
-        saleNumber:
-          invoiceNumber != null && invoiceNumber > 0 ? invoiceNumber : undefined,
-      });
+      };
+
+      let sale;
+      if (editingSaleId != null) {
+        sale = await replaceSaleContents(db, editingSaleId, paymentFields);
+      } else {
+        let marketDayId: number | null;
+        if (isQuickSale) {
+          marketDayId = null;
+        } else {
+          const marketDay = await getActiveMarketDay(db);
+          marketDayId = marketDay?.id ?? null;
+        }
+
+        sale = await createSale(db, {
+          marketDayId,
+          ...paymentFields,
+          isPreorder: preorderCheckout,
+          saleNumber:
+            invoiceNumber != null && invoiceNumber > 0 ? invoiceNumber : undefined,
+        });
+      }
 
       clearCart();
       router.replace({

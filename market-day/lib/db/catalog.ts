@@ -35,6 +35,7 @@ import {
   addToMenu as addItemToMenu,
   removeFromMenu,
   removeSaleByNumber,
+  replaceSaleContents,
   startMarketDay,
   undoCloseMostRecentMarketDay,
   unarchiveItem,
@@ -192,6 +193,14 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async updateSale(saleNumber, updates) {
       await updateSale(db, saleNumber, updates);
+    },
+    async replaceSale(saleNumber, params) {
+      const sale = await getSaleByNumber(db, saleNumber);
+      if (!sale) {
+        throw new Error('Sale not found');
+      }
+      const updated = await replaceSaleContents(db, sale.id, params);
+      return { saleNumber: updated.saleNumber };
     },
     async completePreorder(saleNumber, params) {
       await completePreorder(db, saleNumber, params);

@@ -131,6 +131,18 @@ export type Catalog = {
       completeDate?: string | null;
     },
   ): Promise<void>;
+  replaceSale(
+    saleNumber: number,
+    params: {
+      lines: CartLine[];
+      paymentMethod: PaymentMethod;
+      cashReceivedCents: number | null;
+      changeKept?: boolean;
+      name?: string | null;
+      notes?: string | null;
+      completeDate?: string | null;
+    },
+  ): Promise<{ saleNumber: number }>;
   completePreorder(
     saleNumber: number,
     params: {
@@ -809,6 +821,34 @@ export function createCatalog(): Catalog {
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
       }
+    },
+    async replaceSale(saleNumber, params) {
+      const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+      if (!sale) {
+        throw new Error('Sale not found');
+      }
+      if (params.lines.length === 0) {
+        throw new Error('Sale must have at least one line item');
+      }
+
+      const totalCents = cartTotal(params.lines);
+      const changeKept =
+        params.changeKept === true && (params.cashReceivedCents ?? 0) > totalCents;
+
+      sale.lines = params.lines.map((line) => ({ ...line }));
+      sale.paymentMethod = params.paymentMethod;
+      sale.cashReceivedCents = params.cashReceivedCents;
+      sale.changeKept = changeKept;
+      sale.name = normalizeOptionalText(params.name);
+      sale.notes = normalizeOptionalText(params.notes);
+      sale.completeDate = normalizeOptionalText(params.completeDate);
+
+      const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
+      if (marketDay?.exportedAt) {
+        marketDay.needsReexport = true;
+      }
+
+      return { saleNumber: sale.saleNumber };
     },
     async completePreorder(saleNumber, params) {
       const sale = sales.find((entry) => entry.saleNumber === saleNumber);

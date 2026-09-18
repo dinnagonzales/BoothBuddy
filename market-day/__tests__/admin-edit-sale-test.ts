@@ -238,7 +238,7 @@ test('admin can add optional name and notes to a Sale', async () => {
   expect((await catalog.getSale(saleNumber))?.notes).toBeNull();
 });
 
-test('edit-sale delete+recreate reuses the same invoice number', async () => {
+test('edit-sale replace keeps the same invoice number and created time', async () => {
   const catalog = createCatalog();
 
   const dragon = await catalog.createItem({
@@ -280,12 +280,12 @@ test('edit-sale delete+recreate reuses the same invoice number', async () => {
     cashReceivedCents: 400,
   });
 
-  expect(first.saleNumber).toBe(1);
+  const before = await catalog.getSale(first.saleNumber);
+  expect(before?.saleNumber).toBe(1);
+  const createdAt = before!.createdAt;
 
-  // Mirrors payment.tsx edit flow: delete then recreate with the same invoice.
-  await catalog.removeSale(first.saleNumber);
-  const recreated = await catalog.recordSale({
-    marketDayId: marketDay.id,
+  // Mirrors payment.tsx edit flow: replace contents in place.
+  const replaced = await catalog.replaceSale(first.saleNumber, {
     lines: [
       {
         itemId: dragon.id,
@@ -298,19 +298,71 @@ test('edit-sale delete+recreate reuses the same invoice number', async () => {
     ],
     paymentMethod: 'cash',
     cashReceivedCents: 800,
-    saleNumber: first.saleNumber,
   });
 
-  expect(recreated.saleNumber).toBe(1);
-  expect(await catalog.getSale(1)).toMatchObject({
+  expect(replaced.saleNumber).toBe(1);
+  const after = await catalog.getSale(1);
+  expect(after).toMatchObject({
     saleNumber: 1,
     totalCents: 800,
     paymentMethod: 'cash',
+    createdAt,
   });
+  expect(after?.lines).toEqual([
+    expect.objectContaining({ itemId: dragon.id, quantity: 2 }),
+  ]);
   expect(await catalog.listSalesForMarketDay(marketDay.id)).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ saleNumber: 1, totalCents: 800 }),
       expect.objectContaining({ saleNumber: 2, totalCents: 400 }),
     ]),
   );
+});
+
+test('exported Market Day is flagged for re-export after replacing a Sale', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 400,
+  });
+
+  await catalog.exportMarketDay(marketDay.id);
+  expect(await catalog.marketDayNeedsReexport(marketDay.id)).toBe(false);
+
+  await catalog.replaceSale(saleNumber, {
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 2,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 800,
+  });
+
+  expect(await catalog.marketDayNeedsReexport(marketDay.id)).toBe(true);
 });
