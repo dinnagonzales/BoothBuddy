@@ -1,8 +1,9 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { ensureActiveMarketDayMenu } from '@/lib/db/queries';
+import { migrateSalesTable } from '@/lib/db/sales-schema';
 
-const SCHEMA = `
+const CORE_SCHEMA = `
   CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -30,19 +31,9 @@ const SCHEMA = `
     removed INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (market_day_id, item_id)
   );
+`;
 
-  CREATE TABLE IF NOT EXISTS sales (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sale_number INTEGER NOT NULL UNIQUE,
-    market_day_id INTEGER REFERENCES market_days(id),
-    total_cents INTEGER NOT NULL,
-    payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'venmo_zelle', 'pay_on_pickup')),
-    is_preorder INTEGER NOT NULL DEFAULT 0,
-    cash_received_cents INTEGER,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    exported_at TEXT
-  );
-
+const DEPENDENT_SCHEMA = `
   CREATE TABLE IF NOT EXISTS line_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sale_id INTEGER NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
@@ -59,7 +50,7 @@ const SCHEMA = `
 `;
 
 export async function initDatabase(db: SQLiteDatabase): Promise<void> {
-  await db.execAsync(SCHEMA);
+  await db.execAsync(CORE_SCHEMA);
 
   const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(items)');
   const hasRetired = columns.some((column) => column.name === 'retired');
@@ -81,64 +72,8 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
     );
   }
 
-  const salesColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(sales)');
-  const hasSaleName = salesColumns.some((column) => column.name === 'name');
-  if (!hasSaleName) {
-    await db.execAsync('ALTER TABLE sales ADD COLUMN name TEXT');
-  }
-  const hasSaleNotes = salesColumns.some((column) => column.name === 'notes');
-  if (!hasSaleNotes) {
-    await db.execAsync('ALTER TABLE sales ADD COLUMN notes TEXT');
-  }
-  const hasCompleteDate = salesColumns.some((column) => column.name === 'complete_date');
-  if (!hasCompleteDate) {
-    await db.execAsync('ALTER TABLE sales ADD COLUMN complete_date TEXT');
-  }
-
-  const refreshedSalesColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(sales)');
-  const hasChangeKept = refreshedSalesColumns.some((column) => column.name === 'change_kept');
-  if (!hasChangeKept) {
-    await db.execAsync('ALTER TABLE sales ADD COLUMN change_kept INTEGER NOT NULL DEFAULT 0');
-  }
-
-  const salesTableSql = await db.getFirstAsync<{ sql: string | null }>(
-    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'sales'",
-  );
-  if (salesTableSql?.sql && !salesTableSql.sql.includes('pay_on_pickup')) {
-    await db.execAsync(`
-      PRAGMA foreign_keys=OFF;
-      CREATE TABLE sales_preorder_migration (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sale_number INTEGER NOT NULL UNIQUE,
-        market_day_id INTEGER REFERENCES market_days(id),
-        total_cents INTEGER NOT NULL,
-        payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'venmo_zelle', 'pay_on_pickup')),
-        cash_received_cents INTEGER,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        exported_at TEXT,
-        name TEXT,
-        notes TEXT,
-        is_preorder INTEGER NOT NULL DEFAULT 0
-      );
-      INSERT INTO sales_preorder_migration (
-        id, sale_number, market_day_id, total_cents, payment_method, cash_received_cents,
-        created_at, exported_at, name, notes, is_preorder
-      )
-      SELECT
-        id, sale_number, market_day_id, total_cents, payment_method, cash_received_cents,
-        created_at, exported_at, name, notes, 0
-      FROM sales;
-      DROP TABLE sales;
-      ALTER TABLE sales_preorder_migration RENAME TO sales;
-      PRAGMA foreign_keys=ON;
-    `);
-  } else {
-    const refreshedColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(sales)');
-    const hasIsPreorder = refreshedColumns.some((column) => column.name === 'is_preorder');
-    if (!hasIsPreorder) {
-      await db.execAsync('ALTER TABLE sales ADD COLUMN is_preorder INTEGER NOT NULL DEFAULT 0');
-    }
-  }
+  await migrateSalesTable(db);
+  await db.execAsync(DEPENDENT_SCHEMA);
 
   await ensureActiveMarketDayMenu(db);
 }
