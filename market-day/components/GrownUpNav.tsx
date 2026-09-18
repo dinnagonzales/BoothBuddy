@@ -1,6 +1,9 @@
 import { usePathname, useRouter } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ClipboardList, Package, Receipt, Settings, Tent } from 'lucide-react-native';
 
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 
 type Tab = 'events' | 'inventory' | 'preorders' | 'sales' | 'business';
@@ -17,35 +20,36 @@ export function GrownUpNav() {
   const router = useRouter();
   const pathname = usePathname();
   const current = activeTab(pathname);
+  const iconColor = (active: boolean) => (active ? colors.purpleDark : colors.inkSoft);
 
   return (
     <View style={styles.nav}>
       <NavItem
-        icon="🎪"
+        icon={<UiIcon icon={Tent} size={22} color={iconColor(current === 'events')} />}
         label="Events"
         active={current === 'events'}
         onPress={() => router.replace('/settings')}
       />
       <NavItem
-        icon="📦"
+        icon={<UiIcon icon={Package} size={22} color={iconColor(current === 'inventory')} />}
         label="Inventory"
         active={current === 'inventory'}
         onPress={() => router.replace('/inventory')}
       />
       <NavItem
-        icon="📋"
+        icon={<UiIcon icon={ClipboardList} size={22} color={iconColor(current === 'preorders')} />}
         label="Preorders"
         active={current === 'preorders'}
         onPress={() => router.replace('/preorders')}
       />
       <NavItem
-        icon="🧾"
+        icon={<UiIcon icon={Receipt} size={22} color={iconColor(current === 'sales')} />}
         label="Sales"
         active={current === 'sales'}
         onPress={() => router.replace('/sales')}
       />
       <NavItem
-        icon="⚙️"
+        icon={<UiIcon icon={Settings} size={22} color={iconColor(current === 'business')} />}
         label="Settings"
         active={current === 'business'}
         onPress={() => router.replace('/business')}
@@ -60,14 +64,14 @@ function NavItem({
   active,
   onPress,
 }: {
-  icon: string;
+  icon: ReactNode;
   label: string;
   active: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={styles.navItem}>
-      <Text style={styles.navIcon}>{icon}</Text>
+      <View style={styles.navIcon}>{icon}</View>
       <Text style={[styles.navLabel, active ? styles.navLabelActive : null]}>{label}</Text>
     </Pressable>
   );
@@ -88,8 +92,10 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   navIcon: {
-    fontSize: 22,
     marginBottom: 2,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   navLabel: {
     fontFamily: 'Nunito_800ExtraBold',

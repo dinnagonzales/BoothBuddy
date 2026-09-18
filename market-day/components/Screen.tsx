@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChevronLeft } from 'lucide-react-native';
 
 import { IconTile } from '@/components/ui/IconTile';
+import { UI_ICON_STROKE } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing, touchTargets } from '@/constants/visual';
 import { checkoutVisualSize, iconTileProps, resolveItemVisual } from '@/lib/item-visual';
@@ -24,23 +26,31 @@ export function Screen({ children, className, ...props }: ScreenProps) {
 
 type ScreenHeaderProps = {
   title: string;
+  /** Optional Lucide (or brand) icon shown before the title. */
+  titleIcon?: ReactNode;
   onBack?: () => void;
   right?: ReactNode;
 };
 
-export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
+export function ScreenHeader({ title, titleIcon, onBack, right }: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
       {onBack ? (
-        <Pressable onPress={onBack} style={styles.headerSide}>
-          <Text style={styles.backLabel}>← Back</Text>
+        <Pressable onPress={onBack} style={styles.headerSide} accessibilityLabel="Back">
+          <View style={styles.backRow}>
+            <ChevronLeft size={20} color={colors.purple} strokeWidth={UI_ICON_STROKE} />
+            <Text style={styles.backLabel}>Back</Text>
+          </View>
         </Pressable>
       ) : (
         <View style={styles.headerSide} />
       )}
-      <Text style={styles.headerTitle} numberOfLines={1}>
-        {title}
-      </Text>
+      <View style={styles.headerTitleWrap}>
+        {titleIcon}
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {title}
+        </Text>
+      </View>
       <View style={[styles.headerSide, styles.headerSideEnd]}>{right ?? null}</View>
     </View>
   );
@@ -144,13 +154,24 @@ const styles = StyleSheet.create({
   headerSideEnd: {
     alignItems: 'flex-end',
   },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: -4,
+  },
   backLabel: {
     fontFamily: fonts.body.bold,
     fontSize: 14,
     color: colors.purple,
   },
-  headerTitle: {
+  headerTitleWrap: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  headerTitle: {
     textAlign: 'center',
     fontFamily: fonts.body.bold,
     fontSize: 15,

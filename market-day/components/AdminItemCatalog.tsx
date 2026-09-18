@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
+import { Package, Pencil, Trash2 } from 'lucide-react-native';
 
 import { ExpandableCard, OutlineAddButton } from '@/components/ExpandableCard';
 import { IconInput } from '@/components/ui/IconInput';
 import { IconTile } from '@/components/ui/IconTile';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import type { AdminItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
@@ -245,7 +247,7 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
           />
         </ExpandableCard>
       ) : (
-        <OutlineAddButton label="➕ Add Item" onPress={openAddForm} />
+        <OutlineAddButton label="Add Item" onPress={openAddForm} />
       )}
     </View>
   );
@@ -289,7 +291,11 @@ function ItemRow({
           editing && styles.pencilActive,
           pressed && styles.pencilPressed,
         ]}>
-        <Text style={[styles.pencilIcon, editing && styles.pencilIconActive]}>✏️</Text>
+        <UiIcon
+          icon={Pencil}
+          size={18}
+          color={editing ? colors.white : colors.inkSoft}
+        />
       </Pressable>
     </>
   );
@@ -405,7 +411,10 @@ function ItemForm({
               accessibilityRole="button"
               onPress={onArchive}
               style={({ pressed }) => [styles.archiveButton, pressed && styles.archiveButtonPressed]}>
-              <Text style={styles.archiveButtonLabel}>📦 Archive Item</Text>
+              <View style={styles.actionLabelRow}>
+                <UiIcon icon={Package} size={18} color={colors.amberDark} />
+                <Text style={styles.archiveButtonLabel}>Archive Item</Text>
+              </View>
             </Pressable>
             <Text style={styles.archiveHint}>
               Hides from the menu. Past sales stay.
@@ -418,7 +427,10 @@ function ItemForm({
             accessibilityRole="button"
             onPress={onUnarchive}
             style={({ pressed }) => [styles.archiveButton, pressed && styles.archiveButtonPressed]}>
-            <Text style={styles.archiveButtonLabel}>📦 UnArchive Item</Text>
+            <View style={styles.actionLabelRow}>
+              <UiIcon icon={Package} size={18} color={colors.amberDark} />
+              <Text style={styles.archiveButtonLabel}>UnArchive Item</Text>
+            </View>
           </Pressable>
         ) : null}
 
@@ -428,7 +440,10 @@ function ItemForm({
               accessibilityRole="button"
               onPress={onDelete}
               style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}>
-              <Text style={styles.deleteButtonLabel}>🗑 Delete Item</Text>
+              <View style={styles.actionLabelRow}>
+                <UiIcon icon={Trash2} size={18} color={colors.redDark} />
+                <Text style={styles.deleteButtonLabel}>Delete Item</Text>
+              </View>
             </Pressable>
             <Text style={styles.deleteHint}>
               Only for mistakes. Archive if this item has sold before.
@@ -647,11 +662,10 @@ const styles = StyleSheet.create({
   pencilPressed: {
     opacity: 0.85,
   },
-  pencilIcon: {
-    fontSize: 11,
-  },
-  pencilIconActive: {
-    fontSize: 14,
+  actionLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   formBody: {
     gap: 0,

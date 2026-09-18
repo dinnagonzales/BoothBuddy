@@ -1,5 +1,8 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { Banknote, Coins, Receipt, Smartphone } from 'lucide-react-native';
 
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { formatMarketDayDate } from '@/lib/market-day';
@@ -7,7 +10,7 @@ import { formatMoney } from '@/lib/money';
 import { textOnBackground } from '@/theme/tokens';
 
 type StatBoxProps = {
-  icon: string;
+  icon: ReactNode;
   label: string;
   value: string;
   subValue?: string;
@@ -19,7 +22,7 @@ function StatBox({ icon, label, value, subValue, backgroundColor, fullWidth }: S
   const labelColor = textOnBackground(backgroundColor);
   return (
     <View style={[styles.statBox, fullWidth && styles.statBoxFullWidth, { backgroundColor }]}>
-      <Text style={styles.statIcon}>{icon}</Text>
+      <View style={styles.statIcon}>{icon}</View>
       <Text style={[styles.statLabel, { color: labelColor }]}>{label}</Text>
       <Text style={[styles.statValue, { color: labelColor }]}>{value}</Text>
       {subValue ? (
@@ -68,21 +71,21 @@ export function MarketDaySummaryCard({
       {variant === 'viewOnly' ? (
         <View style={styles.stack}>
           <StatBox
-            icon="🧾"
+            icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
             label="Total Sales"
             value={String(saleCount)}
             backgroundColor={colors.pink}
             fullWidth
           />
           <StatBox
-            icon="📱"
+            icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
             label="Zelle / Venmo"
             value={formatMoney(venmoCents)}
             backgroundColor={colors.grayLight}
             fullWidth
           />
           <StatBox
-            icon="💵"
+            icon={<UiIcon icon={Banknote} size={20} color={textOnBackground(colors.green)} />}
             label="Cash"
             value={formatMoney(cashTotalCents)}
             subValue={cashSubValue}
@@ -94,13 +97,13 @@ export function MarketDaySummaryCard({
         <View style={styles.grid}>
           <View style={styles.gridRow}>
             <StatBox
-              icon="🧾"
+              icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
               label="Total Sales"
               value={String(saleCount)}
               backgroundColor={colors.pink}
             />
             <StatBox
-              icon="💰"
+              icon={<UiIcon icon={Coins} size={20} color={textOnBackground(colors.peach)} />}
               label="Profit"
               value={formatMoney(profitCents)}
               subValue={`${formatMoney(totalCents)} gross`}
@@ -109,13 +112,13 @@ export function MarketDaySummaryCard({
           </View>
           <View style={styles.gridRow}>
             <StatBox
-              icon="📱"
+              icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
               label="Zelle / Venmo"
               value={formatMoney(venmoCents)}
               backgroundColor={colors.grayLight}
             />
             <StatBox
-              icon="💵"
+              icon={<UiIcon icon={Banknote} size={20} color={textOnBackground(colors.green)} />}
               label="Cash"
               value={formatMoney(cashTotalCents)}
               subValue={cashSubValue}
@@ -168,7 +171,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   statIcon: {
-    fontSize: 18,
     marginBottom: 6,
   },
   statLabel: {

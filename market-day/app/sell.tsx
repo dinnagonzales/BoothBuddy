@@ -2,10 +2,12 @@ import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from '
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Search } from 'lucide-react-native';
 
 import { DatePickerField } from '@/components/DatePickerField';
-import { ItemCard, Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
+import { ItemCard, Screen, ScreenHeader } from '@/components/Screen';
 import { Card } from '@/components/ui';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -140,7 +142,10 @@ export default function SellScreen() {
             keyboardShouldPersistTaps="handled"
             ListHeaderComponent={
               <View style={styles.menuLabel}>
-                <SectionLabel>🍭 Menu · use − and + to adjust</SectionLabel>
+                <View style={styles.menuLabelRow}>
+                  <UiIcon icon={Search} size={14} color={colors.inkSoft} />
+                  <Text style={styles.menuLabelText}>Menu · use − and + to adjust</Text>
+                </View>
               </View>
             }
             ListEmptyComponent={
@@ -282,6 +287,19 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     marginBottom: 0,
+  },
+  menuLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  menuLabelText: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
   },
   emptyMenuCard: {
     backgroundColor: colors.white,

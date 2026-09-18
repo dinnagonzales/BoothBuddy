@@ -2,6 +2,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Home, Tent, XCircle } from 'lucide-react-native';
 
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { AdminSalesList } from '@/components/AdminSalesList';
@@ -11,6 +12,7 @@ import { PastEventsList } from '@/components/PastEventsList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { StartMarketDayForm } from '@/components/StartMarketDayForm';
 import { TodaysMenu } from '@/components/TodaysMenu';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import {
@@ -111,7 +113,11 @@ export default function SettingsScreen() {
   if (!activeDay) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
+        <ScreenHeader
+          title="Events"
+          titleIcon={<UiIcon icon={Tent} size={20} color={colors.ink} />}
+          onBack={() => leaveGrownUpArea(router)}
+        />
         <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.emptyWrap}>
             <View style={styles.emptyBadge}>
@@ -138,7 +144,11 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="🎪 Events" onBack={() => leaveGrownUpArea(router)} />
+      <ScreenHeader
+        title="Events"
+        titleIcon={<UiIcon icon={Tent} size={20} color={colors.ink} />}
+        onBack={() => leaveGrownUpArea(router)}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.summarySection}>
           <SectionLabel>Event Summary</SectionLabel>
@@ -202,13 +212,19 @@ export default function SettingsScreen() {
             styles.dashboardButton,
             pressed && styles.dashboardButtonPressed,
           ]}>
-          <Text style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Text>
+          <View style={styles.dashboardButtonRow}>
+            <UiIcon icon={Home} size={18} color={colors.ink} />
+            <Text style={styles.dashboardButtonLabel}>Go to Dashboard</Text>
+          </View>
         </Pressable>
         <Pressable
           accessibilityRole="button"
           onPress={handleEndMarketDay}
           style={({ pressed }) => [styles.endButton, pressed && styles.endButtonPressed]}>
-          <Text style={styles.endButtonLabel}>🔴 End Market Day</Text>
+          <View style={styles.endButtonRow}>
+            <UiIcon icon={XCircle} size={20} color={colors.redDark} />
+            <Text style={styles.endButtonLabel}>End Market Day</Text>
+          </View>
         </Pressable>
       </View>
     </View>
@@ -235,6 +251,11 @@ const styles = StyleSheet.create({
   },
   dashboardButtonPressed: {
     opacity: 0.85,
+  },
+  dashboardButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,
@@ -333,6 +354,11 @@ const styles = StyleSheet.create({
   },
   endButtonPressed: {
     opacity: 0.85,
+  },
+  endButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   endButtonLabel: {
     fontFamily: fonts.heading.semiBold,

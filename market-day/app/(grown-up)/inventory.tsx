@@ -1,9 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { Package } from 'lucide-react-native';
 
 import { AdminItemCatalog } from '@/components/AdminItemCatalog';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
+import { colors } from '@/constants/theme';
 import { leaveGrownUpArea } from '@/lib/navigation';
 
 export default function InventoryScreen() {
@@ -13,7 +16,11 @@ export default function InventoryScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="📦 Inventory" onBack={() => leaveGrownUpArea(router)} />
+      <ScreenHeader
+        title="Inventory"
+        titleIcon={<UiIcon icon={Package} size={20} color={colors.ink} />}
+        onBack={() => leaveGrownUpArea(router)}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <SectionLabel>Items & cost</SectionLabel>
         <AdminItemCatalog db={db} autoOpenAdd={add === '1'} />

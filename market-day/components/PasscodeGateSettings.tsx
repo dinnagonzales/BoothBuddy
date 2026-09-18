@@ -2,9 +2,11 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
+import { Settings } from 'lucide-react-native';
 
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Checkbox } from '@/components/ui';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
@@ -78,9 +80,11 @@ export function PasscodeGateSettings({ db }: PasscodeGateSettingsProps) {
           style={styles.row}>
           <View style={styles.textWrap}>
             <Text style={styles.label}>Require Pass Code for Settings</Text>
-            <Text style={styles.hint}>
-              When off, ⚙️ opens Events without asking for a code.
-            </Text>
+            <View style={styles.hintRow}>
+              <Text style={styles.hint}>When off, </Text>
+              <UiIcon icon={Settings} size={14} color={colors.inkSoft} />
+              <Text style={styles.hint}> opens Events without asking for a code.</Text>
+            </View>
           </View>
           <View pointerEvents="none">
             <Checkbox
@@ -140,6 +144,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.inkSoft,
     lineHeight: 17,
+  },
+  hintRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 4,
   },
   checkbox: {
     borderWidth: 2,

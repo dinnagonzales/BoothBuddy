@@ -15,6 +15,7 @@ import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
 import { IconTile } from '@/components/ui/IconTile';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -29,6 +30,7 @@ import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
 import { homeVisualSize, resolveItemVisual, iconTileProps, HOME_MENU_ICON_SIZE } from '@/lib/item-visual';
 import type { Item } from '@/lib/types';
+import { Plus, Search, Settings } from 'lucide-react-native';
 
 type HomeItem = Item & { soldOut?: boolean };
 
@@ -175,7 +177,7 @@ export default function HomeScreen() {
               accessibilityLabel="Events"
               style={styles.gearButton}
               onPress={openSettings}>
-              <Text style={styles.gearIcon}>⚙️</Text>
+              <UiIcon icon={Settings} size={20} color={colors.inkSoft} />
             </Pressable>
             <View pointerEvents="none" style={styles.titleWrap}>
               <BoothBuddyLogo variant="long" />
@@ -221,7 +223,10 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          <Text style={styles.menuLabel}>🍭 Available Items</Text>
+          <View style={styles.menuLabelRow}>
+            <UiIcon icon={Search} size={14} color={colors.inkSoft} />
+            <Text style={styles.menuLabel}>Available Items</Text>
+          </View>
           <Text style={styles.menuHint}>Tap an item to start a sale</Text>
 
           {items.length === 0 ? (
@@ -233,7 +238,7 @@ export default function HomeScreen() {
                   accessibilityLabel="Add Item"
                   onPress={openInventory}
                   style={({ pressed }) => [styles.menuTile, styles.addItemTile, pressed && styles.menuTilePressed]}>
-                  <Text style={styles.addItemPlus}>+</Text>
+                  <UiIcon icon={Plus} size={48} color={colors.purple} />
                   <Text style={styles.addItemLabel}>Add Item</Text>
                 </Pressable>
                 <View style={styles.menuTileSpacer} />
@@ -352,9 +357,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gearIcon: {
-    fontSize: 16,
-  },
   preorderButton: {
     zIndex: 1,
     height: 38,
@@ -402,13 +404,18 @@ const styles = StyleSheet.create({
     opacity: 0.95,
     textAlign: 'center',
   },
+  menuLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
   menuLabel: {
     fontFamily: fonts.body.extraBold,
     fontSize: 11,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: colors.inkSoft,
-    marginBottom: 8,
   },
   menuHint: {
     fontFamily: fonts.body.regular,
@@ -486,13 +493,6 @@ const styles = StyleSheet.create({
     borderColor: colors.purple,
     borderStyle: 'dashed',
     backgroundColor: colors.white,
-  },
-  addItemPlus: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 52,
-    lineHeight: 58,
-    color: colors.purple,
-    textAlign: 'center',
   },
   addItemLabel: {
     fontFamily: fonts.body.extraBold,

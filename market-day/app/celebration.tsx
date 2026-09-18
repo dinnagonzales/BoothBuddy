@@ -2,10 +2,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { CheckCircle2, Home, Pencil, X } from 'lucide-react-native';
 import { tokens } from '@/theme/tokens';
 
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Card } from '@/components/ui';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -109,11 +111,11 @@ export default function CelebrationScreen() {
           style={styles.closeButton}
           hitSlop={8}
           onPress={goHome}>
-          <Text style={styles.closeLabel}>✕</Text>
+          <UiIcon icon={X} size={18} color={colors.inkSoft} />
         </Pressable>
 
         <View style={styles.badge}>
-          <Text style={styles.badgeIcon}>✅</Text>
+          <UiIcon icon={CheckCircle2} size={40} color={colors.ink} />
         </View>
         <Text style={styles.title}>{isPreorder ? 'Preorder saved!' : 'Sold!'}</Text>
         <Text style={styles.subtitle}>
@@ -130,12 +132,18 @@ export default function CelebrationScreen() {
             styles.dashboardButton,
             pressed && styles.dashboardButtonPressed,
           ]}>
-          <Text style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Text>
+          <View style={styles.dashboardButtonRow}>
+            <UiIcon icon={Home} size={18} color={colors.ink} />
+            <Text style={styles.dashboardButtonLabel}>Go to Dashboard</Text>
+          </View>
         </Pressable>
         <Pressable style={styles.editButton} onPress={editSale}>
-          <Text style={styles.editLabel}>
-            {isPreorder ? '✏️ Edit preorder' : '✏️ Edit this sale'}
-          </Text>
+          <View style={styles.editLabelRow}>
+            <UiIcon icon={Pencil} size={18} color={colors.purpleDark} />
+            <Text style={styles.editLabel}>
+              {isPreorder ? 'Edit preorder' : 'Edit this sale'}
+            </Text>
+          </View>
           <Text style={styles.editHint}>
             {isPreorder ? 'name, notes, or payment' : 'wrong item or price?'}
           </Text>
@@ -193,11 +201,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeLabel: {
-    fontFamily: fonts.heading.bold,
-    fontSize: 20,
-    color: colors.inkSoft,
-  },
   badge: {
     width: 90,
     height: 90,
@@ -216,9 +219,6 @@ const styles = StyleSheet.create({
         elevation: 0,
       },
     }),
-  },
-  badgeIcon: {
-    fontSize: 44,
   },
   title: {
     fontFamily: fonts.heading.semiBold,
@@ -249,6 +249,11 @@ const styles = StyleSheet.create({
   dashboardButtonPressed: {
     opacity: 0.85,
   },
+  dashboardButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
@@ -262,6 +267,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 15,
     color: colors.purpleDark,
+  },
+  editLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   editHint: {
     fontFamily: fonts.body.bold,

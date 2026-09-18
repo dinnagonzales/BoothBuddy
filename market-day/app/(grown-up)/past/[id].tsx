@@ -2,10 +2,12 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Trash2 } from 'lucide-react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import {
   canReopenMarketDay,
@@ -252,9 +254,16 @@ export default function PastMarketDayScreen() {
             deleting && styles.buttonDisabled,
             pressed && !deleting && styles.deleteButtonPressed,
           ]}>
-          <Text style={styles.deleteButtonLabel}>
-            {deleting ? 'Deleting…' : '🗑 Delete Market Day'}
-          </Text>
+          <View style={styles.deleteButtonRow}>
+            {deleting ? (
+              <Text style={styles.deleteButtonLabel}>Deleting…</Text>
+            ) : (
+              <>
+                <UiIcon icon={Trash2} size={18} color={colors.redDark} />
+                <Text style={styles.deleteButtonLabel}>Delete Market Day</Text>
+              </>
+            )}
+          </View>
         </Pressable>
       </View>
     </View>
@@ -352,6 +361,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: colors.redDark,
+  },
+  deleteButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   buttonDisabled: {
     opacity: 0.55,

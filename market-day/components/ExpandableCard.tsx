@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Plus } from 'lucide-react-native';
 
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 
 type ExpandableCardProps = {
@@ -80,7 +82,10 @@ export function OutlineAddButton({ label, onPress, embedded = false }: OutlineAd
         embedded && styles.addButtonEmbedded,
         pressed && styles.addButtonPressed,
       ]}>
-      <Text style={styles.addButtonLabel}>{label}</Text>
+      <View style={styles.addButtonRow}>
+        <UiIcon icon={Plus} size={20} color={colors.purpleDark} />
+        <Text style={styles.addButtonLabel}>{label}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -133,6 +138,11 @@ const styles = StyleSheet.create({
   },
   addButtonPressed: {
     opacity: 0.85,
+  },
+  addButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   addButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',

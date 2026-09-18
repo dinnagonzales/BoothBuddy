@@ -1,9 +1,11 @@
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, ZoomIn, ZoomOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Lock } from 'lucide-react-native';
 import { tokens } from '@/theme/tokens';
 
 import { ParentalGatePrompt } from '@/components/ParentalGatePrompt';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 
 type PassCodeSheetProps = {
@@ -57,7 +59,10 @@ export function PassCodeSheet({
             entering={ZoomIn.duration(200)}
             exiting={ZoomOut.duration(140)}
             style={styles.card}>
-            <Text style={styles.sheetTitle}>{title}</Text>
+            <View style={styles.titleRow}>
+              <UiIcon icon={Lock} size={22} color={colors.ink} />
+              <Text style={styles.sheetTitle}>{title}</Text>
+            </View>
             {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
             <ParentalGatePrompt
               title=""
@@ -98,7 +103,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: tokens.shadow.overlay,
   },
   centerWrap: {
@@ -117,12 +122,18 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     ...cardShadow,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   sheetTitle: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 20,
     color: colors.ink,
     textAlign: 'center',
-    marginBottom: 4,
   },
   subtitle: {
     fontFamily: 'Nunito_600SemiBold',

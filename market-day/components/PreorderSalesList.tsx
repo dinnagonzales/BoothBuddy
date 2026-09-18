@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Check } from 'lucide-react-native';
 
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { formatCompleteDate, isCompleteDateOverdue } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
@@ -35,7 +37,10 @@ export function PreorderSalesList({
         <View key={sale.saleNumber} style={styles.saleBlock}>
           {savedSaleNumber === sale.saleNumber ? (
             <View style={styles.savedBanner}>
-              <Text style={styles.savedBannerText}>Saved ✓</Text>
+              <View style={styles.savedBannerRow}>
+                <Text style={styles.savedBannerText}>Saved</Text>
+                <UiIcon icon={Check} size={16} color={colors.greenDark} />
+              </View>
             </View>
           ) : null}
           <View
@@ -109,6 +114,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_800ExtraBold',
     fontSize: 12,
     color: colors.greenDark,
+  },
+  savedBannerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   saleCard: {
     backgroundColor: colors.white,

@@ -1,11 +1,13 @@
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { BrandButton } from '@/components/ui/BrandButton';
 import { BrandCard } from '@/components/ui/BrandCard';
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts } from '@/constants/visual';
+import type { ReactNode } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Settings } from 'lucide-react-native';
 
 type WelcomeSetupCardProps = {
   onContinue: () => void;
@@ -34,7 +36,13 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>For owners</Text>
               <Bullet>Next: set a Pass Code and add your first item</Bullet>
-              <Bullet>Tap ⚙️ anytime to manage inventory, events, and sales</Bullet>
+              <Bullet>
+                <View style={styles.bulletInline}>
+                  <Text style={styles.bulletText}>Tap </Text>
+                  <UiIcon icon={Settings} size={14} color={colors.ink} />
+                  <Text style={styles.bulletText}> anytime to manage inventory, events, and sales</Text>
+                </View>
+              </Bullet>
             </View>
           </View>
 
@@ -45,11 +53,15 @@ export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
   );
 }
 
-function Bullet({ children }: { children: string }) {
+function Bullet({ children }: { children: ReactNode }) {
   return (
     <View style={styles.bulletRow}>
       <Text style={styles.bulletDot}>•</Text>
-      <Text style={styles.bulletText}>{children}</Text>
+      {typeof children === 'string' ? (
+        <Text style={styles.bulletText}>{children}</Text>
+      ) : (
+        children
+      )}
     </View>
   );
 }
@@ -117,10 +129,16 @@ const styles = StyleSheet.create({
     color: colors.purple,
   },
   bulletText: {
-    flex: 1,
     fontFamily: fonts.body.regular,
     fontSize: 14,
     lineHeight: 20,
     color: colors.ink,
+  },
+  bulletInline: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 4,
   },
 });

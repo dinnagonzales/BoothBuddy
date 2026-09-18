@@ -2,10 +2,12 @@ import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Banknote, Check, ClipboardList, Smartphone } from 'lucide-react-native';
 
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { VenmoZellePaymentInfo } from '@/components/VenmoZellePaymentInfo';
 import { BrandButton, Card, Checkbox, cn } from '@/components/ui';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii, touchTargets } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -305,13 +307,18 @@ export default function PaymentScreen() {
               onPress={() => {
                 setPaymentMethod('cash');
               }}>
-              <Text style={styles.payOptionLabel}>💵 Cash</Text>
+              <View style={styles.payOptionLabelRow}>
+                <UiIcon icon={Banknote} size={20} color={colors.ink} />
+                <Text style={styles.payOptionLabel}>Cash</Text>
+              </View>
               <View
                 className={cn(
                   'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
                   paymentMethod === 'cash' ? 'bg-success' : 'bg-surface',
                 )}>
-                {paymentMethod === 'cash' ? <Text className="text-white font-bold">✓</Text> : null}
+                {paymentMethod === 'cash' ? (
+                  <UiIcon icon={Check} size={16} color={colors.white} />
+                ) : null}
               </View>
             </Pressable>
           </Card>
@@ -329,7 +336,10 @@ export default function PaymentScreen() {
                 setCashReceivedCents(totalCents);
                 setKeepChange(false);
               }}>
-              <Text style={styles.payOptionLabel}>📱 Venmo / Zelle</Text>
+              <View style={styles.payOptionLabelRow}>
+                <UiIcon icon={Smartphone} size={20} color={colors.ink} />
+                <Text style={styles.payOptionLabel}>Venmo / Zelle</Text>
+              </View>
               <View
                 className={cn(
                   'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
@@ -338,7 +348,7 @@ export default function PaymentScreen() {
                     : 'border-border bg-surface',
                 )}>
                 {paymentMethod === 'venmo_zelle' ? (
-                  <Text className="text-white font-bold">✓</Text>
+                  <UiIcon icon={Check} size={16} color={colors.white} />
                 ) : null}
               </View>
             </Pressable>
@@ -358,7 +368,10 @@ export default function PaymentScreen() {
                   setCashReceivedCents(0);
                   setKeepChange(false);
                 }}>
-                <Text style={styles.payOptionLabel}>📋 Pay on pickup</Text>
+                <View style={styles.payOptionLabelRow}>
+                  <UiIcon icon={ClipboardList} size={20} color={colors.ink} />
+                  <Text style={styles.payOptionLabel}>Pay on pickup</Text>
+                </View>
                 <View
                   className={cn(
                     'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
@@ -367,7 +380,7 @@ export default function PaymentScreen() {
                       : 'border-border bg-surface',
                   )}>
                   {paymentMethod === 'pay_on_pickup' ? (
-                    <Text className="text-white font-bold">✓</Text>
+                    <UiIcon icon={Check} size={16} color={colors.white} />
                   ) : null}
                 </View>
               </Pressable>
@@ -377,7 +390,8 @@ export default function PaymentScreen() {
 
           <View style={styles.endDock}>
             <BrandButton
-              label={preorderCheckout ? 'Save preorder ✓' : 'Complete sale ✓'}
+              label={preorderCheckout ? 'Save preorder' : 'Complete sale'}
+              icon={<UiIcon icon={Check} size={20} color={colors.white} />}
               disabled={!canComplete}
               onPress={completeSale}
               style={styles.completeButton}
@@ -439,6 +453,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
     color: colors.ink,
+  },
+  payOptionLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   valuePaidLabel: {
     fontFamily: fonts.body.extraBold,

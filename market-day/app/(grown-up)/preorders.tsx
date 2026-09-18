@@ -2,9 +2,11 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ClipboardList } from 'lucide-react-native';
 
 import { PreorderSalesList } from '@/components/PreorderSalesList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { getPreorderPrepSummary, getPreorderSales, completePreorder, getSaleByNumber, type PreorderPrepItem } from '@/lib/db/queries';
 import { isCompleteDateOverdue, startOfLocalDay } from '@/lib/market-day';
@@ -109,7 +111,11 @@ export default function PreordersScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="📋 Preorders" onBack={() => leaveGrownUpArea(router)} />
+      <ScreenHeader
+        title="Preorders"
+        titleIcon={<UiIcon icon={ClipboardList} size={20} color={colors.ink} />}
+        onBack={() => leaveGrownUpArea(router)}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.lead}>
           Tap an invoice to record payment and mark it picked up.

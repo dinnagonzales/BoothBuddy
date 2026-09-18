@@ -13,3 +13,4 @@ export { BrandInput } from './BrandInput';
 export { IconInput } from './IconInput';
 export { IconTile } from './IconTile';
 export { ListRow } from './ListRow';
+export { UiIcon, UI_ICON_SIZE, UI_ICON_STROKE } from './UiIcon';

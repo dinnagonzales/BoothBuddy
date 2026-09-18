@@ -2,11 +2,13 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Receipt } from 'lucide-react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { DatePickerField } from '@/components/DatePickerField';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { getAllTimeSales, getAllTimeStats } from '@/lib/db/queries';
 import { shareSalesCsv } from '@/lib/market-day-export';
@@ -76,7 +78,11 @@ export default function SalesScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="🧾 Sales" onBack={() => leaveGrownUpArea(router)} />
+      <ScreenHeader
+        title="Sales"
+        titleIcon={<UiIcon icon={Receipt} size={20} color={colors.ink} />}
+        onBack={() => leaveGrownUpArea(router)}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <MarketDaySummaryCard
           variant="allTime"

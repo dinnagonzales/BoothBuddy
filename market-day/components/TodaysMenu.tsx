@@ -2,8 +2,10 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
+import { Trash2 } from 'lucide-react-native';
 
 import { OutlineAddButton } from '@/components/ExpandableCard';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { tokens } from '@/theme/tokens';
 import type { MenuItem, RemovedMenuItem } from '@/lib/catalog';
@@ -143,14 +145,14 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
               accessibilityLabel={`Remove ${item.name} from menu`}
               onPress={() => confirmRemove(item)}
               style={({ pressed }) => [styles.trash, pressed && styles.trashPressed]}>
-              <Text style={styles.trashIcon}>🗑</Text>
+              <UiIcon icon={Trash2} size={20} color={colors.inkSoft} />
             </Pressable>
           </View>
         ))
       )}
 
       <OutlineAddButton
-        label="➕ Add item to today&apos;s menu"
+        label="Add item to today's menu"
         onPress={openAddPicker}
         embedded={embedded}
       />
@@ -272,8 +274,5 @@ const styles = StyleSheet.create({
   },
   trashPressed: {
     opacity: 0.8,
-  },
-  trashIcon: {
-    fontSize: 12,
   },
 });

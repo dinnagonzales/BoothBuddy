@@ -1,10 +1,12 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Banknote, Check, ClipboardList, Smartphone } from 'lucide-react-native';
 
 import { DatePickerField } from '@/components/DatePickerField';
 import { ScreenHeader } from '@/components/Screen';
 import { Card, Checkbox, cn } from '@/components/ui';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import {
   completePreorder,
@@ -35,6 +37,21 @@ import type { CartLine, PaymentMethod } from '@/lib/types';
 function moneyInputFromCents(cents: number): string {
   if (cents === 0) return '';
   return (cents / 100).toFixed(2);
+}
+
+function paymentMethodIcon(method: PaymentMethod) {
+  if (method === 'cash') return Banknote;
+  if (method === 'pay_on_pickup') return ClipboardList;
+  return Smartphone;
+}
+
+function PaymentMethodLabel({ method, label }: { method: PaymentMethod; label?: string }) {
+  return (
+    <View style={styles.payLabelRow}>
+      <UiIcon icon={paymentMethodIcon(method)} size={20} color={colors.ink} />
+      <Text style={styles.payLabelText}>{label ?? paymentMethodLabel(method)}</Text>
+    </View>
+  );
 }
 
 type SaleDetail = {
@@ -379,10 +396,7 @@ export function SaleDetailScreen({
         <Text style={styles.sectionLabel}>Payment method</Text>
         {readOnly ? (
           <View style={styles.readOnlyPayment}>
-            <Text style={styles.readOnlyPaymentLabel}>
-              {sale.paymentMethod === 'cash' ? '💵' : sale.paymentMethod === 'pay_on_pickup' ? '📋' : '📱'}{' '}
-              {paymentMethodLabel(sale.paymentMethod)}
-            </Text>
+            <PaymentMethodLabel method={sale.paymentMethod} />
           </View>
         ) : sale.isPreorder ? (
           <>
@@ -401,14 +415,14 @@ export function SaleDetailScreen({
                     disabled={busy}
                     className="flex-row justify-between items-center"
                     onPress={() => changePaymentMethod('cash')}>
-                    <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
+                    <PaymentMethodLabel method="cash" label="Cash" />
                     <View
                       className={cn(
                         'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
                         selectedPayment === 'cash' ? 'bg-success' : 'bg-surface',
                       )}>
                       {selectedPayment === 'cash' ? (
-                        <Text className="text-white font-bold">✓</Text>
+                        <UiIcon icon={Check} size={16} color={colors.white} />
                       ) : null}
                     </View>
                   </Pressable>
@@ -424,9 +438,7 @@ export function SaleDetailScreen({
                     disabled={busy}
                     className="flex-row justify-between items-center"
                     onPress={() => changePaymentMethod('venmo_zelle')}>
-                    <Text className="text-base font-semibold text-foreground">
-                      📱 {paymentMethodLabel('venmo_zelle')}
-                    </Text>
+                    <PaymentMethodLabel method="venmo_zelle" />
                     <View
                       className={cn(
                         'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
@@ -435,7 +447,7 @@ export function SaleDetailScreen({
                           : 'border-border bg-surface',
                       )}>
                       {selectedPayment === 'venmo_zelle' ? (
-                        <Text className="text-white font-bold">✓</Text>
+                        <UiIcon icon={Check} size={16} color={colors.white} />
                       ) : null}
                     </View>
                   </Pressable>
@@ -447,10 +459,7 @@ export function SaleDetailScreen({
                   Paid with {paymentMethodLabel(sale.paymentMethod)} at checkout.
                 </Text>
                 <View style={styles.readOnlyPayment}>
-                  <Text style={styles.readOnlyPaymentLabel}>
-                    {sale.paymentMethod === 'cash' ? '💵' : '📱'}{' '}
-                    {paymentMethodLabel(sale.paymentMethod)}
-                  </Text>
+                  <PaymentMethodLabel method={sale.paymentMethod} />
                 </View>
               </>
             ) : null}
@@ -569,14 +578,14 @@ export function SaleDetailScreen({
                 disabled={busy}
                 className="flex-row justify-between items-center"
                 onPress={() => changePaymentMethod('cash')}>
-                <Text className="text-base font-semibold text-foreground">💵 Cash</Text>
+                <PaymentMethodLabel method="cash" label="Cash" />
                 <View
                   className={cn(
                     'w-[26px] h-[26px] rounded-full border-2 border-success items-center justify-center',
                     paymentMethod === 'cash' ? 'bg-success' : 'bg-surface',
                   )}>
                   {paymentMethod === 'cash' ? (
-                    <Text className="text-white font-bold">✓</Text>
+                    <UiIcon icon={Check} size={16} color={colors.white} />
                   ) : null}
                 </View>
               </Pressable>
@@ -592,9 +601,7 @@ export function SaleDetailScreen({
                 disabled={busy}
                 className="flex-row justify-between items-center"
                 onPress={() => changePaymentMethod('venmo_zelle')}>
-                <Text className="text-base font-semibold text-foreground">
-                  📱 {paymentMethodLabel('venmo_zelle')}
-                </Text>
+                <PaymentMethodLabel method="venmo_zelle" />
                 <View
                   className={cn(
                     'w-[26px] h-[26px] rounded-full border-2 items-center justify-center',
@@ -603,7 +610,7 @@ export function SaleDetailScreen({
                       : 'border-border bg-surface',
                   )}>
                   {paymentMethod === 'venmo_zelle' ? (
-                    <Text className="text-white font-bold">✓</Text>
+                    <UiIcon icon={Check} size={16} color={colors.white} />
                   ) : null}
                 </View>
               </Pressable>
@@ -755,6 +762,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   readOnlyPaymentLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 14,
+    color: colors.ink,
+  },
+  payLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  payLabelText: {
     fontFamily: 'Nunito_800ExtraBold',
     fontSize: 14,
     color: colors.ink,

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Calendar } from 'lucide-react-native';
 
-import { SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { formatMarketDayDate } from '@/lib/market-day';
 import type { ClosedMarketDaySummary } from '@/lib/types';
@@ -20,7 +21,10 @@ export function PastEventsList({ events, onEventPress }: PastEventsListProps) {
 
   return (
     <View style={styles.wrap}>
-      <SectionLabel>Past Events</SectionLabel>
+      <View style={styles.sectionHeader}>
+        <UiIcon icon={Calendar} size={14} color={colors.inkSoft} />
+        <Text style={styles.sectionLabel}>Past Events</Text>
+      </View>
       <View style={styles.list}>
         {events.map((event) => (
           <Pressable
@@ -46,6 +50,19 @@ const styles = StyleSheet.create({
   wrap: {
     width: '100%',
     marginTop: 28,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  sectionLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: colors.inkSoft,
   },
   list: {
     gap: 8,

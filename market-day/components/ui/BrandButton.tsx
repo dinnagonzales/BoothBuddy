@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   Platform,
   Pressable,
@@ -18,6 +19,8 @@ export type BrandButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 
 type BrandButtonProps = PressableProps & {
   variant?: BrandButtonVariant;
   label: string;
+  /** Optional Lucide (or other) icon shown before the label. */
+  icon?: ReactNode;
   labelStyle?: TextStyle;
   style?: ViewStyle;
   /** 3D press depth (primary/secondary/success/danger). Default true for filled variants. */
@@ -91,6 +94,7 @@ function variantStyles(variant: BrandButtonVariant) {
 export function BrandButton({
   variant = 'primary',
   label,
+  icon,
   labelStyle,
   style,
   depth = variant === 'primary' ||
@@ -118,7 +122,10 @@ export function BrandButton({
       {...props}>
       {({ pressed }) => (
         <View style={[styles.inner, v.inner, depth && pressed ? styles.innerPressed : null]}>
-          <Text style={[styles.label, v.label, labelStyle]}>{label}</Text>
+          <View style={styles.labelRow}>
+            {icon}
+            <Text style={[styles.label, v.label, labelStyle]}>{label}</Text>
+          </View>
         </View>
       )}
     </Pressable>
@@ -143,6 +150,11 @@ const styles = StyleSheet.create({
   },
   innerPressed: {
     marginTop: 0,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   label: {
     fontFamily: fonts.heading.semiBold,

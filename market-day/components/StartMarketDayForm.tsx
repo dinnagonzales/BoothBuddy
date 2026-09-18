@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Play } from 'lucide-react-native';
 
 import { DatePickerField } from '@/components/DatePickerField';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import {
   formatMarketDayDate,
@@ -72,9 +74,14 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
           pressed && canStart && styles.startButtonOuterPressed,
         ]}>
         <View style={styles.startButtonInner}>
-          <Text style={styles.startButtonLabel}>
-            {busy ? 'Starting…' : '▶️ Start Market Day'}
-          </Text>
+          {busy ? (
+            <Text style={styles.startButtonLabel}>Starting…</Text>
+          ) : (
+            <View style={styles.startButtonRow}>
+              <UiIcon icon={Play} size={20} color={colors.white} />
+              <Text style={styles.startButtonLabel}>Start Market Day</Text>
+            </View>
+          )}
         </View>
       </Pressable>
     </View>
@@ -157,6 +164,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  startButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   startButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',

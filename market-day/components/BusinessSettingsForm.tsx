@@ -14,11 +14,13 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { Check, Smartphone } from 'lucide-react-native';
 
 import { ChangePasscodeCard } from '@/components/ChangePasscodeCard';
 import { PasscodeGateSettings } from '@/components/PasscodeGateSettings';
 import { ExpandableCard } from '@/components/ExpandableCard';
 import { SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import {
@@ -238,7 +240,10 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
         headerStyle={styles.cardHeader}
         header={
           <>
-            <Text style={styles.cardTitle}>📱 Venmo / Zelle</Text>
+            <View style={styles.cardTitleRow}>
+              <UiIcon icon={Smartphone} size={18} color={colors.ink} />
+              <Text style={styles.cardTitle}>Venmo / Zelle</Text>
+            </View>
             <Text style={styles.cardChevron}>{paymentOpen ? '▾' : '▸'}</Text>
           </>
         }>
@@ -314,9 +319,14 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
           !canSave && styles.saveButtonDisabled,
           pressed && canSave && styles.saveButtonPressed,
         ]}>
-        <Text style={styles.saveButtonLabel}>
-          {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save changes'}
-        </Text>
+        {savedFlash ? (
+          <View style={styles.saveButtonRow}>
+            <Text style={styles.saveButtonLabel}>Saved</Text>
+            <UiIcon icon={Check} size={18} color={colors.white} />
+          </View>
+        ) : (
+          <Text style={styles.saveButtonLabel}>{saving ? 'Saving…' : 'Save changes'}</Text>
+        )}
       </Pressable>
 
       {__DEV__ ? (
@@ -452,6 +462,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.ink,
   },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   cardChevron: {
     fontFamily: fonts.body.extraBold,
     fontSize: 16,
@@ -576,6 +591,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 16,
     color: colors.white,
+  },
+  saveButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   replayButton: {
     alignItems: 'center',

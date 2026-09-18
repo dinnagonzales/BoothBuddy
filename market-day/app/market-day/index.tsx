@@ -2,10 +2,13 @@ import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { Tent } from 'lucide-react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
+import { UiIcon } from '@/components/ui/UiIcon';
+import { colors } from '@/constants/theme';
 import {
   getActiveMarketDay,
   getMarketDaySales,
@@ -60,7 +63,11 @@ export default function MarketDayDashboardScreen() {
   return (
     <Screen>
       <View style={styles.page}>
-        <ScreenHeader title="🎪 Market Day" onBack={() => safeBack(router)} />
+        <ScreenHeader
+          title="Market Day"
+          titleIcon={<UiIcon icon={Tent} size={20} color={colors.ink} />}
+          onBack={() => safeBack(router)}
+        />
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <MarketDaySummaryCard
             variant="viewOnly"
