@@ -1,26 +1,16 @@
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import {
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
+import { DatePickerField } from '@/components/DatePickerField';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { colors } from '@/constants/theme';
 import { getAllTimeSales, getAllTimeStats } from '@/lib/db/queries';
 import { shareSalesCsv } from '@/lib/market-day-export';
-import { formatMarketDayDate, startOfLocalDay, toExportDate } from '@/lib/market-day';
+import { startOfLocalDay, toExportDate } from '@/lib/market-day';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import type { AllTimeSaleSummary } from '@/lib/types';
 
@@ -38,7 +28,6 @@ export default function SalesScreen() {
   const [sales, setSales] = useState<AllTimeSaleSummary[]>([]);
   const [startDate, setStartDate] = useState(() => startOfLocalDay());
   const [endDate, setEndDate] = useState(() => startOfLocalDay());
-  const [activePicker, setActivePicker] = useState<'start' | 'end' | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -56,19 +45,14 @@ export default function SalesScreen() {
     }, [refresh]),
   );
 
-  const handleDateChange = (which: 'start' | 'end') => (_event: DateTimePickerEvent, selected?: Date) => {
-    if (Platform.OS === 'android') {
-      setActivePicker(null);
-    }
-    if (!selected) return;
-    const next = startOfLocalDay(selected);
-    if (which === 'start') {
-      setStartDate(next);
-      if (next > endDate) setEndDate(next);
-    } else {
-      setEndDate(next);
-      if (next < startDate) setStartDate(next);
-    }
+  const handleStartChange = (next: Date) => {
+    setStartDate(next);
+    if (next > endDate) setEndDate(next);
+  };
+
+  const handleEndChange = (next: Date) => {
+    setEndDate(next);
+    if (next < startDate) setStartDate(next);
   };
 
   const handleExport = () => {
@@ -109,30 +93,20 @@ export default function SalesScreen() {
           <View style={styles.exportCard}>
             <View style={styles.dateField}>
               <Text style={styles.dateLabel}>From</Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setActivePicker('start')}
-                style={styles.dateButton}>
-                <Text style={styles.dateValue}>{formatMarketDayDate(startDate.toISOString())}</Text>
-              </Pressable>
+              <DatePickerField
+                value={startDate}
+                onChange={handleStartChange}
+                accessibilityLabel="Export start date"
+              />
             </View>
             <View style={styles.dateField}>
               <Text style={styles.dateLabel}>To</Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setActivePicker('end')}
-                style={styles.dateButton}>
-                <Text style={styles.dateValue}>{formatMarketDayDate(endDate.toISOString())}</Text>
-              </Pressable>
-            </View>
-            {activePicker ? (
-              <DateTimePicker
-                value={activePicker === 'start' ? startDate : endDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleDateChange(activePicker)}
+              <DatePickerField
+                value={endDate}
+                onChange={handleEndChange}
+                accessibilityLabel="Export end date"
               />
-            ) : null}
+            </View>
             <Pressable
               accessibilityRole="button"
               disabled={exporting}
@@ -194,17 +168,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.inkSoft,
   },
-  dateButton: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  dateValue: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 14,
-    color: colors.ink,
-  },
   exportButton: {
     marginTop: 4,
     backgroundColor: colors.purple,
@@ -212,11 +175,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  exportButtonPressed: {
-    opacity: 0.88,
-  },
   exportButtonDisabled: {
     opacity: 0.6,
+  },
+  exportButtonPressed: {
+    opacity: 0.88,
   },
   exportButtonLabel: {
     fontFamily: 'Fredoka_600SemiBold',

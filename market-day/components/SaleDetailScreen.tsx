@@ -1,11 +1,8 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
-
+import { DatePickerField } from '@/components/DatePickerField';
 import { ScreenHeader } from '@/components/Screen';
 import { Card, Checkbox, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
@@ -22,7 +19,6 @@ import {
   formatSaleTime,
   localDayFromExportDate,
   paymentMethodLabel,
-  startOfLocalDay,
   toExportDate,
 } from '@/lib/market-day';
 import {
@@ -79,7 +75,6 @@ export function SaleDetailScreen({
   const [draftCashReceivedCents, setDraftCashReceivedCents] = useState(0);
   const [draftCashReceivedText, setDraftCashReceivedText] = useState('');
   const [draftKeepChange, setDraftKeepChange] = useState(false);
-  const [showCompleteDatePicker, setShowCompleteDatePicker] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const loadSale = useCallback(async () => {
@@ -190,15 +185,6 @@ export function SaleDetailScreen({
     }, readOnly);
 
   const preorderMetaValid = preorderMetadataValid(draftName, draftNotes, draftCompleteDate);
-
-  const handleCompleteDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowCompleteDatePicker(false);
-    }
-    if (selected) {
-      setDraftCompleteDate(toExportDate(startOfLocalDay(selected)));
-    }
-  };
 
   const canMarkComplete =
     sale?.isPreorder === true &&
@@ -368,34 +354,12 @@ export function SaleDetailScreen({
             {sale.isPreorder ? (
               <>
                 <Text style={styles.sectionLabel}>Complete date (required)</Text>
-                <Pressable
-                  accessibilityRole="button"
+                <DatePickerField
+                  value={localDayFromExportDate(draftCompleteDate)}
+                  onChange={(next) => setDraftCompleteDate(toExportDate(next))}
                   accessibilityLabel={`Complete date, ${formatCompleteDate(draftCompleteDate)}`}
                   disabled={busy}
-                  onPress={() => setShowCompleteDatePicker(true)}
-                  style={({ pressed }) => [
-                    styles.dateButton,
-                    pressed && !busy && styles.dateButtonPressed,
-                  ]}>
-                  <Text style={styles.dateValue}>{formatCompleteDate(draftCompleteDate)}</Text>
-                  <Text style={styles.dateChevron}>▾</Text>
-                </Pressable>
-                {showCompleteDatePicker ? (
-                  <DateTimePicker
-                    value={localDayFromExportDate(draftCompleteDate)}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={handleCompleteDateChange}
-                  />
-                ) : null}
-                {Platform.OS === 'ios' && showCompleteDatePicker ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => setShowCompleteDatePicker(false)}
-                    style={styles.donePicker}>
-                    <Text style={styles.donePickerLabel}>Done</Text>
-                  </Pressable>
-                ) : null}
+                />
               </>
             ) : null}
           </>
@@ -742,40 +706,6 @@ const styles = StyleSheet.create({
   notesInput: {
     minHeight: 88,
     textAlignVertical: 'top',
-  },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 12,
-  },
-  dateButtonPressed: {
-    opacity: 0.88,
-  },
-  dateValue: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 14,
-    color: colors.ink,
-  },
-  dateChevron: {
-    fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 14,
-    color: colors.purpleDark,
-  },
-  donePicker: {
-    alignSelf: 'flex-end',
-    paddingVertical: 4,
-    paddingHorizontal: 2,
-    marginBottom: 8,
-  },
-  donePickerLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 13,
-    color: colors.purpleDark,
   },
   sectionLabel: {
     fontFamily: 'Nunito_800ExtraBold',

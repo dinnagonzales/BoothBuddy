@@ -1,9 +1,7 @@
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { DatePickerField } from '@/components/DatePickerField';
 import { colors } from '@/constants/theme';
 import {
   formatMarketDayDate,
@@ -19,18 +17,8 @@ type StartMarketDayFormProps = {
 export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayFormProps) {
   const [name, setName] = useState('');
   const [date, setDate] = useState(() => startOfLocalDay());
-  const [showPicker, setShowPicker] = useState(false);
 
   const canStart = name.trim().length > 0 && !busy;
-
-  const handleDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
-    if (selected) {
-      setDate(startOfLocalDay(selected));
-    }
-  };
 
   const handleStart = () => {
     if (!canStart) return;
@@ -63,36 +51,15 @@ export function StartMarketDayForm({ onStart, busy = false }: StartMarketDayForm
 
         <View style={styles.field}>
           <Text style={styles.label}>Date</Text>
-          <Pressable
-            accessibilityRole="button"
+          <DatePickerField
+            value={date}
+            onChange={setDate}
             accessibilityLabel={`Market Day date, ${formatMarketDayDate(marketDayStartedAtIso(date))}`}
             disabled={busy}
-            onPress={() => setShowPicker(true)}
-            style={({ pressed }) => [styles.dateButton, pressed && !busy && styles.dateButtonPressed]}>
-            <Text style={styles.dateValue}>{formatMarketDayDate(marketDayStartedAtIso(date))}</Text>
-            <Text style={styles.dateChevron}>▾</Text>
-          </Pressable>
+          />
           <Text style={styles.hint}>The date for this shop day</Text>
         </View>
       </View>
-
-      {showPicker ? (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleDateChange}
-        />
-      ) : null}
-
-      {Platform.OS === 'ios' && showPicker ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => setShowPicker(false)}
-          style={styles.donePicker}>
-          <Text style={styles.donePickerLabel}>Done</Text>
-        </Pressable>
-      ) : null}
 
       <Pressable
         accessibilityRole="button"
@@ -171,40 +138,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_700Bold',
     fontSize: 15,
     color: colors.ink,
-  },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  dateButtonPressed: {
-    opacity: 0.88,
-  },
-  dateValue: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 15,
-    color: colors.ink,
-  },
-  dateChevron: {
-    fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 14,
-    color: colors.purpleDark,
-  },
-  donePicker: {
-    alignSelf: 'flex-end',
-    paddingVertical: 4,
-    paddingHorizontal: 2,
-  },
-  donePickerLabel: {
-    fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 13,
-    color: colors.purpleDark,
   },
   startButtonOuter: {
     width: '100%',

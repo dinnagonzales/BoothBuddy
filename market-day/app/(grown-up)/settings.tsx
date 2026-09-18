@@ -11,7 +11,6 @@ import { PastEventsList } from '@/components/PastEventsList';
 import { ScreenHeader, SectionLabel } from '@/components/Screen';
 import { StartMarketDayForm } from '@/components/StartMarketDayForm';
 import { TodaysMenu } from '@/components/TodaysMenu';
-import { Button } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import {
@@ -195,14 +194,16 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <View style={styles.endDock}>
-        <Button
-          size="lg"
-          variant="secondary"
-          className="w-full"
-          style={styles.dashboardButton}
-          onPress={() => leaveGrownUpArea(router)}>
-          <Button.Label style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Button.Label>
-        </Button>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Go to Dashboard"
+          onPress={() => leaveGrownUpArea(router)}
+          style={({ pressed }) => [
+            styles.dashboardButton,
+            pressed && styles.dashboardButtonPressed,
+          ]}>
+          <Text style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Text>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           onPress={handleEndMarketDay}
@@ -226,8 +227,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   dashboardButton: {
+    width: '100%',
     borderRadius: radii.completeBtn,
     backgroundColor: colors.grayLight,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  dashboardButtonPressed: {
+    opacity: 0.85,
   },
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,

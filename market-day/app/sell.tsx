@@ -1,11 +1,9 @@
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { DatePickerField } from '@/components/DatePickerField';
 import { ItemCard, Screen, ScreenHeader, SectionLabel } from '@/components/Screen';
 import { Card } from '@/components/ui';
 import { colors } from '@/constants/theme';
@@ -16,7 +14,6 @@ import { formatMoney } from '@/lib/money';
 import {
   formatCompleteDate,
   localDayFromExportDate,
-  startOfLocalDay,
   toExportDate,
 } from '@/lib/market-day';
 import { preorderMetadataValid } from '@/lib/sale-edit';
@@ -48,7 +45,6 @@ export default function SellScreen() {
   const [items, setItems] = useState<Item[]>([]);
   const [hasActiveMarket, setHasActiveMarket] = useState<boolean | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [showCompleteDatePicker, setShowCompleteDatePicker] = useState(false);
   const leavingForPayment = useRef(false);
 
   useEffect(() => {
@@ -129,15 +125,6 @@ export default function SellScreen() {
   const canCheckout = itemCount > 0 && (!metaRequired || preorderMetaValid);
   const itemCountLabel = itemCount === 1 ? '1 item' : `${itemCount} items`;
 
-  const handleCompleteDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowCompleteDatePicker(false);
-    }
-    if (selected) {
-      setSaleCompleteDate(toExportDate(startOfLocalDay(selected)));
-    }
-  };
-
   return (
     <Screen>
       <View style={styles.page}>
@@ -201,33 +188,11 @@ export default function SellScreen() {
                     {metaRequired ? (
                       <>
                         <Text style={styles.metaLabel}>Complete date (required)</Text>
-                        <Pressable
-                          accessibilityRole="button"
+                        <DatePickerField
+                          value={localDayFromExportDate(saleCompleteDate)}
+                          onChange={(next) => setSaleCompleteDate(toExportDate(next))}
                           accessibilityLabel={`Complete date, ${formatCompleteDate(saleCompleteDate)}`}
-                          onPress={() => setShowCompleteDatePicker(true)}
-                          style={({ pressed }) => [
-                            styles.dateButton,
-                            pressed && styles.dateButtonPressed,
-                          ]}>
-                          <Text style={styles.dateValue}>{formatCompleteDate(saleCompleteDate)}</Text>
-                          <Text style={styles.dateChevron}>▾</Text>
-                        </Pressable>
-                        {showCompleteDatePicker ? (
-                          <DateTimePicker
-                            value={localDayFromExportDate(saleCompleteDate)}
-                            mode="date"
-                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                            onChange={handleCompleteDateChange}
-                          />
-                        ) : null}
-                        {Platform.OS === 'ios' && showCompleteDatePicker ? (
-                          <Pressable
-                            accessibilityRole="button"
-                            onPress={() => setShowCompleteDatePicker(false)}
-                            style={styles.donePicker}>
-                            <Text style={styles.donePickerLabel}>Done</Text>
-                          </Pressable>
-                        ) : null}
+                        />
                       </>
                     ) : null}
                   </Card>
@@ -364,39 +329,6 @@ const styles = StyleSheet.create({
   notesInput: {
     minHeight: 64,
     textAlignVertical: 'top',
-  },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 6,
-  },
-  dateButtonPressed: {
-    opacity: 0.88,
-  },
-  dateValue: {
-    fontFamily: fonts.body.bold,
-    fontSize: 14,
-    color: colors.ink,
-  },
-  dateChevron: {
-    fontFamily: fonts.body.extraBold,
-    fontSize: 14,
-    color: colors.purpleDark,
-  },
-  donePicker: {
-    alignSelf: 'flex-end',
-    paddingVertical: 4,
-    paddingHorizontal: 2,
-  },
-  donePickerLabel: {
-    fontFamily: fonts.body.extraBold,
-    fontSize: 13,
-    color: colors.purpleDark,
   },
   cartCard: {
     paddingHorizontal: 14,

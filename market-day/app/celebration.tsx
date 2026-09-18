@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { tokens } from '@/theme/tokens';
 
 import { PassCodeSheet } from '@/components/PassCodeSheet';
-import { Button, Card } from '@/components/ui';
+import { Card } from '@/components/ui';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -122,9 +122,16 @@ export default function CelebrationScreen() {
             : `${itemCount} ${itemLabel} • ${formatMoney(totalCents)}`}
         </Text>
         <Text style={styles.prompt}>Need to change something?</Text>
-        <Button size="lg" variant="secondary" style={styles.dashboardButton} onPress={goHome}>
-          <Button.Label style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Button.Label>
-        </Button>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Go to Dashboard"
+          onPress={goHome}
+          style={({ pressed }) => [
+            styles.dashboardButton,
+            pressed && styles.dashboardButtonPressed,
+          ]}>
+          <Text style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Text>
+        </Pressable>
         <Pressable style={styles.editButton} onPress={editSale}>
           <Text style={styles.editLabel}>
             {isPreorder ? '✏️ Edit preorder' : '✏️ Edit this sale'}
@@ -226,6 +233,11 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: radii.completeBtn,
     backgroundColor: colors.grayLight,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  dashboardButtonPressed: {
+    opacity: 0.85,
   },
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,
