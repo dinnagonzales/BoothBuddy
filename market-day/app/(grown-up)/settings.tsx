@@ -197,7 +197,7 @@ export default function SettingsScreen() {
       <View style={styles.endDock}>
         <Button
           size="lg"
-          variant="primary"
+          variant="secondary"
           className="w-full"
           style={styles.dashboardButton}
           onPress={() => leaveGrownUpArea(router)}>
@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
   },
   dashboardButton: {
     borderRadius: radii.completeBtn,
+    backgroundColor: colors.grayLight,
   },
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,

@@ -122,7 +122,7 @@ export default function CelebrationScreen() {
             : `${itemCount} ${itemLabel} • ${formatMoney(totalCents)}`}
         </Text>
         <Text style={styles.prompt}>Need to change something?</Text>
-        <Button size="lg" variant="primary" style={styles.dashboardButton} onPress={goHome}>
+        <Button size="lg" variant="secondary" style={styles.dashboardButton} onPress={goHome}>
           <Button.Label style={styles.dashboardButtonLabel}>🏠 Go to Dashboard</Button.Label>
         </Button>
         <Pressable style={styles.editButton} onPress={editSale}>
@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     width: '100%',
     borderRadius: radii.completeBtn,
+    backgroundColor: colors.grayLight,
   },
   dashboardButtonLabel: {
     fontFamily: fonts.heading.semiBold,
