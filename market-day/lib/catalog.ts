@@ -99,6 +99,7 @@ export type Catalog = {
     changeKept?: boolean;
     name?: string | null;
     notes?: string | null;
+    saleNumber?: number;
   }): Promise<{ saleNumber: number }>;
   recordQuickSale(params: {
     lines: CartLine[];
@@ -109,6 +110,7 @@ export type Catalog = {
     notes?: string | null;
     completeDate?: string | null;
     isPreorder?: boolean;
+    saleNumber?: number;
   }): Promise<{ saleNumber: number }>;
   getMarketDayStats(marketDayId: number): Promise<MarketDayStats>;
   listSalesForMarketDay(marketDayId: number): Promise<SaleSummary[]>;
@@ -273,9 +275,16 @@ export function createCatalog(): Catalog {
       notes?: string | null;
       completeDate?: string | null;
       isPreorder?: boolean;
+      saleNumber?: number;
     },
   ) {
-    const saleNumber = nextSaleNumber++;
+    const saleNumber =
+      params.saleNumber != null && params.saleNumber > 0
+        ? params.saleNumber
+        : nextSaleNumber++;
+    if (params.saleNumber != null && params.saleNumber > 0) {
+      nextSaleNumber = Math.max(nextSaleNumber, params.saleNumber + 1);
+    }
     const name = normalizeOptionalText(params.name);
     const notes = normalizeOptionalText(params.notes);
     const completeDate = normalizeOptionalText(params.completeDate);

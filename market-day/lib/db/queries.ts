@@ -543,10 +543,15 @@ export async function createSale(
     notes?: string | null;
     completeDate?: string | null;
     isPreorder?: boolean;
+    /** Reuse an existing invoice number (e.g. after edit-sale delete). */
+    saleNumber?: number;
   },
 ): Promise<Sale> {
   const totalCents = cartTotal(params.lines);
-  const nextNumber = await getNextSaleNumber(db);
+  const saleNumber =
+    params.saleNumber != null && params.saleNumber > 0
+      ? params.saleNumber
+      : await getNextSaleNumber(db);
   const name = normalizeOptionalText(params.name);
   const notes = normalizeOptionalText(params.notes);
   const completeDate = normalizeOptionalText(params.completeDate);
@@ -561,7 +566,7 @@ export async function createSale(
   const result = await db.runAsync(
     `INSERT INTO sales (sale_number, market_day_id, total_cents, payment_method, cash_received_cents, change_kept, name, notes, complete_date, is_preorder)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    nextNumber,
+    saleNumber,
     params.marketDayId,
     totalCents,
     params.paymentMethod,
@@ -589,7 +594,7 @@ export async function createSale(
 
   return {
     id: saleId,
-    saleNumber: nextNumber,
+    saleNumber,
     marketDayId: params.marketDayId,
     totalCents,
     paymentMethod: params.paymentMethod,

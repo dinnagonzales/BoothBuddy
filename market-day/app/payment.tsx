@@ -136,6 +136,8 @@ export default function PaymentScreen() {
         notes: saleNotes,
         completeDate: saleCompleteDate,
         isPreorder: preorderCheckout,
+        saleNumber:
+          invoiceNumber != null && invoiceNumber > 0 ? invoiceNumber : undefined,
       });
 
       clearCart();
