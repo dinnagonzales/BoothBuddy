@@ -7,7 +7,7 @@ import { Screen, ScreenHeader } from '@/components/Screen';
 import { VenmoZellePaymentInfo } from '@/components/VenmoZellePaymentInfo';
 import { BrandButton, Card, Checkbox, cn } from '@/components/ui';
 import { colors } from '@/constants/theme';
-import { fonts, radii } from '@/constants/visual';
+import { fonts, radii, touchTargets } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import type { BusinessSettings } from '@/lib/business-settings';
 import { EMPTY_BUSINESS_SETTINGS } from '@/lib/business-settings';
@@ -17,7 +17,12 @@ import { paymentCanComplete, preorderMetadataValid, cashChangeCents, cashChangeS
 import { formatMoney } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/types';
 
-const BILLS = [100, 500, 1000, 2000, 10000];
+const BILLS = [100, 500, 1000, 2000, 10000] as const;
+const BILL_ROWS = [
+  [BILLS[0], BILLS[1]],
+  [BILLS[2], BILLS[3]],
+] as const;
+const BILL_FULL = BILLS[4];
 
 const chipShadow = Platform.select({
   web: { boxShadow: `0 4px 0 ${colors.purpleDark}` },
@@ -176,7 +181,20 @@ export default function PaymentScreen() {
 
             {showAmountEntry ? (
             <Card style={styles.cashEntry} className="p-4 mb-3">
-              <Text style={styles.valuePaidLabel}>Amount Paid</Text>
+              <View style={styles.amountPaidHeader}>
+                <Text style={styles.valuePaidLabel}>Amount Paid</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear cash amount"
+                  style={styles.clearChip}
+                  onPress={() => {
+                    setKeepChange(false);
+                    setCashReceivedCents(0);
+                  }}>
+                  <Text style={styles.clearChipLabel}>Clear</Text>
+                </Pressable>
+              </View>
+
               <View style={styles.cashControlRow}>
                 <Pressable
                   accessibilityRole="button"
@@ -199,41 +217,44 @@ export default function PaymentScreen() {
                 </Pressable>
               </View>
 
-              <Text style={styles.tapToAdd}>Tap to add</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Exact amount ${formatMoney(totalCents)}`}
+                style={styles.exactChip}
+                onPress={() => {
+                  setKeepChange(false);
+                  setCashReceivedCents(totalCents);
+                }}>
+                <Text style={styles.chipLabelLight}>Exact amount</Text>
+              </Pressable>
 
-              <View style={styles.chipRow}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Exact amount ${formatMoney(totalCents)}`}
-                  style={styles.exactChip}
-                  onPress={() => {
-                    setKeepChange(false);
-                    setCashReceivedCents(totalCents);
-                  }}>
-                  <Text style={styles.chipLabelLight}>Exact amount</Text>
-                </Pressable>
-                {BILLS.map((cents) => (
-                  <Pressable
-                    key={cents}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${formatMoney(cents)}`}
-                    style={styles.chip}
-                    onPress={() => {
-                      setKeepChange(false);
-                      setCashReceivedCents((value) => value + cents);
-                    }}>
-                    <Text style={styles.chipLabel}>{formatMoney(cents)}</Text>
-                  </Pressable>
+              <View style={styles.billGrid}>
+                {BILL_ROWS.map((row) => (
+                  <View key={row.join('-')} style={styles.billRow}>
+                    {row.map((cents) => (
+                      <Pressable
+                        key={cents}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Add ${formatMoney(cents)}`}
+                        style={[styles.chip, styles.chipHalf]}
+                        onPress={() => {
+                          setKeepChange(false);
+                          setCashReceivedCents((value) => value + cents);
+                        }}>
+                        <Text style={styles.chipLabel}>{`$${cents / 100}`}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
                 ))}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Clear cash amount"
-                  style={styles.clearChip}
+                  accessibilityLabel={`Add ${formatMoney(BILL_FULL)}`}
+                  style={[styles.chip, styles.chipWide]}
                   onPress={() => {
                     setKeepChange(false);
-                    setCashReceivedCents(0);
+                    setCashReceivedCents((value) => value + BILL_FULL);
                   }}>
-                  <Text style={styles.clearChipLabel}>Clear</Text>
+                  <Text style={styles.chipLabel}>{`$${BILL_FULL / 100}`}</Text>
                 </Pressable>
               </View>
 
@@ -423,7 +444,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: colors.inkSoft,
-    textAlign: 'center',
+  },
+  amountPaidHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   cashControlRow: {
     flexDirection: 'row',
@@ -471,15 +497,6 @@ const styles = StyleSheet.create({
     fontSize: 44,
     textAlign: 'center',
   },
-  tapToAdd: {
-    marginTop: 14,
-    textAlign: 'center',
-    fontFamily: fonts.body.extraBold,
-    fontSize: 11,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    color: colors.inkSoft,
-  },
   cashAmountEmpty: {
     color: colors.inkSoft,
   },
@@ -489,43 +506,60 @@ const styles = StyleSheet.create({
   cashAmountGood: {
     color: colors.greenDark,
   },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+  billGrid: {
     gap: 8,
     marginTop: 8,
   },
+  billRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   chip: {
     backgroundColor: colors.purple,
-    borderRadius: 999,
+    borderRadius: radii.completeBtn,
+    minHeight: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 12,
     ...chipShadow,
   },
+  chipHalf: {
+    flex: 1,
+  },
+  chipWide: {
+    width: '100%',
+  },
   exactChip: {
+    marginTop: 12,
     backgroundColor: colors.green,
-    borderRadius: 999,
+    borderRadius: radii.completeBtn,
+    minHeight: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 12,
     ...chipShadow,
   },
   clearChip: {
     backgroundColor: colors.white,
     borderRadius: 999,
+    minHeight: touchTargets.minSize,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderWidth: 2,
-    borderColor: colors.borderSubtle,
+    borderColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipLabel: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 14,
-    color: colors.ink,
+    fontSize: 16,
+    color: colors.white,
   },
   chipLabelLight: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 14,
+    fontSize: 16,
     color: colors.white,
   },
   clearChipLabel: {
