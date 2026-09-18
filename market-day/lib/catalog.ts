@@ -54,6 +54,8 @@ export type MarketDayStats = {
   cashCents: number;
   venmoCents: number;
   tipsCents: number;
+  cashTipsCents: number;
+  venmoTipsCents: number;
 };
 
 export type SaleDetail = {
@@ -651,7 +653,8 @@ export function createCatalog(): Catalog {
       let profitCents = 0;
       let cashCents = 0;
       let venmoCents = 0;
-      let tipsCents = 0;
+      let cashTipsCents = 0;
+      let venmoTipsCents = 0;
 
       for (const sale of daySales) {
         const saleTotal = cartTotal(sale.lines);
@@ -664,11 +667,25 @@ export function createCatalog(): Catalog {
           venmoCents += saleTotal;
         }
         if (sale.changeKept && sale.cashReceivedCents != null) {
-          tipsCents += Math.max(sale.cashReceivedCents - saleTotal, 0);
+          const tip = Math.max(sale.cashReceivedCents - saleTotal, 0);
+          if (sale.paymentMethod === 'cash') {
+            cashTipsCents += tip;
+          } else if (sale.paymentMethod === 'venmo_zelle') {
+            venmoTipsCents += tip;
+          }
         }
       }
 
-      return { totalCents, itemCount, profitCents, cashCents, venmoCents, tipsCents };
+      return {
+        totalCents,
+        itemCount,
+        profitCents,
+        cashCents,
+        venmoCents,
+        tipsCents: cashTipsCents + venmoTipsCents,
+        cashTipsCents,
+        venmoTipsCents,
+      };
     },
     async listSalesForMarketDay(marketDayId) {
       return sales
@@ -690,7 +707,8 @@ export function createCatalog(): Catalog {
       let profitCents = 0;
       let cashCents = 0;
       let venmoCents = 0;
-      let tipsCents = 0;
+      let cashTipsCents = 0;
+      let venmoTipsCents = 0;
 
       for (const sale of completedSales()) {
         const saleTotal = cartTotal(sale.lines);
@@ -703,11 +721,25 @@ export function createCatalog(): Catalog {
           venmoCents += saleTotal;
         }
         if (sale.changeKept && sale.cashReceivedCents != null) {
-          tipsCents += Math.max(sale.cashReceivedCents - saleTotal, 0);
+          const tip = Math.max(sale.cashReceivedCents - saleTotal, 0);
+          if (sale.paymentMethod === 'cash') {
+            cashTipsCents += tip;
+          } else if (sale.paymentMethod === 'venmo_zelle') {
+            venmoTipsCents += tip;
+          }
         }
       }
 
-      return { totalCents, itemCount, profitCents, cashCents, venmoCents, tipsCents };
+      return {
+        totalCents,
+        itemCount,
+        profitCents,
+        cashCents,
+        venmoCents,
+        tipsCents: cashTipsCents + venmoTipsCents,
+        cashTipsCents,
+        venmoTipsCents,
+      };
     },
     async listAllTimeSales() {
       return completedSales()

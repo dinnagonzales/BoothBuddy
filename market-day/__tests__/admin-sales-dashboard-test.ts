@@ -92,6 +92,48 @@ test('admin dashboard shows Cash and Venmo/Zelle totals separately', async () =>
     cashCents: 400,
     venmoCents: 600,
     tipsCents: 0,
+    cashTipsCents: 0,
+    venmoTipsCents: 0,
+  });
+});
+
+test('Venmo keep-change tips do not inflate Cash on the dashboard', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 1000,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 1000,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'venmo_zelle',
+    cashReceivedCents: 1500,
+    changeKept: true,
+  });
+
+  expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
+    totalCents: 1000,
+    itemCount: 1,
+    profitCents: 900,
+    cashCents: 0,
+    venmoCents: 1000,
+    tipsCents: 500,
+    cashTipsCents: 0,
+    venmoTipsCents: 500,
   });
 });
 
