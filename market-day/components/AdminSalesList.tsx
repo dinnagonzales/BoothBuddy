@@ -5,6 +5,7 @@ import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { formatMarketDayDate, formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
+import { cancelReasonDisplayLabel } from '@/lib/sale-cancel';
 import type { AllTimeSaleSummary, SaleSummary } from '@/lib/types';
 
 type AdminSalesListProps = {
@@ -22,6 +23,14 @@ function saleSubtitle(sale: SaleSummary | AllTimeSaleSummary, showSaleContext: b
   }
 
   return `${sale.name ? `#${sale.saleNumber} · ` : ''}${formatSaleTime(sale.createdAt)}`;
+}
+
+function saleMethodLabel(sale: SaleSummary | AllTimeSaleSummary): string {
+  if (!sale.cancelled) {
+    return paymentMethodLabel(sale.paymentMethod);
+  }
+  const reason = cancelReasonDisplayLabel(sale.cancelReason, sale.cancelNote);
+  return reason ? `Cancelled · ${reason}` : 'Cancelled';
 }
 
 export function AdminSalesList({
@@ -55,14 +64,18 @@ export function AdminSalesList({
             onPress={() => onSalePress?.(sale.saleNumber)}
             style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
             <View>
-              <Text style={styles.saleNumber}>
+              <Text style={[styles.saleNumber, sale.cancelled && styles.saleNumberCancelled]}>
                 {sale.name ? sale.name : `#${sale.saleNumber}`}
               </Text>
               <Text style={styles.saleTime}>{saleSubtitle(sale, showSaleContext)}</Text>
             </View>
             <View style={styles.saleAmountWrap}>
-              <Text style={styles.saleAmount}>{formatMoney(sale.totalCents)}</Text>
-              <Text style={styles.saleMethod}>{paymentMethodLabel(sale.paymentMethod)}</Text>
+              <Text style={[styles.saleAmount, sale.cancelled && styles.saleAmountCancelled]}>
+                {formatMoney(sale.totalCents)}
+              </Text>
+              <Text style={[styles.saleMethod, sale.cancelled && styles.saleMethodCancelled]}>
+                {saleMethodLabel(sale)}
+              </Text>
             </View>
           </Pressable>
         </View>
@@ -81,70 +94,77 @@ const styles = StyleSheet.create({
   },
   savedBanner: {
     backgroundColor: colors.successSurface,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.borderSuccess,
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  savedBannerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   savedBannerText: {
     fontFamily: 'Nunito_800ExtraBold',
     fontSize: 12,
     color: colors.greenDark,
   },
-  savedBannerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  emptyCard: {
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-  },
-  emptyText: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 14,
-    color: colors.inkSoft,
-    textAlign: 'center',
-  },
   saleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 14,
+    paddingVertical: 12,
     paddingHorizontal: 14,
-    paddingVertical: 10,
   },
   saleRowPressed: {
     opacity: 0.85,
   },
   saleNumber: {
     fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 13,
+    fontSize: 15,
     color: colors.ink,
   },
-  saleTime: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 11,
+  saleNumberCancelled: {
     color: colors.inkSoft,
-    marginTop: 1,
+  },
+  saleTime: {
+    marginTop: 2,
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: colors.inkSoft,
   },
   saleAmountWrap: {
     alignItems: 'flex-end',
   },
   saleAmount: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
+    fontSize: 18,
     color: colors.ink,
   },
+  saleAmountCancelled: {
+    color: colors.inkSoft,
+    textDecorationLine: 'line-through',
+  },
   saleMethod: {
+    marginTop: 2,
     fontFamily: 'Nunito_700Bold',
     fontSize: 11,
     color: colors.inkSoft,
-    marginTop: 1,
+  },
+  saleMethodCancelled: {
+    color: colors.redDark,
+  },
+  emptyCard: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: colors.inkSoft,
   },
 });

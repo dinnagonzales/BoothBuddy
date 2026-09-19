@@ -118,7 +118,8 @@ export default function PreordersScreen() {
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.lead}>
-          Tap an invoice to record payment and mark it picked up.
+          Tap an invoice to record payment and mark it picked up. For paid preorders, keep payment
+          separate from completed sales to ensure totals align.
         </Text>
 
         {sales.length > 0 ? (

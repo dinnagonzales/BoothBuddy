@@ -6,8 +6,13 @@ import {
   ItemHasSalesError,
   NothingToUndoCloseError,
 } from '@/lib/market-day';
+import {
+  normalizeCancelSaleReason,
+  type CancelSaleReason,
+} from '@/lib/sale-cancel';
 import type {
   AllTimeSaleSummary,
+  CancelReason,
   CartLine,
   Item,
   MarketDay,
@@ -331,11 +336,6 @@ export async function unarchiveItem(db: SQLiteDatabase, id: number): Promise<voi
   await addItemToActiveMenu(db, id);
 }
 
-function isForeignKeyConstraintError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return /FOREIGN KEY constraint failed/i.test(message);
-}
-
 export async function deleteItem(db: SQLiteDatabase, id: number): Promise<void> {
   const row = await db.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) AS count FROM line_items WHERE item_id = ?',
@@ -345,15 +345,8 @@ export async function deleteItem(db: SQLiteDatabase, id: number): Promise<void> 
     throw new ItemHasSalesError();
   }
 
-  try {
-    await db.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
-    await db.runAsync('DELETE FROM items WHERE id = ?', id);
-  } catch (error) {
-    if (isForeignKeyConstraintError(error)) {
-      throw new ItemHasSalesError();
-    }
-    throw error;
-  }
+  await db.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
+  await db.runAsync('DELETE FROM items WHERE id = ?', id);
 }
 
 export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
@@ -536,6 +529,9 @@ function mapSaleRow(row: {
   notes: string | null;
   complete_date: string | null;
   is_preorder: number;
+  cancelled?: number;
+  cancel_reason?: CancelReason | null;
+  cancel_note?: string | null;
   created_at: string;
 }): Sale {
   return {
@@ -550,6 +546,9 @@ function mapSaleRow(row: {
     notes: row.notes,
     completeDate: row.complete_date,
     isPreorder: row.is_preorder === 1,
+    cancelled: (row.cancelled ?? 0) === 1,
+    cancelReason: row.cancel_reason ?? null,
+    cancelNote: row.cancel_note ?? null,
     createdAt: row.created_at,
   };
 }
@@ -642,6 +641,9 @@ export async function createSale(
       notes,
       completeDate,
       isPreorder: isPreorder === 1,
+      cancelled: false,
+      cancelReason: null,
+      cancelNote: null,
       createdAt: createdAtRow?.created_at ?? new Date().toISOString(),
     };
   });
@@ -671,6 +673,9 @@ export async function replaceSaleContents(
   const existing = await getSale(db, saleId);
   if (!existing) {
     throw new Error('Sale not found');
+  }
+  if (existing.cancelled) {
+    throw new Error('Cancelled sales cannot be edited');
   }
 
   const totalCents = cartTotal(params.lines);
@@ -724,6 +729,9 @@ export async function replaceSaleContents(
       notes,
       completeDate,
       isPreorder: existing.isPreorder,
+      cancelled: existing.cancelled,
+      cancelReason: existing.cancelReason,
+      cancelNote: existing.cancelNote,
       createdAt: existing.createdAt,
     };
   });
@@ -822,12 +830,38 @@ export async function getSaleByNumber(
   return mapSaleRow(row);
 }
 
-export async function removeSaleByNumber(db: SQLiteDatabase, saleNumber: number): Promise<void> {
+export async function cancelSaleByNumber(
+  db: SQLiteDatabase,
+  saleNumber: number,
+  reason: CancelSaleReason,
+): Promise<void> {
   const sale = await getSaleByNumber(db, saleNumber);
   if (!sale) return;
+  if (sale.isPreorder) {
+    throw new Error('Open preorders must be deleted, not cancelled');
+  }
+  if (sale.cancelled) return;
 
-  await deleteSale(db, sale.id);
+  const normalized = normalizeCancelSaleReason(reason);
+  await db.runAsync(
+    `UPDATE sales SET cancelled = 1, cancel_reason = ?, cancel_note = ? WHERE id = ?`,
+    normalized.kind,
+    normalized.note,
+    sale.id,
+  );
   await flagMarketDayReexportIfExported(db, sale.marketDayId);
+}
+
+export async function deleteOpenPreorderByNumber(
+  db: SQLiteDatabase,
+  saleNumber: number,
+): Promise<void> {
+  const sale = await getSaleByNumber(db, saleNumber);
+  if (!sale) return;
+  if (!sale.isPreorder) {
+    throw new Error('Only open preorders can be deleted');
+  }
+  await deleteSale(db, sale.id);
 }
 
 export async function updateSalePaymentMethod(
@@ -851,7 +885,7 @@ export async function updateSale(
   },
 ): Promise<void> {
   const sale = await getSaleByNumber(db, saleNumber);
-  if (!sale) return;
+  if (!sale || sale.cancelled) return;
 
   const paymentMethod = updates.paymentMethod ?? sale.paymentMethod;
   const name = updates.name !== undefined ? normalizeOptionalText(updates.name) : sale.name;
@@ -953,14 +987,18 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     total_cents: number;
     payment_method: PaymentMethod;
     change_kept?: number;
-  name: string | null;
+    name: string | null;
     notes: string | null;
     complete_date: string | null;
     created_at: string;
+    cancelled: number;
+    cancel_reason: CancelReason | null;
+    cancel_note: string | null;
   }>(
-    `SELECT sale_number, total_cents, payment_method, name, notes, complete_date, created_at
+    `SELECT sale_number, total_cents, payment_method, name, notes, complete_date, created_at,
+            cancelled, cancel_reason, cancel_note
      FROM sales
-     WHERE is_preorder = 1
+     WHERE is_preorder = 1 AND cancelled = 0
      ORDER BY
        CASE WHEN complete_date IS NULL THEN 1 ELSE 0 END,
        complete_date ASC,
@@ -974,6 +1012,9 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     name: row.name,
     notes: row.notes,
     completeDate: row.complete_date,
+    cancelled: row.cancelled === 1,
+    cancelReason: row.cancel_reason,
+    cancelNote: row.cancel_note,
     createdAt: row.created_at,
   }));
 }
@@ -994,7 +1035,7 @@ export async function getMarketDaySaleCount(
   marketDayId: number,
 ): Promise<number> {
   const row = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) AS count FROM sales WHERE market_day_id = ?',
+    'SELECT COUNT(*) AS count FROM sales WHERE market_day_id = ? AND cancelled = 0',
     marketDayId,
   );
   return row?.count ?? 0;
@@ -1049,7 +1090,7 @@ export async function getMarketDayStats(db: SQLiteDatabase, marketDayId: number)
          END
        ), 0) AS venmo_tips_cents
      FROM sales s
-     WHERE s.market_day_id = ?`,
+     WHERE s.market_day_id = ? AND s.cancelled = 0`,
     marketDayId,
   );
 
@@ -1114,7 +1155,7 @@ export async function getAllTimeStats(db: SQLiteDatabase) {
          END
        ), 0) AS venmo_tips_cents
      FROM sales s
-     WHERE s.is_preorder = 0`,
+     WHERE s.is_preorder = 0 AND s.cancelled = 0`,
   );
 
   return {
@@ -1135,9 +1176,12 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
     total_cents: number;
     payment_method: PaymentMethod;
     change_kept?: number;
-  name: string | null;
+    name: string | null;
     created_at: string;
     market_day_name: string | null;
+    cancelled: number;
+    cancel_reason: CancelReason | null;
+    cancel_note: string | null;
   }>(
     `SELECT
        s.sale_number,
@@ -1145,7 +1189,10 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
        s.payment_method,
        s.name,
        s.created_at,
-       md.name AS market_day_name
+       md.name AS market_day_name,
+       s.cancelled,
+       s.cancel_reason,
+       s.cancel_note
      FROM sales s
      LEFT JOIN market_days md ON md.id = s.market_day_id
      WHERE s.is_preorder = 0
@@ -1159,6 +1206,9 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
     name: row.name,
     notes: null,
     completeDate: null,
+    cancelled: row.cancelled === 1,
+    cancelReason: row.cancel_reason,
+    cancelNote: row.cancel_note,
     createdAt: row.created_at,
     marketDayName: row.market_day_name,
   }));
@@ -1173,10 +1223,14 @@ export async function getMarketDaySales(
     total_cents: number;
     payment_method: PaymentMethod;
     change_kept?: number;
-  name: string | null;
+    name: string | null;
     created_at: string;
+    cancelled: number;
+    cancel_reason: CancelReason | null;
+    cancel_note: string | null;
   }>(
-    `SELECT sale_number, total_cents, payment_method, name, created_at
+    `SELECT sale_number, total_cents, payment_method, name, created_at,
+            cancelled, cancel_reason, cancel_note
      FROM sales
      WHERE market_day_id = ?
      ORDER BY sale_number ASC`,
@@ -1190,6 +1244,9 @@ export async function getMarketDaySales(
     name: row.name,
     notes: null,
     completeDate: null,
+    cancelled: row.cancelled === 1,
+    cancelReason: row.cancel_reason,
+    cancelNote: row.cancel_note,
     createdAt: row.created_at,
   }));
 }
@@ -1237,7 +1294,7 @@ export async function getClosedMarketDays(
     sale_count: number;
   }>(
     `SELECT md.id, md.name, md.started_at, md.closed_at,
-            (SELECT COUNT(*) FROM sales s WHERE s.market_day_id = md.id) AS sale_count
+            (SELECT COUNT(*) FROM sales s WHERE s.market_day_id = md.id AND s.cancelled = 0) AS sale_count
      FROM market_days md
      WHERE md.closed_at IS NOT NULL
      ORDER BY md.closed_at DESC, md.id DESC`,
@@ -1296,7 +1353,50 @@ export type MarketDayExportRow = {
   cashReceivedCents: number | null;
   changeKeptCents: number;
   customerName: string | null;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
 };
+
+function mapExportRow(row: {
+  sale_number: number;
+  created_at: string;
+  market_day_name: string;
+  item_name: string;
+  quantity: number;
+  price_cents: number;
+  cost_cents: number;
+  total_cents: number;
+  payment_method: PaymentMethod;
+  cash_received_cents: number | null;
+  change_kept?: number;
+  name: string | null;
+  cancelled?: number;
+  cancel_reason?: CancelReason | null;
+  cancel_note?: string | null;
+}): MarketDayExportRow {
+  const cancelled = (row.cancelled ?? 0) === 1;
+  return {
+    saleNumber: row.sale_number,
+    createdAt: row.created_at,
+    marketDayName: row.market_day_name,
+    itemName: row.item_name,
+    quantity: row.quantity,
+    priceCents: cancelled ? 0 : row.price_cents,
+    costCents: cancelled ? 0 : row.cost_cents,
+    saleTotalCents: cancelled ? 0 : row.total_cents,
+    paymentMethod: row.payment_method,
+    cashReceivedCents: cancelled ? null : row.cash_received_cents,
+    changeKeptCents:
+      !cancelled && row.change_kept === 1 && row.cash_received_cents != null
+        ? Math.max(row.cash_received_cents - row.total_cents, 0)
+        : 0,
+    customerName: row.name,
+    cancelled,
+    cancelReason: row.cancel_reason ?? null,
+    cancelNote: row.cancel_note ?? null,
+  };
+}
 
 export async function getMarketDayExportRows(
   db: SQLiteDatabase,
@@ -1317,9 +1417,13 @@ export async function getMarketDayExportRows(
     quantity: number;
     price_cents: number;
     cost_cents: number;
+    cancelled: number;
+    cancel_reason: CancelReason | null;
+    cancel_note: string | null;
   }>(
     `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.change_kept, s.name,
-            i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
+            i.name AS item_name, li.quantity, li.price_cents, li.cost_cents,
+            s.cancelled, s.cancel_reason, s.cancel_note
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
@@ -1328,23 +1432,12 @@ export async function getMarketDayExportRows(
     marketDayId,
   );
 
-  return rows.map((row) => ({
-    saleNumber: row.sale_number,
-    createdAt: row.created_at,
-    marketDayName: marketDay.name,
-    itemName: row.item_name,
-    quantity: row.quantity,
-    priceCents: row.price_cents,
-    costCents: row.cost_cents,
-    saleTotalCents: row.total_cents,
-    paymentMethod: row.payment_method,
-    cashReceivedCents: row.cash_received_cents,
-    changeKeptCents:
-      row.change_kept === 1 && row.cash_received_cents != null
-        ? Math.max(row.cash_received_cents - row.total_cents, 0)
-        : 0,
-    customerName: row.name,
-  }));
+  return rows.map((row) =>
+    mapExportRow({
+      ...row,
+      market_day_name: marketDay.name,
+    }),
+  );
 }
 
 export async function getSalesExportRows(
@@ -1365,10 +1458,14 @@ export async function getSalesExportRows(
     quantity: number;
     price_cents: number;
     cost_cents: number;
+    cancelled: number;
+    cancel_reason: CancelReason | null;
+    cancel_note: string | null;
   }>(
     `SELECT s.sale_number, s.created_at, s.total_cents, s.payment_method, s.cash_received_cents, s.change_kept, s.name,
             md.name AS market_day_name,
-            i.name AS item_name, li.quantity, li.price_cents, li.cost_cents
+            i.name AS item_name, li.quantity, li.price_cents, li.cost_cents,
+            s.cancelled, s.cancel_reason, s.cancel_note
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
@@ -1381,23 +1478,12 @@ export async function getSalesExportRows(
     endDate,
   );
 
-  return rows.map((row) => ({
-    saleNumber: row.sale_number,
-    createdAt: row.created_at,
-    marketDayName: row.market_day_name ?? '',
-    itemName: row.item_name,
-    quantity: row.quantity,
-    priceCents: row.price_cents,
-    costCents: row.cost_cents,
-    saleTotalCents: row.total_cents,
-    paymentMethod: row.payment_method,
-    cashReceivedCents: row.cash_received_cents,
-    changeKeptCents:
-      row.change_kept === 1 && row.cash_received_cents != null
-        ? Math.max(row.cash_received_cents - row.total_cents, 0)
-        : 0,
-    customerName: row.name,
-  }));
+  return rows.map((row) =>
+    mapExportRow({
+      ...row,
+      market_day_name: row.market_day_name ?? '',
+    }),
+  );
 }
 
 export type PreorderPrepItem = {
@@ -1418,7 +1504,7 @@ export async function getPreorderPrepSummary(db: SQLiteDatabase): Promise<Preord
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
-     WHERE s.is_preorder = 1
+     WHERE s.is_preorder = 1 AND s.cancelled = 0
      GROUP BY li.item_id, i.name, i.icon
      ORDER BY i.name ASC`,
   );
@@ -1461,7 +1547,7 @@ export async function getPreorderExportRows(db: SQLiteDatabase): Promise<Preorde
      FROM sales s
      JOIN line_items li ON li.sale_id = s.id
      JOIN items i ON i.id = li.item_id
-     WHERE s.is_preorder = 1
+     WHERE s.is_preorder = 1 AND s.cancelled = 0
      ORDER BY s.created_at ASC, s.sale_number ASC, li.id ASC`,
   );
 

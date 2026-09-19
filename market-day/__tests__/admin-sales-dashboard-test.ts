@@ -191,6 +191,9 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
     name: null,
     notes: null,
     completeDate: null,
+    cancelled: false,
+    cancelReason: null,
+    cancelNote: null,
     createdAt: expect.any(String),
   });
   expect(sales[1]).toEqual({
@@ -200,6 +203,9 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
     name: null,
     notes: null,
     completeDate: null,
+    cancelled: false,
+    cancelReason: null,
+    cancelNote: null,
     createdAt: expect.any(String),
   });
 });

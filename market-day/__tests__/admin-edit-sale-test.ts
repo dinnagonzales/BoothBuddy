@@ -1,6 +1,6 @@
 import { createCatalog } from '@/lib/catalog';
 
-test('admin can remove a mis-logged Sale', async () => {
+test('admin can cancel a completed Sale with Return; it stays visible and drops from totals', async () => {
   const catalog = createCatalog();
 
   const dragon = await catalog.createItem({
@@ -42,19 +42,22 @@ test('admin can remove a mis-logged Sale', async () => {
     cashReceivedCents: null,
   });
 
-  await catalog.removeSale(first.saleNumber);
+  await catalog.cancelSale(first.saleNumber, { kind: 'return' });
 
-  expect(await catalog.listSalesForMarketDay(marketDay.id)).toEqual([
-    {
-      saleNumber: 2,
-      totalCents: 800,
-      paymentMethod: 'venmo_zelle',
-      name: null,
-      notes: null,
-      completeDate: null,
-      createdAt: expect.any(String),
-    },
-  ]);
+  const sales = await catalog.listSalesForMarketDay(marketDay.id);
+  expect(sales).toHaveLength(2);
+  expect(sales[0]).toMatchObject({
+    saleNumber: 1,
+    totalCents: 400,
+    cancelled: true,
+    cancelReason: 'return',
+    cancelNote: null,
+  });
+  expect(sales[1]).toMatchObject({
+    saleNumber: 2,
+    totalCents: 800,
+    cancelled: false,
+  });
   expect(await catalog.getMarketDayStats(marketDay.id)).toEqual({
     totalCents: 800,
     itemCount: 2,
@@ -64,6 +67,12 @@ test('admin can remove a mis-logged Sale', async () => {
     tipsCents: 0,
     cashTipsCents: 0,
     venmoTipsCents: 0,
+  });
+  expect(await catalog.getSale(first.saleNumber)).toMatchObject({
+    saleNumber: 1,
+    cancelled: true,
+    cancelReason: 'return',
+    cancelNote: null,
   });
 });
 
@@ -106,6 +115,9 @@ test('admin can change payment method on a Sale', async () => {
       name: null,
       notes: null,
       completeDate: null,
+      cancelled: false,
+      cancelReason: null,
+      cancelNote: null,
       createdAt: expect.any(String),
     },
   ]);
@@ -219,7 +231,7 @@ test('exported Market Day is flagged for re-export after a payment method edit',
   expect(await catalog.marketDayNeedsReexport(marketDay.id)).toBe(true);
 });
 
-test('exported Market Day is flagged for re-export after removing a Sale', async () => {
+test('exported Market Day is flagged for re-export after cancelling a Sale', async () => {
   const catalog = createCatalog();
 
   const dragon = await catalog.createItem({
@@ -247,7 +259,7 @@ test('exported Market Day is flagged for re-export after removing a Sale', async
   });
 
   await catalog.exportMarketDay(marketDay.id);
-  await catalog.removeSale(saleNumber);
+  await catalog.cancelSale(saleNumber, { kind: 'return' });
 
   expect(await catalog.marketDayNeedsReexport(marketDay.id)).toBe(true);
 });
@@ -295,6 +307,9 @@ test('admin can add optional name and notes to a Sale', async () => {
       name: 'Emma',
       notes: null,
       completeDate: null,
+      cancelled: false,
+      cancelReason: null,
+      cancelNote: null,
       createdAt: expect.any(String),
     },
   ]);
@@ -432,4 +447,155 @@ test('exported Market Day is flagged for re-export after replacing a Sale', asyn
   });
 
   expect(await catalog.marketDayNeedsReexport(marketDay.id)).toBe(true);
+});
+
+test('admin can cancel a completed Sale with Error and a short note', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 400,
+  });
+
+  await catalog.cancelSale(saleNumber, { kind: 'error', note: '  Double ring  ' });
+
+  expect(await catalog.getSale(saleNumber)).toMatchObject({
+    cancelled: true,
+    cancelReason: 'error',
+    cancelNote: 'Double ring',
+  });
+  expect(await catalog.getMarketDayStats(marketDay.id)).toMatchObject({
+    totalCents: 0,
+    itemCount: 0,
+  });
+});
+
+test('cancel with Error rejects an empty note', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 400,
+  });
+
+  await expect(
+    catalog.cancelSale(saleNumber, { kind: 'error', note: '   ' }),
+  ).rejects.toThrow('Error reason requires a short note');
+});
+
+test('deleting an open preorder removes it entirely', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  const { saleNumber } = await catalog.recordQuickSale({
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'pay_on_pickup',
+    cashReceivedCents: null,
+    name: 'Emma',
+    notes: 'Saturday pickup',
+    completeDate: '2026-08-30',
+    isPreorder: true,
+  });
+
+  await catalog.deleteOpenPreorder(saleNumber);
+
+  expect(await catalog.getSale(saleNumber)).toBeNull();
+  expect(await catalog.listPreorderSales()).toHaveLength(0);
+});
+
+test('cancelled sales appear in export with zero money contribution', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 400,
+  });
+
+  await catalog.cancelSale(saleNumber, { kind: 'return' });
+
+  const rows = await catalog.listSalesExportRows('2000-01-01', '2100-01-01');
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({
+    saleNumber: 1,
+    itemName: 'Dragon',
+    quantity: 1,
+    saleTotalCents: 0,
+    priceCents: 0,
+    costCents: 0,
+    cancelled: true,
+    cancelReason: 'return',
+    cancelNote: null,
+  });
 });

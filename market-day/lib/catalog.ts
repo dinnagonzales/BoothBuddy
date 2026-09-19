@@ -4,6 +4,19 @@ import {
   ItemHasSalesError,
   NothingToUndoCloseError,
 } from '@/lib/market-day';
+import {
+  normalizeCancelSaleReason,
+  type CancelSaleReason,
+} from '@/lib/sale-cancel';
+import type {
+  AllTimeSaleSummary,
+  CancelReason,
+  CartLine,
+  ClosedMarketDaySummary,
+  MarketDay,
+  PaymentMethod,
+  SaleSummary,
+} from '@/lib/types';
 
 export type ItemDraft = {
   name: string;
@@ -66,6 +79,9 @@ export type SaleDetail = {
   notes: string | null;
   completeDate: string | null;
   isPreorder: boolean;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
   createdAt: string;
   lines: CartLine[];
 };
@@ -120,7 +136,8 @@ export type Catalog = {
   listAllTimeSales(): Promise<AllTimeSaleSummary[]>;
   listPreorderSales(): Promise<SaleSummary[]>;
   getSale(saleNumber: number): Promise<SaleDetail | null>;
-  removeSale(saleNumber: number): Promise<void>;
+  cancelSale(saleNumber: number, reason: CancelSaleReason): Promise<void>;
+  deleteOpenPreorder(saleNumber: number): Promise<void>;
   updateSalePaymentMethod(saleNumber: number, paymentMethod: PaymentMethod): Promise<void>;
   updateSale(
     saleNumber: number,
@@ -177,6 +194,9 @@ export type SalesExportRow = {
   cashReceivedCents: number | null;
   changeKeptCents: number;
   customerName: string | null;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
 };
 
 type StoredItem = ItemDraft & { id: number; archived: boolean; photoUri: string | null };
@@ -208,6 +228,9 @@ type StoredSale = {
   notes: string | null;
   completeDate: string | null;
   isPreorder: boolean;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
   createdAt: string;
   exportedAt: string | null;
 };
@@ -319,6 +342,9 @@ export function createCatalog(): Catalog {
       notes,
       completeDate,
       isPreorder: params.isPreorder === true,
+      cancelled: false,
+      cancelReason: null,
+      cancelNote: null,
       createdAt: new Date().toISOString(),
       exportedAt: null,
     });
@@ -326,7 +352,22 @@ export function createCatalog(): Catalog {
   }
 
   function completedSales() {
-    return sales.filter((sale) => !sale.isPreorder);
+    return sales.filter((sale) => !sale.isPreorder && !sale.cancelled);
+  }
+
+  function mapSaleSummary(sale: StoredSale): SaleSummary {
+    return {
+      saleNumber: sale.saleNumber,
+      totalCents: cartTotal(sale.lines),
+      paymentMethod: sale.paymentMethod,
+      name: sale.name,
+      notes: sale.notes,
+      completeDate: sale.completeDate,
+      cancelled: sale.cancelled,
+      cancelReason: sale.cancelReason,
+      cancelNote: sale.cancelNote,
+      createdAt: sale.createdAt,
+    };
   }
 
   function isDateInRange(iso: string, startDate: string, endDate: string): boolean {
@@ -347,7 +388,8 @@ export function createCatalog(): Catalog {
         sale.marketDayId == null
           ? ''
           : (marketDays.find((day) => day.id === sale.marketDayId)?.name ?? '');
-      const saleTotalCents = cartTotal(sale.lines);
+      const activeTotalCents = cartTotal(sale.lines);
+      const saleTotalCents = sale.cancelled ? 0 : activeTotalCents;
       for (const line of sale.lines) {
         rows.push({
           saleNumber: sale.saleNumber,
@@ -355,16 +397,19 @@ export function createCatalog(): Catalog {
           marketDayName,
           itemName: line.name,
           quantity: line.quantity,
-          priceCents: line.priceCents,
-          costCents: line.costCents,
+          priceCents: sale.cancelled ? 0 : line.priceCents,
+          costCents: sale.cancelled ? 0 : line.costCents,
           saleTotalCents,
           paymentMethod: sale.paymentMethod,
-          cashReceivedCents: sale.cashReceivedCents,
+          cashReceivedCents: sale.cancelled ? null : sale.cashReceivedCents,
           changeKeptCents:
-            sale.changeKept && sale.cashReceivedCents != null
-              ? Math.max(sale.cashReceivedCents - saleTotalCents, 0)
+            !sale.cancelled && sale.changeKept && sale.cashReceivedCents != null
+              ? Math.max(sale.cashReceivedCents - activeTotalCents, 0)
               : 0,
           customerName: sale.name,
+          cancelled: sale.cancelled,
+          cancelReason: sale.cancelReason,
+          cancelNote: sale.cancelNote,
         });
       }
     }
@@ -647,7 +692,9 @@ export function createCatalog(): Catalog {
       return recordSaleEntry(null, params);
     },
     async getMarketDayStats(marketDayId) {
-      const daySales = sales.filter((sale) => sale.marketDayId === marketDayId);
+      const daySales = sales.filter(
+        (sale) => sale.marketDayId === marketDayId && !sale.cancelled,
+      );
       let totalCents = 0;
       let itemCount = 0;
       let profitCents = 0;
@@ -692,13 +739,9 @@ export function createCatalog(): Catalog {
         .filter((sale) => sale.marketDayId === marketDayId)
         .sort((a, b) => a.saleNumber - b.saleNumber)
         .map((sale) => ({
-          saleNumber: sale.saleNumber,
-          totalCents: cartTotal(sale.lines),
-          paymentMethod: sale.paymentMethod,
-          name: sale.name,
+          ...mapSaleSummary(sale),
           notes: null,
           completeDate: null,
-          createdAt: sale.createdAt,
         }));
     },
     async getAllTimeStats() {
@@ -742,26 +785,23 @@ export function createCatalog(): Catalog {
       };
     },
     async listAllTimeSales() {
-      return completedSales()
+      return sales
+        .filter((sale) => !sale.isPreorder)
         .slice()
         .sort((a, b) => {
           const byDate = b.createdAt.localeCompare(a.createdAt);
           return byDate !== 0 ? byDate : b.saleNumber - a.saleNumber;
         })
         .map((sale) => ({
-          saleNumber: sale.saleNumber,
-          totalCents: cartTotal(sale.lines),
-          paymentMethod: sale.paymentMethod,
-          name: sale.name,
+          ...mapSaleSummary(sale),
           notes: null,
           completeDate: null,
-          createdAt: sale.createdAt,
           marketDayName: marketDays.find((day) => day.id === sale.marketDayId)?.name ?? null,
         }));
     },
     async listPreorderSales() {
       return sales
-        .filter((sale) => sale.isPreorder)
+        .filter((sale) => sale.isPreorder && !sale.cancelled)
         .sort((a, b) => {
           if (!a.completeDate && !b.completeDate) {
             return a.saleNumber - b.saleNumber;
@@ -771,24 +811,34 @@ export function createCatalog(): Catalog {
           const byDate = a.completeDate.localeCompare(b.completeDate);
           return byDate !== 0 ? byDate : a.saleNumber - b.saleNumber;
         })
-        .map((sale) => ({
-          saleNumber: sale.saleNumber,
-          totalCents: cartTotal(sale.lines),
-          paymentMethod: sale.paymentMethod,
-          name: sale.name,
-          notes: sale.notes,
-          completeDate: sale.completeDate,
-          createdAt: sale.createdAt,
-        }));
+        .map(mapSaleSummary);
     },
-    async removeSale(saleNumber) {
-      const index = sales.findIndex((sale) => sale.saleNumber === saleNumber);
-      if (index === -1) return;
-      const [removed] = sales.splice(index, 1);
-      const marketDay = marketDays.find((day) => day.id === removed.marketDayId);
+    async cancelSale(saleNumber, reason) {
+      const sale = sales.find((entry) => entry.saleNumber === saleNumber);
+      if (!sale) return;
+      if (sale.isPreorder) {
+        throw new Error('Open preorders must be deleted, not cancelled');
+      }
+      if (sale.cancelled) return;
+
+      const normalized = normalizeCancelSaleReason(reason);
+      sale.cancelled = true;
+      sale.cancelReason = normalized.kind;
+      sale.cancelNote = normalized.note;
+
+      const marketDay = marketDays.find((day) => day.id === sale.marketDayId);
       if (marketDay?.exportedAt) {
         marketDay.needsReexport = true;
       }
+    },
+    async deleteOpenPreorder(saleNumber) {
+      const index = sales.findIndex((sale) => sale.saleNumber === saleNumber);
+      if (index === -1) return;
+      const sale = sales[index];
+      if (!sale.isPreorder) {
+        throw new Error('Only open preorders can be deleted');
+      }
+      sales.splice(index, 1);
     },
     async getSale(saleNumber) {
       const sale = sales.find((entry) => entry.saleNumber === saleNumber);
@@ -801,13 +851,16 @@ export function createCatalog(): Catalog {
         notes: sale.notes,
         completeDate: sale.completeDate,
         isPreorder: sale.isPreorder,
+        cancelled: sale.cancelled,
+        cancelReason: sale.cancelReason,
+        cancelNote: sale.cancelNote,
         createdAt: sale.createdAt,
         lines: sale.lines.map((line) => ({ ...line })),
       };
     },
     async updateSalePaymentMethod(saleNumber, paymentMethod) {
       const sale = sales.find((entry) => entry.saleNumber === saleNumber);
-      if (!sale) return;
+      if (!sale || sale.cancelled) return;
 
       sale.paymentMethod = paymentMethod;
       if (paymentMethod === 'cash' || paymentMethod === 'venmo_zelle') {
@@ -826,7 +879,7 @@ export function createCatalog(): Catalog {
     },
     async updateSale(saleNumber, updates) {
       const sale = sales.find((entry) => entry.saleNumber === saleNumber);
-      if (!sale) return;
+      if (!sale || sale.cancelled) return;
 
       if (updates.paymentMethod !== undefined) {
         sale.paymentMethod = updates.paymentMethod;
@@ -866,6 +919,9 @@ export function createCatalog(): Catalog {
       const sale = sales.find((entry) => entry.saleNumber === saleNumber);
       if (!sale) {
         throw new Error('Sale not found');
+      }
+      if (sale.cancelled) {
+        throw new Error('Cancelled sales cannot be edited');
       }
       if (params.lines.length === 0) {
         throw new Error('Sale must have at least one line item');
@@ -938,7 +994,9 @@ export function createCatalog(): Catalog {
           name: day.name,
           startedAt: day.startedAt,
           closedAt: day.closedAt!,
-          saleCount: sales.filter((sale) => sale.marketDayId === day.id).length,
+          saleCount: sales.filter(
+            (sale) => sale.marketDayId === day.id && !sale.cancelled,
+          ).length,
         }));
     },
     async getMarketDayById(id) {

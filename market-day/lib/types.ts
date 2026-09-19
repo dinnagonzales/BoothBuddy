@@ -1,5 +1,7 @@
 export type PaymentMethod = 'cash' | 'venmo_zelle' | 'pay_on_pickup';
 
+export type CancelReason = 'return' | 'error';
+
 export type Item = {
   id: number;
   name: string;
@@ -40,6 +42,9 @@ export type Sale = {
   notes: string | null;
   completeDate: string | null;
   isPreorder: boolean;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
   createdAt: string;
 };
 
@@ -50,6 +55,9 @@ export type SaleSummary = {
   name: string | null;
   notes: string | null;
   completeDate: string | null;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
   createdAt: string;
 };
 

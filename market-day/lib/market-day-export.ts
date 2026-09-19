@@ -15,6 +15,7 @@ import {
 } from '@/lib/db/queries';
 import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
+import { cancelReasonDisplayLabel } from '@/lib/sale-cancel';
 
 const CSV_HEADERS = [
   'Sale Number',
@@ -31,6 +32,8 @@ const CSV_HEADERS = [
   'Cash Received',
   'Change Kept',
   'Customer Name',
+  'Status',
+  'Cancel Reason',
 ] as const;
 
 function escapeCsvField(value: string | number): string {
@@ -140,6 +143,8 @@ export function buildMarketDayCsv(
         row.cashReceivedCents == null ? '' : formatCentsForCsv(row.cashReceivedCents),
         row.changeKeptCents > 0 ? formatCentsForCsv(row.changeKeptCents) : '',
         row.customerName ?? '',
+        row.cancelled ? 'Cancelled' : '',
+        cancelReasonDisplayLabel(row.cancelReason, row.cancelNote) ?? '',
       ]
         .map(escapeCsvField)
         .join(','),

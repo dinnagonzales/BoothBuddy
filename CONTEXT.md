@@ -83,8 +83,12 @@ A staff action on the celebration overlay that reopens the cart with the just-co
 _Avoid_: Undo, edit sale, oops
 
 **Owner edit** (code: Admin edit):
-The owner's ability to open and change any Sale from owner settings — payment method, optional name and notes, complete date (preorders), or remove the whole mis-logged Sale. If composition needs to change beyond payment or metadata, remove the Sale and re-log from scratch (staff **Fix** on celebration, or owner remove + new checkout). If the Sale's Market Day or Running Tab chunk has already been exported, the bucket is flagged as out of date and re-export is recommended.
-_Avoid_: Void, correction, adjustment
+The owner's ability to open and change any Sale from owner settings — payment method, optional name and notes, complete date (preorders), or **Cancel sale** on a completed Sale. Cancelling requires a reason (**Return** or **Error** with a short note). The Sale stays visible with its **Sale number** / Invoice #, becomes read-only, and is excluded from money totals and CSV money columns (still exported as a marked Cancelled row). Cancellation is permanent — no restore. Open **Preorders** are hard-deleted with a simple confirm (no Cancelled stub). If composition needs to change beyond payment or metadata, cancel the Sale and re-log from scratch (staff **Fix** on celebration, or owner cancel + new checkout). Wrong payment method is an edit, not a cancel. If the Sale's Market Day or Running Tab chunk has already been exported, the bucket is flagged as out of date and re-export is recommended.
+_Avoid_: Void, remove sale, correction, adjustment
+
+**Cancelled**:
+A completed Sale the owner has cancelled with a reason. Remains in Sales lists and exports for Invoice # history; does not count toward revenue, profit, tips, or payment totals. Detail is read-only.
+_Avoid_: Voided, deleted sale, removed
 
 **Payment method**:
 How the customer paid for a Sale — **Cash**, **Venmo/Zelle**, or **Pay on pickup** (preorders only, until **Mark complete**). Mutually exclusive per Sale. Completed Sales always have Cash or Venmo/Zelle on file.

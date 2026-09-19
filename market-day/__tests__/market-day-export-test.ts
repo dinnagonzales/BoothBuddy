@@ -1,5 +1,11 @@
 import { buildMarketDayCsv, buildPreorderPrintout, computeExportSummary, marketDayExportFilename } from '@/lib/market-day-export';
 
+const activeRow = {
+  cancelled: false as const,
+  cancelReason: null,
+  cancelNote: null,
+};
+
 test('buildMarketDayCsv includes headers and one row per line item', () => {
   const csv = buildMarketDayCsv([
     {
@@ -15,11 +21,12 @@ test('buildMarketDayCsv includes headers and one row per line item', () => {
       cashReceivedCents: 1000,
       changeKeptCents: 200,
       customerName: null,
+      ...activeRow,
     },
   ]);
 
   expect(csv.startsWith(
-    'Sale Number,Date/Time,Market Day,Item Name,Quantity,Unit Price,Unit Cost,Line Total,Line Profit,Sale Total,Payment Method,Cash Received,Change Kept,Customer Name\n',
+    'Sale Number,Date/Time,Market Day,Item Name,Quantity,Unit Price,Unit Cost,Line Total,Line Profit,Sale Total,Payment Method,Cash Received,Change Kept,Customer Name,Status,Cancel Reason\n',
   )).toBe(true);
   expect(csv).toContain('Demo Market Day – Aug 28, 2026');
   expect(csv).toContain('Dragon');
@@ -32,11 +39,38 @@ test('buildMarketDayCsv includes headers and one row per line item', () => {
   expect(csv).toContain('2.00');
   const summaryLines = csv.trim().split('\n').slice(-4);
   expect(summaryLines).toEqual([
-    'Total (without tips),,,,,,,,,8.00,,,,',
-    'Gross (without tips),,,,,,,,,8.00,,,,',
-    'Profit (without tips),,,,,,,,,6.00,,,,',
-    'Tips total,,,,,,,,,2.00,,,,',
+    'Total (without tips),,,,,,,,,8.00,,,,,,',
+    'Gross (without tips),,,,,,,,,8.00,,,,,,',
+    'Profit (without tips),,,,,,,,,6.00,,,,,,',
+    'Tips total,,,,,,,,,2.00,,,,,,',
   ]);
+});
+
+test('buildMarketDayCsv marks cancelled sales with zero money and reason', () => {
+  const csv = buildMarketDayCsv([
+    {
+      saleNumber: 7,
+      createdAt: '2026-08-28T20:32:00.000Z',
+      marketDayName: 'Fair',
+      itemName: 'Dragon',
+      quantity: 1,
+      priceCents: 0,
+      costCents: 0,
+      saleTotalCents: 0,
+      paymentMethod: 'cash',
+      cashReceivedCents: null,
+      changeKeptCents: 0,
+      customerName: null,
+      cancelled: true,
+      cancelReason: 'return',
+      cancelNote: null,
+    },
+  ]);
+
+  expect(csv).toContain('Cancelled');
+  expect(csv).toContain('Return');
+  const dataLine = csv.trim().split('\n')[1];
+  expect(dataLine).toContain(',0.00,0.00,0.00,0.00,0.00,');
 });
 
 test('computeExportSummary dedupes sale totals and tips across line items', () => {
@@ -55,6 +89,7 @@ test('computeExportSummary dedupes sale totals and tips across line items', () =
         cashReceivedCents: 1000,
         changeKeptCents: 200,
         customerName: null,
+        ...activeRow,
       },
       {
         saleNumber: 2,
@@ -69,6 +104,7 @@ test('computeExportSummary dedupes sale totals and tips across line items', () =
         cashReceivedCents: null,
         changeKeptCents: 0,
         customerName: 'Emma',
+        ...activeRow,
       },
     ]),
   ).toEqual({
@@ -95,6 +131,7 @@ test('computeExportSummary sums every line item for gross and profit', () => {
         cashReceivedCents: 1000,
         changeKeptCents: 0,
         customerName: null,
+        ...activeRow,
       },
       {
         saleNumber: 1,
@@ -109,6 +146,7 @@ test('computeExportSummary sums every line item for gross and profit', () => {
         cashReceivedCents: 1000,
         changeKeptCents: 0,
         customerName: null,
+        ...activeRow,
       },
     ]),
   ).toEqual({

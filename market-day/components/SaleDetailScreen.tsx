@@ -9,10 +9,11 @@ import { Card, Checkbox, cn } from '@/components/ui';
 import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import {
+  cancelSaleByNumber,
   completePreorder,
+  deleteOpenPreorderByNumber,
   getSaleByNumber,
   getSaleLineItems,
-  removeSaleByNumber,
   updateSale,
 } from '@/lib/db/queries';
 import {
@@ -24,6 +25,11 @@ import {
   toExportDate,
 } from '@/lib/market-day';
 import {
+  CANCEL_ERROR_NOTE_MAX_LENGTH,
+  cancelReasonDisplayLabel,
+  type CancelSaleReason,
+} from '@/lib/sale-cancel';
+import {
   cashChangeCents,
   cashChangeStatusLabel,
   paymentCanComplete,
@@ -32,7 +38,7 @@ import {
   saleHasUnsavedChanges,
 } from '@/lib/sale-edit';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
-import type { CartLine, PaymentMethod } from '@/lib/types';
+import type { CancelReason, CartLine, PaymentMethod } from '@/lib/types';
 
 function moneyInputFromCents(cents: number): string {
   if (cents === 0) return '';
@@ -62,6 +68,9 @@ type SaleDetail = {
   notes: string | null;
   completeDate: string | null;
   isPreorder: boolean;
+  cancelled: boolean;
+  cancelReason: CancelReason | null;
+  cancelNote: string | null;
   createdAt: string;
   lines: CartLine[];
 };
@@ -93,6 +102,9 @@ export function SaleDetailScreen({
   const [draftCashReceivedText, setDraftCashReceivedText] = useState('');
   const [draftKeepChange, setDraftKeepChange] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [cancelSheetOpen, setCancelSheetOpen] = useState(false);
+  const [cancelKind, setCancelKind] = useState<'return' | 'error' | null>(null);
+  const [cancelErrorNote, setCancelErrorNote] = useState('');
 
   const loadSale = useCallback(async () => {
     const header = await getSaleByNumber(db, saleNumber);
@@ -114,6 +126,9 @@ export function SaleDetailScreen({
       notes: header.notes,
       completeDate: header.completeDate,
       isPreorder: header.isPreorder,
+      cancelled: header.cancelled,
+      cancelReason: header.cancelReason,
+      cancelNote: header.cancelNote,
       createdAt: header.createdAt,
       lines,
     });
@@ -143,7 +158,7 @@ export function SaleDetailScreen({
   };
 
   const changePaymentMethod = (paymentMethod: PaymentMethod) => {
-    if (readOnly || !sale || busy || draftPaymentMethod === paymentMethod) return;
+    if (readOnly || sale?.cancelled || !sale || busy || draftPaymentMethod === paymentMethod) return;
     setDraftPaymentMethod(paymentMethod);
     // Preserve existing tender/tip when reclassifying cash ↔ Venmo. Only default
     // Venmo to exact total when nothing over the total has been entered yet.
@@ -277,27 +292,63 @@ export function SaleDetailScreen({
     })();
   };
 
-  const confirmRemoveSale = () => {
-    if (readOnly) return;
+  const confirmDeleteOpenPreorder = () => {
+    if (readOnly || !sale?.isPreorder) return;
 
     Alert.alert(
-      'Remove this sale?',
-      'Deletes the whole sale. Can\u2019t be undone.',
+      'Delete this preorder?',
+      'This can\u2019t be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Remove sale',
+          text: 'Delete preorder',
           style: 'destructive',
           onPress: () => {
             void (async () => {
               setBusy(true);
-              await removeSaleByNumber(db, saleNumber);
-              onBack();
+              try {
+                await deleteOpenPreorderByNumber(db, saleNumber);
+                onBack();
+              } finally {
+                setBusy(false);
+              }
             })();
           },
         },
       ],
     );
+  };
+
+  const openCancelSheet = () => {
+    if (readOnly || !sale || sale.isPreorder || sale.cancelled) return;
+    setCancelKind(null);
+    setCancelErrorNote('');
+    setCancelSheetOpen(true);
+  };
+
+  const confirmCancelSale = () => {
+    if (!sale || cancelKind == null || busy) return;
+
+    const reason: CancelSaleReason =
+      cancelKind === 'return'
+        ? { kind: 'return' }
+        : { kind: 'error', note: cancelErrorNote };
+
+    void (async () => {
+      setBusy(true);
+      try {
+        await cancelSaleByNumber(db, saleNumber, reason);
+        setCancelSheetOpen(false);
+        await loadSale();
+      } catch (error) {
+        Alert.alert(
+          'Could not cancel sale',
+          error instanceof Error ? error.message : 'Try again.',
+        );
+      } finally {
+        setBusy(false);
+      }
+    })();
   };
 
   if (!sale) {
@@ -309,12 +360,16 @@ export function SaleDetailScreen({
     );
   }
 
-  const paymentMethod = readOnly
+  const locked = readOnly || sale.cancelled;
+  const paymentMethod = locked
     ? sale.paymentMethod
     : sale.isPreorder
       ? draftPaymentMethod
       : draftPaymentMethod ?? sale.paymentMethod;
-  const selectedPayment = sale.isPreorder && !readOnly ? draftPaymentMethod : paymentMethod;
+  const selectedPayment = sale.isPreorder && !locked ? draftPaymentMethod : paymentMethod;
+  const canSubmitCancel =
+    cancelKind === 'return' ||
+    (cancelKind === 'error' && cancelErrorNote.trim().length > 0);
   const preorderCompleteLabel = preorderPaymentLocked
     ? 'Mark Delivered → Sales'
     : activePreorderPayment === 'cash'
@@ -331,16 +386,35 @@ export function SaleDetailScreen({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryAmount}>{formatMoney(sale.totalCents)}</Text>
+          <Text
+            style={[
+              styles.summaryAmount,
+              sale.cancelled ? styles.summaryAmountCancelled : null,
+            ]}>
+            {formatMoney(sale.totalCents)}
+          </Text>
           <Text style={styles.summaryMeta}>{formatSaleTime(sale.createdAt)}</Text>
-          {readOnly && sale.name ? <Text style={styles.summaryName}>{sale.name}</Text> : null}
-          {readOnly && sale.notes ? <Text style={styles.summaryNotes}>{sale.notes}</Text> : null}
-          {readOnly && sale.completeDate ? (
+          {sale.cancelled ? (
+            <Text style={styles.cancelledBanner}>
+              Cancelled
+              {(() => {
+                const reason = cancelReasonDisplayLabel(sale.cancelReason, sale.cancelNote);
+                return reason ? ` · ${reason}` : '';
+              })()}
+            </Text>
+          ) : null}
+          {(locked || sale.cancelled) && sale.name ? (
+            <Text style={styles.summaryName}>{sale.name}</Text>
+          ) : null}
+          {(locked || sale.cancelled) && sale.notes ? (
+            <Text style={styles.summaryNotes}>{sale.notes}</Text>
+          ) : null}
+          {(locked || sale.cancelled) && sale.completeDate ? (
             <Text style={styles.summaryNotes}>Complete: {formatCompleteDate(sale.completeDate)}</Text>
           ) : null}
         </View>
 
-        {!readOnly ? (
+        {!locked ? (
           <>
             <Text style={styles.sectionLabel}>
               Name {sale.isPreorder ? '(required)' : '(optional)'}
@@ -400,7 +474,7 @@ export function SaleDetailScreen({
         ))}
 
         <Text style={styles.sectionLabel}>Payment method</Text>
-        {readOnly ? (
+        {locked ? (
           <View style={styles.readOnlyPayment}>
             <PaymentMethodLabel method={sale.paymentMethod} />
           </View>
@@ -567,9 +641,9 @@ export function SaleDetailScreen({
             <Pressable
               accessibilityRole="button"
               disabled={busy}
-              onPress={confirmRemoveSale}
+              onPress={confirmDeleteOpenPreorder}
               style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}>
-              <Text style={styles.removeButtonLabel}>Remove sale</Text>
+              <Text style={styles.removeButtonLabel}>Delete preorder</Text>
             </Pressable>
           </>
         ) : (
@@ -637,13 +711,71 @@ export function SaleDetailScreen({
               </View>
             </Pressable>
 
-            <Pressable
-              accessibilityRole="button"
-              disabled={busy}
-              onPress={confirmRemoveSale}
-              style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}>
-              <Text style={styles.removeButtonLabel}>Remove sale</Text>
-            </Pressable>
+            {cancelSheetOpen ? (
+              <View style={styles.cancelSheet}>
+                <Text style={styles.cancelSheetTitle}>Cancel this sale?</Text>
+                <Text style={styles.cancelSheetLead}>
+                  It stays on the list for Invoice # history but won’t count in totals.
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setCancelKind('return')}
+                  style={[
+                    styles.cancelReasonOption,
+                    cancelKind === 'return' && styles.cancelReasonOptionSelected,
+                  ]}>
+                  <Text style={styles.cancelReasonLabel}>Return</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setCancelKind('error')}
+                  style={[
+                    styles.cancelReasonOption,
+                    cancelKind === 'error' && styles.cancelReasonOptionSelected,
+                  ]}>
+                  <Text style={styles.cancelReasonLabel}>Error</Text>
+                </Pressable>
+                {cancelKind === 'error' ? (
+                  <TextInput
+                    value={cancelErrorNote}
+                    onChangeText={setCancelErrorNote}
+                    placeholder="Short reason"
+                    placeholderTextColor={colors.inkSoft}
+                    maxLength={CANCEL_ERROR_NOTE_MAX_LENGTH}
+                    style={styles.textInput}
+                  />
+                ) : null}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: !canSubmitCancel || busy }}
+                  disabled={!canSubmitCancel || busy}
+                  onPress={confirmCancelSale}
+                  style={({ pressed }) => [
+                    styles.removeButton,
+                    (!canSubmitCancel || busy) && styles.saveButtonOuterDisabled,
+                    pressed && canSubmitCancel && !busy && styles.removeButtonPressed,
+                  ]}>
+                  <Text style={styles.removeButtonLabel}>
+                    {busy ? 'Cancelling…' : 'Confirm cancel'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={busy}
+                  onPress={() => setCancelSheetOpen(false)}
+                  style={styles.cancelDismiss}>
+                  <Text style={styles.cancelDismissLabel}>Keep sale</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                disabled={busy}
+                onPress={openCancelSheet}
+                style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}>
+                <Text style={styles.removeButtonLabel}>Cancel sale</Text>
+              </Pressable>
+            )}
           </>
         )}
       </ScrollView>
@@ -680,6 +812,59 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 28,
     color: colors.ink,
+  },
+  summaryAmountCancelled: {
+    color: colors.inkSoft,
+    textDecorationLine: 'line-through',
+  },
+  cancelledBanner: {
+    marginTop: 8,
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 13,
+    color: colors.redDark,
+  },
+  cancelSheet: {
+    marginTop: 8,
+    gap: 10,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: colors.surfaceMuted,
+  },
+  cancelSheetTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 18,
+    color: colors.ink,
+  },
+  cancelSheetLead: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: colors.inkSoft,
+    lineHeight: 18,
+  },
+  cancelReasonOption: {
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: colors.white,
+  },
+  cancelReasonOptionSelected: {
+    borderColor: colors.redDark,
+  },
+  cancelReasonLabel: {
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 15,
+    color: colors.ink,
+  },
+  cancelDismiss: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  cancelDismissLabel: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: colors.inkSoft,
   },
   summaryMeta: {
     fontFamily: 'Nunito_700Bold',

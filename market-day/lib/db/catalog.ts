@@ -34,7 +34,8 @@ import {
   marketDayNeedsReexport,
   addToMenu as addItemToMenu,
   removeFromMenu,
-  removeSaleByNumber,
+  cancelSaleByNumber,
+  deleteOpenPreorderByNumber,
   replaceSaleContents,
   startMarketDay,
   undoCloseMostRecentMarketDay,
@@ -181,12 +182,18 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
         notes: sale.notes,
         completeDate: sale.completeDate,
         isPreorder: sale.isPreorder,
+        cancelled: sale.cancelled,
+        cancelReason: sale.cancelReason,
+        cancelNote: sale.cancelNote,
         createdAt: sale.createdAt,
         lines,
       };
     },
-    async removeSale(saleNumber) {
-      await removeSaleByNumber(db, saleNumber);
+    async cancelSale(saleNumber, reason) {
+      await cancelSaleByNumber(db, saleNumber, reason);
+    },
+    async deleteOpenPreorder(saleNumber) {
+      await deleteOpenPreorderByNumber(db, saleNumber);
     },
     async updateSalePaymentMethod(saleNumber, paymentMethod) {
       await updateSalePaymentMethod(db, saleNumber, paymentMethod);
