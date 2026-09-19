@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { GripVertical, Trash2 } from 'lucide-react-native';
-import Sortable from 'react-native-sortables';
+import Sortable, { type SortableGridRenderItem } from 'react-native-sortables';
 
 import { OutlineAddButton } from '@/components/ExpandableCard';
 import { UiIcon } from '@/components/ui/UiIcon';
@@ -140,6 +140,40 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
     })();
   };
 
+  const renderItem: SortableGridRenderItem<MenuItem> = ({ item }) => (
+    <View
+      style={[
+        styles.itemRow,
+        embedded && styles.itemRowEmbedded,
+        item.soldOut && styles.itemRowSoldOut,
+      ]}>
+      <Sortable.Handle style={styles.handle}>
+        <View
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={`Reorder ${item.name}`}>
+          <UiIcon icon={GripVertical} size={18} color={colors.inkSoft} />
+        </View>
+      </Sortable.Handle>
+      {item.icon ? <Text style={styles.icon}>{item.icon}</Text> : null}
+      <View style={styles.meta}>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.price}>{formatMoney(item.priceCents)}</Text>
+      </View>
+      <View style={styles.toggleWrap}>
+        <SoldOutToggle soldOut={item.soldOut} onToggle={() => confirmSoldOut(item)} />
+        <Text style={styles.toggleLabel}>Sold out</Text>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Remove ${item.name} from menu`}
+        onPress={() => confirmRemove(item)}
+        style={({ pressed }) => [styles.trash, pressed && styles.trashPressed]}>
+        <UiIcon icon={Trash2} size={20} color={colors.inkSoft} />
+      </Pressable>
+    </View>
+  );
+
   return (
     <View style={[styles.wrap, embedded && styles.wrapEmbedded]}>
       {menuItems.length === 0 ? (
@@ -147,52 +181,17 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
           <Text style={styles.emptyText}>No items on today&apos;s menu yet.</Text>
         </View>
       ) : (
-        <Sortable.Flex
-          flexDirection="column"
-          gap={8}
-          width="fill"
+        <Sortable.Grid
+          columns={1}
+          data={menuItems}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          rowGap={8}
           customHandle
-          onDragEnd={({ order }) => {
-            persistOrder(order(menuItems));
-          }}>
-          {menuItems.map((item) => (
-            <View
-              key={String(item.id)}
-              style={[
-                styles.itemRow,
-                embedded && styles.itemRowEmbedded,
-                item.soldOut && styles.itemRowSoldOut,
-              ]}>
-              <Sortable.Handle style={styles.handle}>
-                <View
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={`Reorder ${item.name}`}>
-                  <UiIcon icon={GripVertical} size={18} color={colors.inkSoft} />
-                </View>
-              </Sortable.Handle>
-              <Text style={styles.icon}>{item.icon}</Text>
-              <View style={styles.meta}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.price}>{formatMoney(item.priceCents)}</Text>
-              </View>
-              <View style={styles.toggleWrap}>
-                <SoldOutToggle
-                  soldOut={item.soldOut}
-                  onToggle={() => confirmSoldOut(item)}
-                />
-                <Text style={styles.toggleLabel}>Sold out</Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${item.name} from menu`}
-                onPress={() => confirmRemove(item)}
-                style={({ pressed }) => [styles.trash, pressed && styles.trashPressed]}>
-                <UiIcon icon={Trash2} size={20} color={colors.inkSoft} />
-              </Pressable>
-            </View>
-          ))}
-        </Sortable.Flex>
+          onDragEnd={({ data }) => {
+            persistOrder(data);
+          }}
+        />
       )}
 
       <OutlineAddButton
@@ -220,6 +219,8 @@ const styles = StyleSheet.create({
   wrap: {
     gap: 8,
     marginBottom: 8,
+    alignSelf: 'stretch',
+    width: '100%',
   },
   wrapEmbedded: {
     marginBottom: 0,
@@ -242,7 +243,6 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'stretch',
     width: '100%',
     gap: 8,
     backgroundColor: colors.white,
@@ -269,6 +269,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     flex: 1,
+    minWidth: 0,
   },
   name: {
     fontFamily: 'Nunito_800ExtraBold',

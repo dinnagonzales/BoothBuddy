@@ -205,6 +205,7 @@ export default function SettingsScreen() {
           accessibilityLabel="Today's Menu"
           style={styles.menuCard}
           headerStyle={styles.menuCardHeader}
+          bodyStyle={styles.menuCardBody}
           header={
             <>
               <Text style={styles.menuCardTitle}>Today&apos;s Menu</Text>
@@ -283,6 +284,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  menuCardBody: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
   },
   menuCardTitle: {
     fontFamily: fonts.body.extraBold,
