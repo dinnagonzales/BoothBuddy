@@ -34,3 +34,11 @@ export function cancelReasonDisplayLabel(
   if (reason === 'return') return 'Return';
   return note ? `Error: ${note}` : 'Error';
 }
+
+export function countActiveSales(sales: { cancelled: boolean }[]): number {
+  return sales.filter((sale) => !sale.cancelled).length;
+}
+
+export function countCancelledSales(sales: { cancelled: boolean }[]): number {
+  return sales.filter((sale) => sale.cancelled).length;
+}

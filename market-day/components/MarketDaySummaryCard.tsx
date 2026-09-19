@@ -36,6 +36,7 @@ type MarketDaySummaryCardProps = {
   name?: string;
   startedAt?: string;
   saleCount: number;
+  cancelledSaleCount?: number;
   cashCents: number;
   venmoCents: number;
   cashTipsCents?: number;
@@ -51,6 +52,7 @@ export function MarketDaySummaryCard({
   totalCents = 0,
   profitCents = 0,
   saleCount,
+  cancelledSaleCount = 0,
   cashCents,
   venmoCents,
   cashTipsCents = 0,
@@ -67,6 +69,8 @@ export function MarketDaySummaryCard({
     venmoTipsCents > 0
       ? `${formatMoney(venmoCents)} + ${formatMoney(venmoTipsCents)} (tips)`
       : undefined;
+  const saleCountSubValue =
+    cancelledSaleCount > 0 ? `${cancelledSaleCount} cancelled` : undefined;
 
   return (
     <View style={styles.wrap}>
@@ -81,6 +85,7 @@ export function MarketDaySummaryCard({
             icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
             label="Total Sales"
             value={String(saleCount)}
+            subValue={saleCountSubValue}
             backgroundColor={colors.pink}
             fullWidth
           />
@@ -108,6 +113,7 @@ export function MarketDaySummaryCard({
               icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
               label="Total Sales"
               value={String(saleCount)}
+              subValue={saleCountSubValue}
               backgroundColor={colors.pink}
             />
             <StatBox

@@ -15,6 +15,7 @@ import {
   getMarketDayStats,
 } from '@/lib/db/queries';
 import { safeBack } from '@/lib/navigation';
+import { countActiveSales, countCancelledSales } from '@/lib/sale-cancel';
 import type { MarketDay, SaleSummary } from '@/lib/types';
 
 export default function MarketDayDashboardScreen() {
@@ -79,7 +80,8 @@ export default function MarketDayDashboardScreen() {
             variant="viewOnly"
             name={activeDay.name}
             startedAt={activeDay.startedAt}
-            saleCount={sales.length}
+            saleCount={countActiveSales(sales)}
+            cancelledSaleCount={countCancelledSales(sales)}
             cashCents={stats.cashCents}
             venmoCents={stats.venmoCents}
             cashTipsCents={stats.cashTipsCents}

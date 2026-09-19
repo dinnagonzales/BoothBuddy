@@ -25,6 +25,7 @@ import {
 } from '@/lib/db/queries';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import { ActiveMarketDayExistsError } from '@/lib/market-day';
+import { countActiveSales, countCancelledSales } from '@/lib/sale-cancel';
 import { showUiError } from '@/lib/ui-errors';
 import type { ClosedMarketDaySummary, MarketDay, SaleSummary } from '@/lib/types';
 
@@ -180,7 +181,8 @@ export default function SettingsScreen() {
             startedAt={activeDay.startedAt}
             totalCents={stats.totalCents}
             profitCents={stats.profitCents}
-            saleCount={sales.length}
+            saleCount={countActiveSales(sales)}
+            cancelledSaleCount={countCancelledSales(sales)}
             cashCents={stats.cashCents}
             venmoCents={stats.venmoCents}
             cashTipsCents={stats.cashTipsCents}

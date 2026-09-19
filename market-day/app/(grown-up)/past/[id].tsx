@@ -22,6 +22,7 @@ import {
 import { ActiveMarketDayExistsError } from '@/lib/market-day';
 import { shareMarketDayCsv } from '@/lib/market-day-export';
 import { safeBack } from '@/lib/navigation';
+import { countActiveSales, countCancelledSales } from '@/lib/sale-cancel';
 import type { MarketDay, SaleSummary } from '@/lib/types';
 
 export default function PastMarketDayScreen() {
@@ -204,7 +205,8 @@ export default function PastMarketDayScreen() {
           startedAt={marketDay.startedAt}
           totalCents={stats.totalCents}
           profitCents={stats.profitCents}
-          saleCount={sales.length}
+          saleCount={countActiveSales(sales)}
+          cancelledSaleCount={countCancelledSales(sales)}
           cashCents={stats.cashCents}
           venmoCents={stats.venmoCents}
           cashTipsCents={stats.cashTipsCents}

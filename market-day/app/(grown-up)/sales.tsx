@@ -14,6 +14,7 @@ import { getAllTimeSales, getAllTimeStats } from '@/lib/db/queries';
 import { shareSalesCsv } from '@/lib/market-day-export';
 import { startOfLocalDay, toExportDate } from '@/lib/market-day';
 import { leaveGrownUpArea } from '@/lib/navigation';
+import { countActiveSales, countCancelledSales } from '@/lib/sale-cancel';
 import type { AllTimeSaleSummary } from '@/lib/types';
 
 export default function SalesScreen() {
@@ -90,7 +91,8 @@ export default function SalesScreen() {
           variant="allTime"
           totalCents={stats.totalCents}
           profitCents={stats.profitCents}
-          saleCount={sales.length}
+          saleCount={countActiveSales(sales)}
+          cancelledSaleCount={countCancelledSales(sales)}
           cashCents={stats.cashCents}
           venmoCents={stats.venmoCents}
           cashTipsCents={stats.cashTipsCents}
