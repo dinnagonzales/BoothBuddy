@@ -336,6 +336,11 @@ export async function unarchiveItem(db: SQLiteDatabase, id: number): Promise<voi
   await addItemToActiveMenu(db, id);
 }
 
+function isForeignKeyConstraintError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /FOREIGN KEY/i.test(message);
+}
+
 export async function deleteItem(db: SQLiteDatabase, id: number): Promise<void> {
   const row = await db.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) AS count FROM line_items WHERE item_id = ?',
@@ -345,8 +350,15 @@ export async function deleteItem(db: SQLiteDatabase, id: number): Promise<void> 
     throw new ItemHasSalesError();
   }
 
-  await db.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
-  await db.runAsync('DELETE FROM items WHERE id = ?', id);
+  try {
+    await db.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
+    await db.runAsync('DELETE FROM items WHERE id = ?', id);
+  } catch (error) {
+    if (isForeignKeyConstraintError(error)) {
+      throw new ItemHasSalesError();
+    }
+    throw error;
+  }
 }
 
 export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay | null> {
