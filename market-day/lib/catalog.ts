@@ -3,6 +3,7 @@ import {
   CannotDeleteActiveMarketDayError,
   ItemHasSalesError,
   NothingToUndoCloseError,
+  isCreatedAtInLocalDateRange,
 } from '@/lib/market-day';
 import {
   normalizeCancelSaleReason,
@@ -371,8 +372,7 @@ export function createCatalog(): Catalog {
   }
 
   function isDateInRange(iso: string, startDate: string, endDate: string): boolean {
-    const day = iso.slice(0, 10);
-    return day >= startDate && day <= endDate;
+    return isCreatedAtInLocalDateRange(iso, startDate, endDate);
   }
 
   function salesInRange(startDate: string, endDate: string) {

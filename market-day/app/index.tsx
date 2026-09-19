@@ -32,6 +32,7 @@ import {
 import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMoney } from '@/lib/money';
+import { parseSqliteUtc } from '@/lib/market-day';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
 import { showUiError } from '@/lib/ui-errors';
@@ -66,7 +67,7 @@ const TICKET_MUTED = '#8C86A0';
 const TICKET_PILL = '#3DBE7A';
 
 function formatTicketDate(iso: string): string {
-  return new Date(iso)
+  return parseSqliteUtc(iso)
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     .toUpperCase();
 }
@@ -123,13 +124,13 @@ function TicketMarketBanner({
         <View style={styles.ticketBodyMain}>
           <View style={styles.ticketBodyLeft}>
             <Text style={styles.ticketTotalAmount}>{formatMoney(totalCents)}</Text>
-            <Text style={styles.ticketSoldLabel}>sold today</Text>
+            <Text style={styles.ticketSoldLabel}>this Market Day</Text>
           </View>
           <View style={styles.ticketBodyRight}>
             <View style={styles.ticketSalePill}>
               <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
             </View>
-            <Text style={styles.ticketBodyAction}>See Today's Sales →</Text>
+            <Text style={styles.ticketBodyAction}>See Market Day Sales →</Text>
           </View>
         </View>
       </View>

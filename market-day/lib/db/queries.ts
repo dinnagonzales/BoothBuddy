@@ -5,6 +5,7 @@ import {
   CannotDeleteActiveMarketDayError,
   ItemHasSalesError,
   NothingToUndoCloseError,
+  localDateRangeToUtcBounds,
 } from '@/lib/market-day';
 import {
   normalizeCancelSaleReason,
@@ -1541,6 +1542,7 @@ export async function getSalesExportRows(
   startDate: string,
   endDate: string,
 ): Promise<MarketDayExportRow[]> {
+  const { startUtc, endUtcExclusive } = localDateRangeToUtcBounds(startDate, endDate);
   const rows = await db.getAllAsync<{
     sale_number: number;
     created_at: string;
@@ -1567,11 +1569,11 @@ export async function getSalesExportRows(
      JOIN items i ON i.id = li.item_id
      LEFT JOIN market_days md ON md.id = s.market_day_id
      WHERE s.is_preorder = 0
-       AND date(s.created_at) >= date(?)
-       AND date(s.created_at) <= date(?)
+       AND s.created_at >= ?
+       AND s.created_at < ?
      ORDER BY s.sale_number ASC, li.id ASC`,
-    startDate,
-    endDate,
+    startUtc,
+    endUtcExclusive,
   );
 
   return rows.map((row) =>

@@ -13,7 +13,7 @@ import {
   type PreorderExportRow,
   type PreorderPrepItem,
 } from '@/lib/db/queries';
-import { formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
+import { formatSaleTime, paymentMethodLabel, parseSqliteUtc } from '@/lib/market-day';
 import { formatMoney } from '@/lib/money';
 import { cancelReasonDisplayLabel } from '@/lib/sale-cancel';
 
@@ -49,7 +49,7 @@ function formatCentsForCsv(cents: number): string {
 }
 
 function formatSaleDateTime(iso: string): string {
-  const date = new Date(iso);
+  const date = parseSqliteUtc(iso);
   return `${date.toLocaleDateString('en-US')} ${formatSaleTime(iso)}`;
 }
 

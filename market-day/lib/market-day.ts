@@ -1,5 +1,53 @@
+/**
+ * Parse timestamps stored by SQLite datetime('now') (UTC, no trailing Z) as UTC.
+ * Also accepts ISO strings that already include a zone designator.
+ */
+export function parseSqliteUtc(value: string): Date {
+  const trimmed = value.trim();
+  if (/[zZ]$|[+-]\d{2}:?\d{2}$/.test(trimmed)) {
+    return new Date(trimmed);
+  }
+  const normalized = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?$/.test(normalized)) {
+    return new Date(`${normalized}Z`);
+  }
+  return new Date(trimmed);
+}
+
+function toSqliteUtcTimestamp(date: Date): string {
+  return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+}
+
+/**
+ * Convert an inclusive local-calendar date range (YYYY-MM-DD) into a half-open
+ * UTC timestamp range for filtering created_at. Does not use SQLite localtime.
+ */
+export function localDateRangeToUtcBounds(
+  startDate: string,
+  endDate: string,
+): { startUtc: string; endUtcExclusive: string } {
+  const [startY, startM, startD] = startDate.split('-').map(Number);
+  const [endY, endM, endD] = endDate.split('-').map(Number);
+  const startLocal = new Date(startY, startM - 1, startD);
+  const endExclusiveLocal = new Date(endY, endM - 1, endD + 1);
+  return {
+    startUtc: toSqliteUtcTimestamp(startLocal),
+    endUtcExclusive: toSqliteUtcTimestamp(endExclusiveLocal),
+  };
+}
+
+export function isCreatedAtInLocalDateRange(
+  createdAt: string,
+  startDate: string,
+  endDate: string,
+): boolean {
+  const { startUtc, endUtcExclusive } = localDateRangeToUtcBounds(startDate, endDate);
+  const t = parseSqliteUtc(createdAt).getTime();
+  return t >= parseSqliteUtc(startUtc).getTime() && t < parseSqliteUtc(endUtcExclusive).getTime();
+}
+
 export function formatMarketDayDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+  return parseSqliteUtc(iso).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -7,7 +55,7 @@ export function formatMarketDayDate(iso: string): string {
 }
 
 export function formatSaleTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-US', {
+  return parseSqliteUtc(iso).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
   });
