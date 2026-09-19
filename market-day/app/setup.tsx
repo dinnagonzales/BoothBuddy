@@ -15,6 +15,7 @@ import {
   PARENTAL_CODE_MAX_LENGTH,
 } from '@/lib/parental-gate';
 import { beginFreshSetupIfNoCode, getSetupStep } from '@/lib/setup';
+import { showUiError } from '@/lib/ui-errors';
 
 type Step = 'loading' | 'welcome' | 'profile' | 'code';
 
@@ -55,7 +56,8 @@ export default function SetupScreen() {
           return;
         }
         setStep('code');
-      } catch {
+      } catch (error) {
+        showUiError(error);
         if (!cancelled) setStep('welcome');
       }
     })();
@@ -66,8 +68,12 @@ export default function SetupScreen() {
   }, [db, router]);
 
   const saveProfile = async () => {
-    await saveAdminProfile(db, { businessName, firstName, lastName });
-    setStep('code');
+    try {
+      await saveAdminProfile(db, { businessName, firstName, lastName });
+      setStep('code');
+    } catch (error) {
+      showUiError(error);
+    }
   };
 
   const saveCode = async () => {
@@ -80,8 +86,12 @@ export default function SetupScreen() {
       setCodeError('Those codes do not match.');
       return;
     }
-    await deviceParentalGate.setCode(code);
-    router.replace('/');
+    try {
+      await deviceParentalGate.setCode(code);
+      router.replace('/');
+    } catch (error) {
+      showUiError(error);
+    }
   };
 
   if (step === 'loading') {

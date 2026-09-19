@@ -11,6 +11,7 @@ import { tokens } from '@/theme/tokens';
 import type { MenuItem, RemovedMenuItem } from '@/lib/catalog';
 import { createSqliteCatalog } from '@/lib/db/catalog';
 import { formatMoney } from '@/lib/money';
+import { showUiError } from '@/lib/ui-errors';
 
 type TodaysMenuProps = {
   db: SQLiteDatabase;
@@ -39,13 +40,17 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
 
   const toggleSoldOut = (item: MenuItem) => {
     void (async () => {
-      const catalog = createSqliteCatalog(db);
-      if (item.soldOut) {
-        await catalog.markAvailable(item.id);
-      } else {
-        await catalog.markSoldOut(item.id);
+      try {
+        const catalog = createSqliteCatalog(db);
+        if (item.soldOut) {
+          await catalog.markAvailable(item.id);
+        } else {
+          await catalog.markSoldOut(item.id);
+        }
+        await refreshMenu();
+      } catch (error) {
+        showUiError(error);
       }
-      await refreshMenu();
     })();
   };
 
@@ -66,9 +71,13 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
 
   const removeItem = (item: MenuItem) => {
     void (async () => {
-      const catalog = createSqliteCatalog(db);
-      await catalog.removeFromMenu(item.id);
-      await refreshMenu();
+      try {
+        const catalog = createSqliteCatalog(db);
+        await catalog.removeFromMenu(item.id);
+        await refreshMenu();
+      } catch (error) {
+        showUiError(error);
+      }
     })();
   };
 
@@ -85,9 +94,13 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
 
   const addItem = (itemId: number) => {
     void (async () => {
-      const catalog = createSqliteCatalog(db);
-      await catalog.addToMenu(itemId);
-      await refreshMenu();
+      try {
+        const catalog = createSqliteCatalog(db);
+        await catalog.addToMenu(itemId);
+        await refreshMenu();
+      } catch (error) {
+        showUiError(error);
+      }
     })();
   };
 

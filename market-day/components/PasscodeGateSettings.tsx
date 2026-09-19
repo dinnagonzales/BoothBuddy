@@ -16,6 +16,7 @@ import {
 } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
+import { showUiError } from '@/lib/ui-errors';
 
 type PasscodeGateSettingsProps = {
   db: SQLiteDatabase;
@@ -53,6 +54,8 @@ export function PasscodeGateSettings({ db }: PasscodeGateSettingsProps) {
       if (!pendingEnabled) {
         unlock();
       }
+    } catch (error) {
+      showUiError(error);
     } finally {
       setSaving(false);
       setPendingEnabled(null);
@@ -108,9 +111,13 @@ export function PasscodeGateSettings({ db }: PasscodeGateSettingsProps) {
           void applyToggle();
         }}
         onForgotCode={async () => {
-          await resetAppForForgottenCode(db, deviceParentalGate);
-          closePassCode();
-          router.replace('/setup');
+          try {
+            await resetAppForForgottenCode(db, deviceParentalGate);
+            closePassCode();
+            router.replace('/setup');
+          } catch (error) {
+            showUiError(error);
+          }
         }}
       />
     </>

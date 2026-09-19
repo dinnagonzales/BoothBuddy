@@ -41,6 +41,7 @@ import { formatPhoneNumber, formatZelleContactForInput } from '@/lib/contact-for
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { deleteBusinessImage, pickBusinessImage, type BusinessImageKind } from '@/lib/local-image';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
+import { showUiError } from '@/lib/ui-errors';
 
 type BusinessSettingsFormProps = {
   db: SQLiteDatabase;
@@ -158,6 +159,8 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
       setProfileDraft(normalizedProfile);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 2500);
+    } catch (error) {
+      showUiError(error);
     } finally {
       setSaving(false);
     }
@@ -174,8 +177,12 @@ export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
           style: 'destructive',
           onPress: () => {
             void (async () => {
-              await resetAppForForgottenCode(db, deviceParentalGate);
-              router.replace('/setup');
+              try {
+                await resetAppForForgottenCode(db, deviceParentalGate);
+                router.replace('/setup');
+              } catch (error) {
+                showUiError(error);
+              }
             })();
           },
         },

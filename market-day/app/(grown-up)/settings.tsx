@@ -24,6 +24,8 @@ import {
   startMarketDay,
 } from '@/lib/db/queries';
 import { leaveGrownUpArea } from '@/lib/navigation';
+import { ActiveMarketDayExistsError } from '@/lib/market-day';
+import { showUiError } from '@/lib/ui-errors';
 import type { ClosedMarketDaySummary, MarketDay, SaleSummary } from '@/lib/types';
 
 export default function SettingsScreen() {
@@ -96,10 +98,11 @@ export default function SettingsScreen() {
         await startMarketDay(db, name, startedAt);
         await refreshDashboard();
       } catch (error) {
-        Alert.alert(
-          'Could not start Market Day',
-          error instanceof Error ? error.message : 'Try again in a moment.',
-        );
+        if (error instanceof ActiveMarketDayExistsError) {
+          Alert.alert('Could not start Market Day', error.message);
+        } else {
+          showUiError(error);
+        }
       } finally {
         setStarting(false);
       }
@@ -117,8 +120,12 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: () => {
             void (async () => {
-              await closeActiveMarketDay(db);
-              await refreshDashboard();
+              try {
+                await closeActiveMarketDay(db);
+                await refreshDashboard();
+              } catch (error) {
+                showUiError(error);
+              }
             })();
           },
         },

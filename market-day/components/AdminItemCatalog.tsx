@@ -14,6 +14,7 @@ import { isItemVisualComplete, iconTileProps } from '@/lib/item-visual';
 import { deleteItemPhoto, persistItemPhoto, pickItemPhoto } from '@/lib/local-image';
 import { ItemHasSalesError } from '@/lib/market-day';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
+import { showUiError } from '@/lib/ui-errors';
 
 type AdminItemCatalogProps = {
   db: SQLiteDatabase;
@@ -94,49 +95,61 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
 
   const saveItem = () => {
     void (async () => {
-      const catalog = createSqliteCatalog(db);
-      const draft = {
-        name: form.name.trim(),
-        icon: form.visualMode === 'icon' ? form.icon.trim() : '',
-        costCents: parseMoneyInput(form.cost),
-        priceCents: parseMoneyInput(form.price),
-        photoUri: form.visualMode === 'photo' ? form.photoUri : null,
-      };
-      if (!draft.name || draft.priceCents <= 0) return;
-      if (!isItemVisualComplete(draft)) return;
+      try {
+        const catalog = createSqliteCatalog(db);
+        const draft = {
+          name: form.name.trim(),
+          icon: form.visualMode === 'icon' ? form.icon.trim() : '',
+          costCents: parseMoneyInput(form.cost),
+          priceCents: parseMoneyInput(form.price),
+          photoUri: form.visualMode === 'photo' ? form.photoUri : null,
+        };
+        if (!draft.name || draft.priceCents <= 0) return;
+        if (!isItemVisualComplete(draft)) return;
 
-      if (formMode?.type === 'add') {
-        const created = await catalog.createItem({ ...draft, photoUri: null });
-        if (draft.photoUri) {
-          const persisted = await persistItemPhoto(draft.photoUri, created.id);
-          await catalog.updateItem(created.id, { ...draft, photoUri: persisted });
+        if (formMode?.type === 'add') {
+          const created = await catalog.createItem({ ...draft, photoUri: null });
+          if (draft.photoUri) {
+            const persisted = await persistItemPhoto(draft.photoUri, created.id);
+            await catalog.updateItem(created.id, { ...draft, photoUri: persisted });
+          }
+        } else if (formMode?.type === 'edit') {
+          const previousPhotoUri = formMode.item.photoUri;
+          if (previousPhotoUri && previousPhotoUri !== draft.photoUri) {
+            await deleteItemPhoto(previousPhotoUri);
+          }
+          await catalog.updateItem(formMode.item.id, draft);
         }
-      } else if (formMode?.type === 'edit') {
-        const previousPhotoUri = formMode.item.photoUri;
-        if (previousPhotoUri && previousPhotoUri !== draft.photoUri) {
-          await deleteItemPhoto(previousPhotoUri);
-        }
-        await catalog.updateItem(formMode.item.id, draft);
+
+        closeForm();
+        await refreshItems();
+      } catch (error) {
+        showUiError(error);
       }
-
-      closeForm();
-      await refreshItems();
     })();
   };
 
   const archiveItem = (id: number) => {
     void (async () => {
-      await createSqliteCatalog(db).archive(id);
-      closeForm();
-      await refreshItems();
+      try {
+        await createSqliteCatalog(db).archive(id);
+        closeForm();
+        await refreshItems();
+      } catch (error) {
+        showUiError(error);
+      }
     })();
   };
 
   const unarchiveItem = (id: number) => {
     void (async () => {
-      await createSqliteCatalog(db).unarchive(id);
-      closeForm();
-      await refreshItems();
+      try {
+        await createSqliteCatalog(db).unarchive(id);
+        closeForm();
+        await refreshItems();
+      } catch (error) {
+        showUiError(error);
+      }
     })();
   };
 
@@ -161,6 +174,8 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
                     'Cannot delete this item',
                     'It appears in past sales. Use Archive to hide it from the menu instead.',
                   );
+                } else {
+                  showUiError(error);
                 }
               }
             })();

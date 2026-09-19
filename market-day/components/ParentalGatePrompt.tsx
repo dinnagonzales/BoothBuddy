@@ -7,6 +7,7 @@ import {
   getParentalCodeLengthError,
   PARENTAL_CODE_MAX_LENGTH,
 } from '@/lib/parental-gate';
+import { showUiError, runBusyAction } from '@/lib/ui-errors';
 
 type ParentalGatePromptProps = {
   title: string;
@@ -44,16 +45,21 @@ export function ParentalGatePrompt({
       if (busy) return;
 
       setBusy(true);
-      const ok = await onSubmit(nextCode);
-      setBusy(false);
-      if (!ok) {
-        setErrorMessage(errorText);
-        lastSubmittedCode.current = nextCode;
-        return;
+      try {
+        const ok = await onSubmit(nextCode);
+        if (!ok) {
+          setErrorMessage(errorText);
+          lastSubmittedCode.current = nextCode;
+          return;
+        }
+        setErrorMessage(null);
+        setCode('');
+        lastSubmittedCode.current = '';
+      } catch (error) {
+        showUiError(error);
+      } finally {
+        setBusy(false);
       }
-      setErrorMessage(null);
-      setCode('');
-      lastSubmittedCode.current = '';
     },
     [busy, code, errorText, onSubmit],
   );
@@ -68,9 +74,7 @@ export function ParentalGatePrompt({
 
   const confirmForgotCode = async () => {
     if (!onForgotCode) return;
-    setResetting(true);
-    await onForgotCode();
-    setResetting(false);
+    await runBusyAction(onForgotCode, setResetting);
   };
 
   if (showForgotConfirm) {

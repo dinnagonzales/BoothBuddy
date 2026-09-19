@@ -38,6 +38,7 @@ import {
   saleHasUnsavedChanges,
 } from '@/lib/sale-edit';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
+import { showUiError } from '@/lib/ui-errors';
 import type { CancelReason, CartLine, PaymentMethod } from '@/lib/types';
 
 function moneyInputFromCents(cents: number): string {
@@ -246,6 +247,8 @@ export function SaleDetailScreen({
           });
           await loadSale();
           onSaved?.(saleNumber);
+        } catch (error) {
+          showUiError(error);
         } finally {
           setBusy(false);
         }
@@ -265,6 +268,8 @@ export function SaleDetailScreen({
         });
         await loadSale();
         onSaved?.(saleNumber);
+      } catch (error) {
+        showUiError(error);
       } finally {
         setBusy(false);
       }
@@ -286,6 +291,8 @@ export function SaleDetailScreen({
           completeDate: draftCompleteDate,
         });
         onCompleted?.(saleNumber);
+      } catch (error) {
+        showUiError(error);
       } finally {
         setBusy(false);
       }
@@ -309,6 +316,8 @@ export function SaleDetailScreen({
               try {
                 await deleteOpenPreorderByNumber(db, saleNumber);
                 onBack();
+              } catch (error) {
+                showUiError(error);
               } finally {
                 setBusy(false);
               }

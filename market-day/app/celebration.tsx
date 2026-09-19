@@ -18,6 +18,7 @@ import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { cashReceivedForEditedSale } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
+import { showUiError } from '@/lib/ui-errors';
 
 export default function CelebrationScreen() {
   const router = useRouter();
@@ -167,10 +168,14 @@ export default function CelebrationScreen() {
           }
         }}
         onForgotCode={async () => {
-          await resetAppForForgottenCode(db, deviceParentalGate);
-          setPassCodeOpen(false);
-          setPendingPreorderSaleNumber(null);
-          router.replace('/setup');
+          try {
+            await resetAppForForgottenCode(db, deviceParentalGate);
+            setPassCodeOpen(false);
+            setPendingPreorderSaleNumber(null);
+            router.replace('/setup');
+          } catch (error) {
+            showUiError(error);
+          }
         }}
       />
     </View>

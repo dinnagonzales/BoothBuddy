@@ -34,6 +34,7 @@ import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { formatMoney } from '@/lib/money';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
+import { showUiError } from '@/lib/ui-errors';
 import { homeVisualSize, resolveItemVisual, iconTileProps, HOME_MENU_ICON_SIZE } from '@/lib/item-visual';
 import type { Item } from '@/lib/types';
 import { Plus, Search, Settings, ShoppingCartPlus } from 'lucide-react-native';
@@ -383,9 +384,13 @@ export default function HomeScreen() {
           router.push(postUnlockPath);
         }}
         onForgotCode={async () => {
-          await resetAppForForgottenCode(db, deviceParentalGate);
-          setPassCodeOpen(false);
-          router.replace('/setup');
+          try {
+            await resetAppForForgottenCode(db, deviceParentalGate);
+            setPassCodeOpen(false);
+            router.replace('/setup');
+          } catch (error) {
+            showUiError(error);
+          }
         }}
       />
     </Screen>

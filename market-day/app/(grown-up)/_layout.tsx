@@ -12,6 +12,7 @@ import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
+import { showUiError } from '@/lib/ui-errors';
 
 export default function GrownUpLayout() {
   const db = useSQLiteContext();
@@ -53,8 +54,12 @@ export default function GrownUpLayout() {
           onSubmit={(code) => deviceParentalGate.verify(code)}
           onSuccess={unlock}
           onForgotCode={async () => {
-            await resetAppForForgottenCode(db, deviceParentalGate);
-            router.replace('/setup');
+            try {
+              await resetAppForForgottenCode(db, deviceParentalGate);
+              router.replace('/setup');
+            } catch (error) {
+              showUiError(error);
+            }
           }}
         />
       </View>

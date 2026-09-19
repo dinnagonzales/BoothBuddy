@@ -9,7 +9,6 @@ import type { ClosedMarketDaySummary } from '@/lib/types';
 type PastEventsListProps = {
   events: ClosedMarketDaySummary[];
   onEventPress: (marketDayId: number) => void;
-  hasActiveMarketDay?: boolean;
 };
 
 function saleCountLabel(count: number): string {
@@ -17,11 +16,7 @@ function saleCountLabel(count: number): string {
   return `${count} sales`;
 }
 
-export function PastEventsList({
-  events,
-  onEventPress,
-  hasActiveMarketDay = false,
-}: PastEventsListProps) {
+export function PastEventsList({ events, onEventPress }: PastEventsListProps) {
   if (events.length === 0) return null;
 
   return (
@@ -30,9 +25,6 @@ export function PastEventsList({
         <UiIcon icon={Calendar} size={14} color={colors.inkSoft} />
         <Text style={styles.sectionLabel}>Past Events</Text>
       </View>
-      {hasActiveMarketDay ? (
-        <Text style={styles.reopenHelper}>Close today&apos;s Market Day first.</Text>
-      ) : null}
       <View style={styles.list}>
         {events.map((event) => (
           <Pressable
@@ -71,12 +63,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: colors.inkSoft,
-  },
-  reopenHelper: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 12,
-    color: colors.inkSoft,
-    marginBottom: 8,
   },
   list: {
     gap: 8,
