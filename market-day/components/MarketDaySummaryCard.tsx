@@ -13,21 +13,27 @@ type StatBoxProps = {
   icon: ReactNode;
   label: string;
   value: string;
-  subValue?: string;
+  subValues?: string[];
   backgroundColor: string;
   fullWidth?: boolean;
 };
 
-function StatBox({ icon, label, value, subValue, backgroundColor, fullWidth }: StatBoxProps) {
+function StatBox({ icon, label, value, subValues, backgroundColor, fullWidth }: StatBoxProps) {
   const labelColor = textOnBackground(backgroundColor);
   return (
     <View style={[styles.statBox, fullWidth && styles.statBoxFullWidth, { backgroundColor }]}>
-      <View style={styles.statIcon}>{icon}</View>
-      <Text style={[styles.statLabel, { color: labelColor }]}>{label}</Text>
+      <View style={styles.statHeader}>
+        {icon}
+        <Text style={[styles.statLabel, { color: labelColor }]} numberOfLines={1}>
+          {label}
+        </Text>
+      </View>
       <Text style={[styles.statValue, { color: labelColor }]}>{value}</Text>
-      {subValue ? (
-        <Text style={[styles.statSub, { color: labelColor }]}>{subValue}</Text>
-      ) : null}
+      {subValues?.map((line) => (
+        <Text key={line} style={[styles.statSub, { color: labelColor }]}>
+          {line}
+        </Text>
+      ))}
     </View>
   );
 }
@@ -61,16 +67,18 @@ export function MarketDaySummaryCard({
 }: MarketDaySummaryCardProps) {
   const cashTotalCents = cashCents + cashTipsCents;
   const venmoTotalCents = venmoCents + venmoTipsCents;
-  const cashSubValue =
+  const tipsTotalCents = cashTipsCents + venmoTipsCents;
+  const totalWithTipsCents = totalCents + tipsTotalCents;
+  const cashSubValues =
     cashTipsCents > 0
-      ? `${formatMoney(cashCents)} + ${formatMoney(cashTipsCents)} (tips)`
+      ? [`${formatMoney(cashCents)} + ${formatMoney(cashTipsCents)} (tips)`]
       : undefined;
-  const venmoSubValue =
+  const venmoSubValues =
     venmoTipsCents > 0
-      ? `${formatMoney(venmoCents)} + ${formatMoney(venmoTipsCents)} (tips)`
+      ? [`${formatMoney(venmoCents)} + ${formatMoney(venmoTipsCents)} (tips)`]
       : undefined;
-  const saleCountSubValue =
-    cancelledSaleCount > 0 ? `${cancelledSaleCount} cancelled` : undefined;
+  const saleCountSubValues =
+    cancelledSaleCount > 0 ? [`${cancelledSaleCount} cancelled`] : undefined;
 
   return (
     <View style={styles.wrap}>
@@ -80,48 +88,24 @@ export function MarketDaySummaryCard({
       ) : null}
 
       {variant === 'viewOnly' ? (
-        <View style={styles.stack}>
-          <StatBox
-            icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
-            label="Total Sales"
-            value={String(saleCount)}
-            subValue={saleCountSubValue}
-            backgroundColor={colors.pink}
-            fullWidth
-          />
-          <StatBox
-            icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
-            label="Zelle / Venmo"
-            value={formatMoney(venmoTotalCents)}
-            subValue={venmoSubValue}
-            backgroundColor={colors.grayLight}
-            fullWidth
-          />
-          <StatBox
-            icon={<UiIcon icon={Banknote} size={20} color={textOnBackground(colors.green)} />}
-            label="Cash"
-            value={formatMoney(cashTotalCents)}
-            subValue={cashSubValue}
-            backgroundColor={colors.green}
-            fullWidth
-          />
-        </View>
-      ) : (
         <View style={styles.grid}>
           <View style={styles.gridRow}>
             <StatBox
-              icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
+              icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.purple)} />}
               label="Total Sales"
               value={String(saleCount)}
-              subValue={saleCountSubValue}
-              backgroundColor={colors.pink}
+              subValues={saleCountSubValues}
+              backgroundColor={colors.purple}
             />
             <StatBox
-              icon={<UiIcon icon={Coins} size={20} color={textOnBackground(colors.peach)} />}
-              label="Profit"
-              value={formatMoney(profitCents)}
-              subValue={`${formatMoney(totalCents)} gross`}
-              backgroundColor={colors.peach}
+              icon={<UiIcon icon={Coins} size={20} color={textOnBackground(colors.pink)} />}
+              label="Total with Tips"
+              value={formatMoney(totalWithTipsCents)}
+              subValues={[
+                `Order total: ${formatMoney(totalCents)}`,
+                `Tips Total: ${formatMoney(tipsTotalCents)}`,
+              ]}
+              backgroundColor={colors.pink}
             />
           </View>
           <View style={styles.gridRow}>
@@ -129,14 +113,62 @@ export function MarketDaySummaryCard({
               icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
               label="Zelle / Venmo"
               value={formatMoney(venmoTotalCents)}
-              subValue={venmoSubValue}
+              subValues={[
+                `Order total: ${formatMoney(venmoCents)}`,
+                `Tips: ${formatMoney(venmoTipsCents)}`,
+              ]}
               backgroundColor={colors.grayLight}
             />
             <StatBox
               icon={<UiIcon icon={Banknote} size={20} color={textOnBackground(colors.green)} />}
               label="Cash"
               value={formatMoney(cashTotalCents)}
-              subValue={cashSubValue}
+              subValues={[
+                `Order total: ${formatMoney(cashCents)}`,
+                `Tips: ${formatMoney(cashTipsCents)}`,
+              ]}
+              backgroundColor={colors.green}
+            />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.grid}>
+          <View style={styles.gridRow}>
+            <StatBox
+              icon={<UiIcon icon={Coins} size={20} color={textOnBackground(colors.purple)} />}
+              label="Profit"
+              value={formatMoney(profitCents)}
+              subValues={[
+                `${formatMoney(totalCents)} gross`,
+                `Total sales: ${saleCount}`,
+                ...(saleCountSubValues ?? []),
+              ]}
+              backgroundColor={colors.purple}
+            />
+            <StatBox
+              icon={<UiIcon icon={Receipt} size={20} color={textOnBackground(colors.pink)} />}
+              label="Total with Tips"
+              value={formatMoney(totalWithTipsCents)}
+              subValues={[
+                `Order total: ${formatMoney(totalCents)}`,
+                `Tips Total: ${formatMoney(tipsTotalCents)}`,
+              ]}
+              backgroundColor={colors.pink}
+            />
+          </View>
+          <View style={styles.gridRow}>
+            <StatBox
+              icon={<UiIcon icon={Smartphone} size={20} color={textOnBackground(colors.grayLight)} />}
+              label="Zelle / Venmo"
+              value={formatMoney(venmoTotalCents)}
+              subValues={venmoSubValues}
+              backgroundColor={colors.grayLight}
+            />
+            <StatBox
+              icon={<UiIcon icon={Banknote} size={20} color={textOnBackground(colors.green)} />}
+              label="Cash"
+              value={formatMoney(cashTotalCents)}
+              subValues={cashSubValues}
               backgroundColor={colors.green}
             />
           </View>
@@ -164,9 +196,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 14,
   },
-  stack: {
-    gap: 10,
-  },
   grid: {
     gap: 10,
   },
@@ -185,15 +214,18 @@ const styles = StyleSheet.create({
     flex: undefined,
     width: '100%',
   },
-  statIcon: {
+  statHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginBottom: 6,
   },
   statLabel: {
+    flexShrink: 1,
     fontFamily: fonts.body.extraBold,
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-    marginBottom: 4,
   },
   statValue: {
     fontFamily: fonts.heading.bold,

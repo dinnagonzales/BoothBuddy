@@ -187,6 +187,7 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
   expect(sales[0]).toEqual({
     saleNumber: 1,
     totalCents: 400,
+    tipCents: 0,
     paymentMethod: 'cash',
     name: null,
     notes: null,
@@ -199,6 +200,7 @@ test('admin dashboard lists every Sale with number, time, total, and payment met
   expect(sales[1]).toEqual({
     saleNumber: 2,
     totalCents: 800,
+    tipCents: 0,
     paymentMethod: 'venmo_zelle',
     name: null,
     notes: null,

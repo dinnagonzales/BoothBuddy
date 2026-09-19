@@ -357,9 +357,14 @@ export function createCatalog(): Catalog {
   }
 
   function mapSaleSummary(sale: StoredSale): SaleSummary {
+    const totalCents = cartTotal(sale.lines);
     return {
       saleNumber: sale.saleNumber,
-      totalCents: cartTotal(sale.lines),
+      totalCents,
+      tipCents:
+        !sale.cancelled && sale.changeKept && sale.cashReceivedCents != null
+          ? Math.max(sale.cashReceivedCents - totalCents, 0)
+          : 0,
       paymentMethod: sale.paymentMethod,
       name: sale.name,
       notes: sale.notes,

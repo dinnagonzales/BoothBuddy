@@ -111,6 +111,7 @@ test('admin can change payment method on a Sale', async () => {
     {
       saleNumber: 1,
       totalCents: 400,
+      tipCents: 0,
       paymentMethod: 'venmo_zelle',
       name: null,
       notes: null,
@@ -162,6 +163,9 @@ test('switching payment method keeps change-kept tip and tender', async () => {
   });
 
   expect((await catalog.getMarketDayStats(marketDay.id)).tipsCents).toBe(100);
+  expect((await catalog.listSalesForMarketDay(marketDay.id))[0]).toMatchObject({
+    tipCents: 100,
+  });
 
   await catalog.updateSalePaymentMethod(saleNumber, 'venmo_zelle');
 
@@ -303,6 +307,7 @@ test('admin can add optional name and notes to a Sale', async () => {
     {
       saleNumber: 1,
       totalCents: 400,
+      tipCents: 0,
       paymentMethod: 'cash',
       name: 'Emma',
       notes: null,

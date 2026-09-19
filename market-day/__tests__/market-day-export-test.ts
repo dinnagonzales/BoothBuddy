@@ -37,12 +37,20 @@ test('buildMarketDayCsv includes headers and one row per line item', () => {
   expect(csv).toContain('Cash');
   expect(csv).toContain('10.00');
   expect(csv).toContain('2.00');
-  const summaryLines = csv.trim().split('\n').slice(-4);
+  const summaryLines = csv.trim().split('\n').slice(-12);
   expect(summaryLines).toEqual([
-    'Total (without tips),,,,,,,,,8.00,,,,,,',
-    'Gross (without tips),,,,,,,,,8.00,,,,,,',
-    'Profit (without tips),,,,,,,,,6.00,,,,,,',
-    'Tips total,,,,,,,,,2.00,,,,,,',
+    'Zelle total,,,,,,,,,0.00,,,,,,',
+    'Zelle order total,,,,,,,,,0.00,,,,,,',
+    'Zelle tips total,,,,,,,,,0.00,,,,,,',
+    '',
+    'Cash total,,,,,,,,,10.00,,,,,,',
+    'Cash order total,,,,,,,,,8.00,,,,,,',
+    'Cash tips total,,,,,,,,,2.00,,,,,,',
+    '',
+    'Overall total,,,,,,,,,10.00,,,,,,',
+    'Order overall total,,,,,,,,,8.00,,,,,,',
+    'Tips overall total,,,,,,,,,2.00,,,,,,',
+    'Overall profit,,,,,,,,,6.00,,,,,,',
   ]);
 });
 
@@ -110,14 +118,17 @@ test('computeExportSummary ignores cancelled sales when mixed with active ones',
       },
     ]),
   ).toEqual({
-    totalWithoutTipsCents: 400,
-    grossWithoutTipsCents: 400,
-    profitWithoutTipsCents: 300,
-    tipsTotalCents: 0,
+    zelleOrderTotalCents: 0,
+    zelleTipsTotalCents: 0,
+    cashOrderTotalCents: 400,
+    cashTipsTotalCents: 0,
+    orderOverallTotalCents: 400,
+    tipsOverallTotalCents: 0,
+    overallProfitCents: 300,
   });
 });
 
-test('computeExportSummary dedupes sale totals and tips across line items', () => {
+test('computeExportSummary splits cash and zelle order totals and tips', () => {
   expect(
     computeExportSummary([
       {
@@ -145,21 +156,24 @@ test('computeExportSummary dedupes sale totals and tips across line items', () =
         costCents: 100,
         saleTotalCents: 300,
         paymentMethod: 'venmo_zelle',
-        cashReceivedCents: null,
-        changeKeptCents: 0,
+        cashReceivedCents: 500,
+        changeKeptCents: 200,
         customerName: 'Emma',
         ...activeRow,
       },
     ]),
   ).toEqual({
-    totalWithoutTipsCents: 1100,
-    grossWithoutTipsCents: 1100,
-    profitWithoutTipsCents: 800,
-    tipsTotalCents: 200,
+    zelleOrderTotalCents: 300,
+    zelleTipsTotalCents: 200,
+    cashOrderTotalCents: 800,
+    cashTipsTotalCents: 200,
+    orderOverallTotalCents: 1100,
+    tipsOverallTotalCents: 400,
+    overallProfitCents: 800,
   });
 });
 
-test('computeExportSummary sums every line item for gross and profit', () => {
+test('computeExportSummary dedupes sale totals and tips across line items', () => {
   expect(
     computeExportSummary([
       {
@@ -194,16 +208,22 @@ test('computeExportSummary sums every line item for gross and profit', () => {
       },
     ]),
   ).toEqual({
-    totalWithoutTipsCents: 1000,
-    grossWithoutTipsCents: 1000,
-    profitWithoutTipsCents: 750,
-    tipsTotalCents: 0,
+    zelleOrderTotalCents: 0,
+    zelleTipsTotalCents: 0,
+    cashOrderTotalCents: 1000,
+    cashTipsTotalCents: 0,
+    orderOverallTotalCents: 1000,
+    tipsOverallTotalCents: 0,
+    overallProfitCents: 750,
   });
 });
 
-test('marketDayExportFilename sanitizes the Market Day name', () => {
-  expect(marketDayExportFilename('Demo Market Day – Aug 28, 2026')).toBe(
-    'Demo-Market-Day-Aug-28-2026-sales.csv',
+test('marketDayExportFilename uses date and hyphenated event name', () => {
+  expect(marketDayExportFilename('Kids Market', '2026-09-20T12:00:00.000Z')).toBe(
+    '09-20-2026_Kids-Market.csv',
+  );
+  expect(marketDayExportFilename('Demo Market Day – Aug 28, 2026', '2026-08-28T12:00:00.000Z')).toBe(
+    '08-28-2026_Demo-Market-Day-Aug-28-2026.csv',
   );
 });
 

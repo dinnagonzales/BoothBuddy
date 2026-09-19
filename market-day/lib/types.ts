@@ -51,6 +51,7 @@ export type Sale = {
 export type SaleSummary = {
   saleNumber: number;
   totalCents: number;
+  tipCents: number;
   paymentMethod: PaymentMethod;
   name: string | null;
   notes: string | null;

@@ -1,36 +1,55 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Check } from 'lucide-react-native'
 
-import { UiIcon } from '@/components/ui/UiIcon';
-import { colors } from '@/constants/theme';
-import { formatMarketDayDate, formatSaleTime, paymentMethodLabel } from '@/lib/market-day';
-import { formatMoney } from '@/lib/money';
-import { cancelReasonDisplayLabel } from '@/lib/sale-cancel';
-import type { AllTimeSaleSummary, SaleSummary } from '@/lib/types';
+import { UiIcon } from '@/components/ui/UiIcon'
+import { colors } from '@/constants/theme'
+import {
+  formatMarketDayDate,
+  formatSaleTime,
+  paymentMethodLabel,
+} from '@/lib/market-day'
+import { formatMoney } from '@/lib/money'
+import { cancelReasonDisplayLabel } from '@/lib/sale-cancel'
+import { salePaymentBottomLabel } from '@/lib/sale-edit'
+import type { AllTimeSaleSummary, SaleSummary } from '@/lib/types'
 
 type AdminSalesListProps = {
-  sales: SaleSummary[] | AllTimeSaleSummary[];
-  savedSaleNumber?: number | null;
-  onSalePress?: (saleNumber: number) => void;
-  showSaleContext?: boolean;
-};
-
-function saleSubtitle(sale: SaleSummary | AllTimeSaleSummary, showSaleContext: boolean): string {
-  if (showSaleContext) {
-    const marketDayName =
-      'marketDayName' in sale && sale.marketDayName ? `${sale.marketDayName} · ` : '';
-    return `${formatMarketDayDate(sale.createdAt)} · ${marketDayName}${formatSaleTime(sale.createdAt)}`;
-  }
-
-  return `${sale.name ? `#${sale.saleNumber} · ` : ''}${formatSaleTime(sale.createdAt)}`;
+  sales: SaleSummary[] | AllTimeSaleSummary[]
+  savedSaleNumber?: number | null
+  onSalePress?: (saleNumber: number) => void
+  showSaleContext?: boolean
 }
 
-function saleMethodLabel(sale: SaleSummary | AllTimeSaleSummary): string {
-  if (!sale.cancelled) {
-    return paymentMethodLabel(sale.paymentMethod);
+function saleSubtitle(
+  sale: SaleSummary | AllTimeSaleSummary,
+  showSaleContext: boolean,
+): string {
+  if (showSaleContext) {
+    const marketDayName =
+      'marketDayName' in sale && sale.marketDayName
+        ? `${sale.marketDayName} · `
+        : ''
+    return `${formatMarketDayDate(
+      sale.createdAt,
+    )} · ${marketDayName}${formatSaleTime(sale.createdAt)}`
   }
-  const reason = cancelReasonDisplayLabel(sale.cancelReason, sale.cancelNote);
-  return reason ? `Cancelled · ${reason}` : 'Cancelled';
+
+  return `${sale.name ? `#${sale.saleNumber} · ` : ''}${formatSaleTime(
+    sale.createdAt,
+  )}`
+}
+
+function saleBottomLabel(sale: SaleSummary | AllTimeSaleSummary): string {
+  if (sale.cancelled) {
+    const reason = cancelReasonDisplayLabel(sale.cancelReason, sale.cancelNote)
+    return reason ? `Cancelled · ${reason}` : 'Cancelled'
+  }
+  return salePaymentBottomLabel(
+    paymentMethodLabel(sale.paymentMethod),
+    sale.tipCents,
+    sale.totalCents,
+    formatMoney,
+  )
 }
 
 export function AdminSalesList({
@@ -44,7 +63,7 @@ export function AdminSalesList({
       <View style={styles.emptyCard}>
         <Text style={styles.emptyText}>No sales yet</Text>
       </View>
-    );
+    )
   }
 
   return (
@@ -62,26 +81,48 @@ export function AdminSalesList({
           <Pressable
             accessibilityRole="button"
             onPress={() => onSalePress?.(sale.saleNumber)}
-            style={({ pressed }) => [styles.saleRow, pressed && styles.saleRowPressed]}>
-            <View>
-              <Text style={[styles.saleNumber, sale.cancelled && styles.saleNumberCancelled]}>
+            style={({ pressed }) => [
+              styles.saleRow,
+              pressed && styles.saleRowPressed,
+            ]}
+          >
+            <View style={styles.saleCopy}>
+              <Text
+                style={[
+                  styles.saleNumber,
+                  sale.cancelled && styles.saleNumberCancelled,
+                ]}
+              >
                 {sale.name ? sale.name : `#${sale.saleNumber}`}
               </Text>
-              <Text style={styles.saleTime}>{saleSubtitle(sale, showSaleContext)}</Text>
+              <Text style={styles.saleTime}>
+                {saleSubtitle(sale, showSaleContext)}
+              </Text>
             </View>
             <View style={styles.saleAmountWrap}>
-              <Text style={[styles.saleAmount, sale.cancelled && styles.saleAmountCancelled]}>
+              <Text
+                style={[
+                  styles.saleAmount,
+                  sale.cancelled && styles.saleAmountCancelled,
+                ]}
+              >
                 {formatMoney(sale.totalCents)}
               </Text>
-              <Text style={[styles.saleMethod, sale.cancelled && styles.saleMethodCancelled]}>
-                {saleMethodLabel(sale)}
+              <Text
+                style={[
+                  styles.saleMethod,
+                  sale.cancelled && styles.saleMethodCancelled,
+                  !sale.cancelled && sale.tipCents > 0 && styles.salePaidTip,
+                ]}
+              >
+                {saleBottomLabel(sale)}
               </Text>
             </View>
           </Pressable>
         </View>
       ))}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -116,9 +157,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
+    gap: 12,
   },
   saleRowPressed: {
     opacity: 0.85,
+  },
+  saleCopy: {
+    flexShrink: 1,
   },
   saleNumber: {
     fontFamily: 'Nunito_800ExtraBold',
@@ -136,11 +181,14 @@ const styles = StyleSheet.create({
   },
   saleAmountWrap: {
     alignItems: 'flex-end',
+    flexShrink: 1,
+    maxWidth: '58%',
   },
   saleAmount: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 18,
     color: colors.ink,
+    textAlign: 'right',
   },
   saleAmountCancelled: {
     color: colors.inkSoft,
@@ -151,6 +199,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_700Bold',
     fontSize: 11,
     color: colors.inkSoft,
+    textAlign: 'right',
+  },
+  salePaidTip: {
+    color: colors.ink,
   },
   saleMethodCancelled: {
     color: colors.redDark,
@@ -167,4 +219,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.inkSoft,
   },
-});
+})

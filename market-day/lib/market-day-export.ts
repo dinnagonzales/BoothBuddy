@@ -66,45 +66,64 @@ function formatSaleDateTime(iso: string): string {
 }
 
 export type CsvExportSummary = {
-  totalWithoutTipsCents: number;
-  grossWithoutTipsCents: number;
-  profitWithoutTipsCents: number;
-  tipsTotalCents: number;
+  zelleOrderTotalCents: number;
+  zelleTipsTotalCents: number;
+  cashOrderTotalCents: number;
+  cashTipsTotalCents: number;
+  orderOverallTotalCents: number;
+  tipsOverallTotalCents: number;
+  overallProfitCents: number;
 };
 
 export function computeExportSummary(
   rows: Awaited<ReturnType<typeof getMarketDayExportRows>>,
 ): CsvExportSummary {
-  const sales = new Map<number, { saleTotalCents: number; changeKeptCents: number }>();
-  let grossWithoutTipsCents = 0;
-  let profitWithoutTipsCents = 0;
+  const sales = new Map<
+    number,
+    { saleTotalCents: number; changeKeptCents: number; paymentMethod: string }
+  >();
+  let overallProfitCents = 0;
 
   for (const row of rows) {
-    const lineTotalCents = row.priceCents * row.quantity;
-    const lineProfitCents = (row.priceCents - row.costCents) * row.quantity;
-    grossWithoutTipsCents += lineTotalCents;
-    profitWithoutTipsCents += lineProfitCents;
+    overallProfitCents += (row.priceCents - row.costCents) * row.quantity;
 
     if (!sales.has(row.saleNumber)) {
       sales.set(row.saleNumber, {
         saleTotalCents: row.saleTotalCents,
         changeKeptCents: row.changeKeptCents,
+        paymentMethod: row.paymentMethod,
       });
     }
   }
 
-  let totalWithoutTipsCents = 0;
-  let tipsTotalCents = 0;
+  let zelleOrderTotalCents = 0;
+  let zelleTipsTotalCents = 0;
+  let cashOrderTotalCents = 0;
+  let cashTipsTotalCents = 0;
+  let orderOverallTotalCents = 0;
+  let tipsOverallTotalCents = 0;
+
   for (const sale of sales.values()) {
-    totalWithoutTipsCents += sale.saleTotalCents;
-    tipsTotalCents += sale.changeKeptCents;
+    orderOverallTotalCents += sale.saleTotalCents;
+    tipsOverallTotalCents += sale.changeKeptCents;
+
+    if (sale.paymentMethod === 'cash') {
+      cashOrderTotalCents += sale.saleTotalCents;
+      cashTipsTotalCents += sale.changeKeptCents;
+    } else if (sale.paymentMethod === 'venmo_zelle') {
+      zelleOrderTotalCents += sale.saleTotalCents;
+      zelleTipsTotalCents += sale.changeKeptCents;
+    }
   }
 
   return {
-    totalWithoutTipsCents,
-    grossWithoutTipsCents,
-    profitWithoutTipsCents,
-    tipsTotalCents,
+    zelleOrderTotalCents,
+    zelleTipsTotalCents,
+    cashOrderTotalCents,
+    cashTipsTotalCents,
+    orderOverallTotalCents,
+    tipsOverallTotalCents,
+    overallProfitCents,
   };
 }
 
@@ -125,10 +144,33 @@ function appendSummaryRows(
 
   const summary = computeExportSummary(rows);
   lines.push('');
-  lines.push(formatSummaryRow('Total (without tips)', summary.totalWithoutTipsCents));
-  lines.push(formatSummaryRow('Gross (without tips)', summary.grossWithoutTipsCents));
-  lines.push(formatSummaryRow('Profit (without tips)', summary.profitWithoutTipsCents));
-  lines.push(formatSummaryRow('Tips total', summary.tipsTotalCents));
+  lines.push(
+    formatSummaryRow(
+      'Zelle total',
+      summary.zelleOrderTotalCents + summary.zelleTipsTotalCents,
+    ),
+  );
+  lines.push(formatSummaryRow('Zelle order total', summary.zelleOrderTotalCents));
+  lines.push(formatSummaryRow('Zelle tips total', summary.zelleTipsTotalCents));
+  lines.push('');
+  lines.push(
+    formatSummaryRow(
+      'Cash total',
+      summary.cashOrderTotalCents + summary.cashTipsTotalCents,
+    ),
+  );
+  lines.push(formatSummaryRow('Cash order total', summary.cashOrderTotalCents));
+  lines.push(formatSummaryRow('Cash tips total', summary.cashTipsTotalCents));
+  lines.push('');
+  lines.push(
+    formatSummaryRow(
+      'Overall total',
+      summary.orderOverallTotalCents + summary.tipsOverallTotalCents,
+    ),
+  );
+  lines.push(formatSummaryRow('Order overall total', summary.orderOverallTotalCents));
+  lines.push(formatSummaryRow('Tips overall total', summary.tipsOverallTotalCents));
+  lines.push(formatSummaryRow('Overall profit', summary.overallProfitCents));
 }
 
 export function buildMarketDayCsv(
@@ -168,13 +210,18 @@ export function buildMarketDayCsv(
   return `${lines.join('\n')}\n`;
 }
 
-export function marketDayExportFilename(marketDayName: string): string {
+export function marketDayExportFilename(marketDayName: string, startedAt: string): string {
+  const date = parseSqliteUtc(startedAt);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  const datePart = `${month}-${day}-${year}`;
   const slug = marketDayName
     .replace(/[^\w\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-')
     .slice(0, 80);
-  return `${slug || 'market-day'}-sales.csv`;
+  return `${datePart}_${slug || 'market-day'}.csv`;
 }
 
 export function salesExportFilename(startDate: string, endDate: string): string {
@@ -281,7 +328,7 @@ export async function shareMarketDayCsv(
 
   const rows = await getMarketDayExportRows(db, marketDayId);
   const csv = buildMarketDayCsv(rows);
-  const filename = marketDayExportFilename(marketDay.name);
+  const filename = marketDayExportFilename(marketDay.name, marketDay.startedAt);
 
   await shareCsvFile(csv, filename);
 

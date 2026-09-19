@@ -11,6 +11,7 @@ import {
   normalizeCancelSaleReason,
   type CancelSaleReason,
 } from '@/lib/sale-cancel';
+import { saleTipCents } from '@/lib/sale-edit';
 import type {
   AllTimeSaleSummary,
   CancelReason,
@@ -1071,7 +1072,8 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
-    change_kept?: number;
+    cash_received_cents: number | null;
+    change_kept: number;
     name: string | null;
     notes: string | null;
     complete_date: string | null;
@@ -1080,7 +1082,8 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
     cancel_reason: CancelReason | null;
     cancel_note: string | null;
   }>(
-    `SELECT sale_number, total_cents, payment_method, name, notes, complete_date, created_at,
+    `SELECT sale_number, total_cents, payment_method, cash_received_cents, change_kept,
+            name, notes, complete_date, created_at,
             cancelled, cancel_reason, cancel_note
      FROM sales
      WHERE is_preorder = 1 AND cancelled = 0
@@ -1093,6 +1096,12 @@ export async function getPreorderSales(db: SQLiteDatabase): Promise<SaleSummary[
   return rows.map((row) => ({
     saleNumber: row.sale_number,
     totalCents: row.total_cents,
+    tipCents: saleTipCents(
+      row.change_kept === 1,
+      row.cash_received_cents,
+      row.total_cents,
+      row.cancelled === 1,
+    ),
     paymentMethod: row.payment_method,
     name: row.name,
     notes: row.notes,
@@ -1260,7 +1269,8 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
-    change_kept?: number;
+    cash_received_cents: number | null;
+    change_kept: number;
     name: string | null;
     created_at: string;
     market_day_name: string | null;
@@ -1272,6 +1282,8 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
        s.sale_number,
        s.total_cents,
        s.payment_method,
+       s.cash_received_cents,
+       s.change_kept,
        s.name,
        s.created_at,
        md.name AS market_day_name,
@@ -1287,6 +1299,12 @@ export async function getAllTimeSales(db: SQLiteDatabase): Promise<AllTimeSaleSu
   return rows.map((row) => ({
     saleNumber: row.sale_number,
     totalCents: row.total_cents,
+    tipCents: saleTipCents(
+      row.change_kept === 1,
+      row.cash_received_cents,
+      row.total_cents,
+      row.cancelled === 1,
+    ),
     paymentMethod: row.payment_method,
     name: row.name,
     notes: null,
@@ -1307,15 +1325,16 @@ export async function getMarketDaySales(
     sale_number: number;
     total_cents: number;
     payment_method: PaymentMethod;
-    change_kept?: number;
+    cash_received_cents: number | null;
+    change_kept: number;
     name: string | null;
     created_at: string;
     cancelled: number;
     cancel_reason: CancelReason | null;
     cancel_note: string | null;
   }>(
-    `SELECT sale_number, total_cents, payment_method, name, created_at,
-            cancelled, cancel_reason, cancel_note
+    `SELECT sale_number, total_cents, payment_method, cash_received_cents, change_kept,
+            name, created_at, cancelled, cancel_reason, cancel_note
      FROM sales
      WHERE market_day_id = ?
      ORDER BY sale_number ASC`,
@@ -1325,6 +1344,12 @@ export async function getMarketDaySales(
   return rows.map((row) => ({
     saleNumber: row.sale_number,
     totalCents: row.total_cents,
+    tipCents: saleTipCents(
+      row.change_kept === 1,
+      row.cash_received_cents,
+      row.total_cents,
+      row.cancelled === 1,
+    ),
     paymentMethod: row.payment_method,
     name: row.name,
     notes: null,

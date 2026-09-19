@@ -23,6 +23,7 @@ export default function MarketDayDashboardScreen() {
   const router = useRouter();
   const [activeDay, setActiveDay] = useState<MarketDay | null>(null);
   const [stats, setStats] = useState({
+    totalCents: 0,
     cashCents: 0,
     venmoCents: 0,
     cashTipsCents: 0,
@@ -40,6 +41,7 @@ export default function MarketDayDashboardScreen() {
         getMarketDaySales(db, day.id),
       ]);
       setStats({
+        totalCents: dayStats.totalCents,
         cashCents: dayStats.cashCents,
         venmoCents: dayStats.venmoCents,
         cashTipsCents: dayStats.cashTipsCents,
@@ -47,7 +49,13 @@ export default function MarketDayDashboardScreen() {
       });
       setSales(daySales);
     } else {
-      setStats({ cashCents: 0, venmoCents: 0, cashTipsCents: 0, venmoTipsCents: 0 });
+      setStats({
+        totalCents: 0,
+        cashCents: 0,
+        venmoCents: 0,
+        cashTipsCents: 0,
+        venmoTipsCents: 0,
+      });
       setSales([]);
     }
     setLoaded(true);
@@ -82,6 +90,7 @@ export default function MarketDayDashboardScreen() {
             startedAt={activeDay.startedAt}
             saleCount={countActiveSales(sales)}
             cancelledSaleCount={countCancelledSales(sales)}
+            totalCents={stats.totalCents}
             cashCents={stats.cashCents}
             venmoCents={stats.venmoCents}
             cashTipsCents={stats.cashTipsCents}
