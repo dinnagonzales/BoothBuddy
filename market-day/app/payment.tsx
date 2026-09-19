@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { Banknote, Check, ClipboardList, Smartphone } from 'lucide-react-native';
 
@@ -61,6 +61,8 @@ export default function PaymentScreen() {
   const [cashReceivedCents, setCashReceivedCents] = useState(0);
   const [keepChange, setKeepChange] = useState(false);
   const [businessSettings, setBusinessSettings] = useState<BusinessSettings>(EMPTY_BUSINESS_SETTINGS);
+  const [saving, setSaving] = useState(false);
+  const completingRef = useRef(false);
   const preorderCheckout = isQuickSale && isPreorder && editingSaleId == null;
 
   useEffect(() => {
@@ -133,26 +135,28 @@ export default function PaymentScreen() {
     (!preorderCheckout || preorderMetadataValid(saleName, saleNotes, saleCompleteDate));
 
   const completeSale = () => {
-    if (!canComplete) return;
+    if (!canComplete || completingRef.current) return;
+    completingRef.current = true;
+    setSaving(true);
 
     void (async () => {
-      if (lines.length === 0) return;
-
-      const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
-
-      const paymentFields = {
-        lines,
-        paymentMethod,
-        cashReceivedCents:
-          paymentMethod === 'cash' || paymentMethod === 'venmo_zelle' ? cashReceivedCents : null,
-        changeKept:
-          (paymentMethod === 'cash' || paymentMethod === 'venmo_zelle') && keepChange,
-        name: saleName,
-        notes: saleNotes,
-        completeDate: saleCompleteDate,
-      };
-
       try {
+        if (lines.length === 0) return;
+
+        const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
+
+        const paymentFields = {
+          lines,
+          paymentMethod,
+          cashReceivedCents:
+            paymentMethod === 'cash' || paymentMethod === 'venmo_zelle' ? cashReceivedCents : null,
+          changeKept:
+            (paymentMethod === 'cash' || paymentMethod === 'venmo_zelle') && keepChange,
+          name: saleName,
+          notes: saleNotes,
+          completeDate: saleCompleteDate,
+        };
+
         let sale;
         if (editingSaleId != null) {
           sale = await replaceSaleContents(db, editingSaleId, paymentFields);
@@ -193,6 +197,9 @@ export default function PaymentScreen() {
         if (__DEV__) {
           console.warn('[payment] completeSale failed', error);
         }
+      } finally {
+        completingRef.current = false;
+        setSaving(false);
       }
     })();
   };
@@ -438,9 +445,15 @@ export default function PaymentScreen() {
 
           <View style={styles.endDock}>
             <BrandButton
-              label={preorderCheckout ? 'Save preorder' : 'Complete sale'}
+              label={
+                saving
+                  ? 'Saving…'
+                  : preorderCheckout
+                    ? 'Save preorder'
+                    : 'Complete sale'
+              }
               icon={<UiIcon icon={Check} size={20} color={colors.white} />}
-              disabled={!canComplete}
+              disabled={!canComplete || saving}
               onPress={completeSale}
               style={styles.completeButton}
             />
