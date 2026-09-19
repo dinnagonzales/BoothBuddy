@@ -21,6 +21,7 @@ import type {
   SaleSummary,
   ClosedMarketDaySummary,
 } from '@/lib/types';
+import { withWriteTransaction } from '@/lib/db/write-transaction';
 
 type ItemRow = {
   id: number;
@@ -403,7 +404,7 @@ export async function startMarketDay(
   let created: MarketDay | null = null;
 
   try {
-    await db.withExclusiveTransactionAsync(async (txn) => {
+    await withWriteTransaction(db, async (txn) => {
       const active = await getActiveMarketDay(txn);
       if (active) {
         throw new ActiveMarketDayExistsError();
@@ -468,7 +469,7 @@ export async function closeActiveMarketDay(db: SQLiteDatabase): Promise<void> {
 
 export async function undoCloseMostRecentMarketDay(db: SQLiteDatabase): Promise<void> {
   try {
-    await db.withExclusiveTransactionAsync(async (txn) => {
+    await withWriteTransaction(db, async (txn) => {
       const active = await getActiveMarketDay(txn);
       if (active) {
         throw new ActiveMarketDayExistsError();
@@ -653,7 +654,7 @@ export async function createSale(
 
   let created: Sale | null = null;
 
-  await db.withExclusiveTransactionAsync(async (txn) => {
+  await withWriteTransaction(db, async (txn) => {
     const saleNumber =
       params.saleNumber != null && params.saleNumber > 0
         ? params.saleNumber
@@ -755,7 +756,7 @@ export async function replaceSaleContents(
 
   let updated: Sale | null = null;
 
-  await db.withExclusiveTransactionAsync(async (txn) => {
+  await withWriteTransaction(db, async (txn) => {
     await txn.runAsync(
       `UPDATE sales
        SET total_cents = ?, payment_method = ?, cash_received_cents = ?, change_kept = ?,
@@ -856,10 +857,15 @@ export async function getSaleLineItems(db: SQLiteDatabase, saleId: number): Prom
   }));
 }
 
+/** Deletes a sale and its lines on an already-open connection (no nested txn). */
+async function deleteSaleTx(db: SQLiteDatabase, saleId: number): Promise<void> {
+  await db.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
+  await db.runAsync('DELETE FROM sales WHERE id = ?', saleId);
+}
+
 export async function deleteSale(db: SQLiteDatabase, saleId: number): Promise<void> {
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    await txn.runAsync('DELETE FROM line_items WHERE sale_id = ?', saleId);
-    await txn.runAsync('DELETE FROM sales WHERE id = ?', saleId);
+  await withWriteTransaction(db, async (txn) => {
+    await deleteSaleTx(txn, saleId);
   });
 }
 

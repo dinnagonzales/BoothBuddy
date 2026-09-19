@@ -171,9 +171,10 @@ async function rebuildSalesTableForPayOnPickup(db: SalesSchemaDb): Promise<void>
   const violationsBefore = await countForeignKeyViolations(db);
   const rowCountBefore = await countRows(db, 'sales');
 
-  // Must run on this connection: withExclusiveTransactionAsync opens a new
-  // connection (expo-sqlite Transaction.createAsync useNewConnection: true),
-  // and PRAGMA foreign_keys is per-connection.
+  // Must run on this connection: expo-sqlite's withExclusiveTransactionAsync
+  // opens a new connection (useNewConnection: true) without inheriting
+  // PRAGMA foreign_keys, and the pragma cannot be changed after BEGIN.
+  // App writes use withWriteTransaction on the main connection instead.
   await db.execAsync('PRAGMA foreign_keys=OFF');
   try {
     await db.execAsync('BEGIN IMMEDIATE');

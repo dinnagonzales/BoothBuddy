@@ -1,5 +1,3 @@
-// @ts-expect-error Node built-in; project tsconfig has no @types/node (same as foreign-keys-test)
-import { DatabaseSync } from 'node:sqlite';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { ActiveMarketDayExistsError } from '@/lib/market-day';
@@ -11,51 +9,7 @@ import {
   startMarketDay,
   undoCloseMostRecentMarketDay,
 } from '@/lib/db/queries';
-
-function normalizeParams(params: unknown[]): unknown[] {
-  if (params.length === 1 && Array.isArray(params[0])) {
-    return params[0] as unknown[];
-  }
-  return params;
-}
-
-function createTestDb(): { raw: DatabaseSync; db: SQLiteDatabase } {
-  const raw = new DatabaseSync(':memory:', { enableForeignKeyConstraints: false });
-
-  const db = {
-    async execAsync(source: string) {
-      raw.exec(source);
-    },
-    async getAllAsync<T>(source: string, ...params: unknown[]) {
-      return raw.prepare(source).all(...normalizeParams(params)) as T[];
-    },
-    async getFirstAsync<T>(source: string, ...params: unknown[]) {
-      const row = raw.prepare(source).get(...normalizeParams(params)) as T | undefined;
-      return row ?? null;
-    },
-    async runAsync(source: string, ...params: unknown[]) {
-      const result = raw.prepare(source).run(...normalizeParams(params));
-      return {
-        lastInsertRowId: Number(result.lastInsertRowid),
-        changes: result.changes,
-      };
-    },
-    async withExclusiveTransactionAsync(
-      task: (txn: SQLiteDatabase) => Promise<void>,
-    ) {
-      raw.exec('BEGIN IMMEDIATE');
-      try {
-        await task(db as SQLiteDatabase);
-        raw.exec('COMMIT');
-      } catch (error) {
-        raw.exec('ROLLBACK');
-        throw error;
-      }
-    },
-  } as SQLiteDatabase;
-
-  return { raw, db };
-}
+import { createTestDb } from './helpers/sqlite-test-db';
 
 async function openDayCount(db: SQLiteDatabase): Promise<number> {
   const row = await db.getFirstAsync<{ c: number }>(
