@@ -90,18 +90,18 @@ function TicketMarketBanner({
           <Text style={styles.ticketStripText} numberOfLines={1}>
             {name.toUpperCase()} · {dateLabel}
           </Text>
-          <Text style={styles.ticketStripAction}>Sales →</Text>
+          <View style={styles.ticketSalePill}>
+            <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
+          </View>
         </View>
       </View>
 
       <View style={styles.ticketBody}>
-        <View style={styles.ticketTotals}>
+        <View style={styles.ticketAmountRow}>
           <Text style={styles.ticketTotalAmount}>{formatMoney(totalCents)}</Text>
-          <Text style={styles.ticketSoldLabel}>sold today</Text>
+          <Text style={styles.ticketBodyAction}>Sales →</Text>
         </View>
-        <View style={styles.ticketSalePill}>
-          <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
-        </View>
+        <Text style={styles.ticketSoldLabel}>sold today</Text>
       </View>
     </View>
   );
@@ -447,31 +447,30 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     opacity: 0.9,
   },
-  ticketStripAction: {
-    fontFamily: fonts.body.extraBold,
-    fontSize: 10.5,
-    color: colors.white,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-    opacity: 0.9,
-  },
   ticketBody: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 16,
     backgroundColor: colors.white,
   },
-  ticketTotals: {
-    flexShrink: 1,
+  ticketAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   ticketTotalAmount: {
+    flexShrink: 1,
     fontFamily: fonts.heading.bold,
     fontSize: 32,
     color: colors.ink,
+  },
+  ticketBodyAction: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 10.5,
+    color: colors.purple,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   ticketSoldLabel: {
     fontFamily: fonts.body.bold,
