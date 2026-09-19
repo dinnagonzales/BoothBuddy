@@ -34,16 +34,15 @@ function wrapConnection(raw: DatabaseSync): SQLiteDatabase {
      * Production code no longer calls this; tests keep it to reproduce the old bug.
      */
     async withExclusiveTransactionAsync(
-      task: (txn: SQLiteDatabase) => Promise<void>,
+      _task: (txn: SQLiteDatabase) => Promise<void>,
     ) {
-      // Caller must attach exclusiveRaw via createTwoConnectionTestDb.
       throw new Error(
         'withExclusiveTransactionAsync requires createTwoConnectionTestDb (separate FK-off connection)',
       );
     },
-  } as SQLiteDatabase;
+  };
 
-  return db;
+  return db as unknown as SQLiteDatabase;
 }
 
 let sharedMemSeq = 0;
@@ -75,11 +74,7 @@ export function createTwoConnectionTestDb(): {
   const main = wrapConnection(mainRaw);
   const exclusive = wrapConnection(exclusiveRaw);
 
-  (main as SQLiteDatabase & {
-    withExclusiveTransactionAsync: (
-      task: (txn: SQLiteDatabase) => Promise<void>,
-    ) => Promise<void>;
-  }).withExclusiveTransactionAsync = async (task) => {
+  main.withExclusiveTransactionAsync = async (task) => {
     exclusiveRaw.exec('BEGIN IMMEDIATE');
     try {
       await task(exclusive);
@@ -96,4 +91,18 @@ export function createTwoConnectionTestDb(): {
 export async function foreignKeysEnabled(db: SQLiteDatabase): Promise<number> {
   const row = await db.getFirstAsync<{ foreign_keys: number }>('PRAGMA foreign_keys');
   return row?.foreign_keys ?? 0;
+}
+
+type RunAsync = (source: string, ...params: unknown[]) => Promise<{
+  lastInsertRowId: number;
+  changes: number;
+}>;
+
+/** Replace db.runAsync with a wrapper; restores bind flexibility for test spies. */
+export function spyRunAsync(db: SQLiteDatabase, spy: RunAsync): void {
+  db.runAsync = spy as SQLiteDatabase['runAsync'];
+}
+
+export function bindRunAsync(db: SQLiteDatabase): RunAsync {
+  return db.runAsync.bind(db) as RunAsync;
 }

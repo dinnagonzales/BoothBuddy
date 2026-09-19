@@ -12,10 +12,12 @@ import {
 } from '@/lib/db/queries';
 import { withWriteTransaction } from '@/lib/db/write-transaction';
 import {
+  bindRunAsync,
   createTestDb,
   createTwoConnectionTestDb,
   foreignKeysEnabled,
-} from './helpers/sqlite-test-db';
+  spyRunAsync,
+} from '../test-utils/sqlite-test-db';
 
 test('(a) initDatabase enables foreign_keys pragma', async () => {
   const { raw, db } = createTestDb();
@@ -286,13 +288,13 @@ test('deleteSale rolls back when a step fails (via withWriteTransaction)', async
     cashReceivedCents: 400,
   });
 
-  const originalRun = db.runAsync.bind(db);
-  db.runAsync = (async (source: string, ...params: unknown[]) => {
+  const originalRun = bindRunAsync(db);
+  spyRunAsync(db, async (source, ...params) => {
     if (/DELETE FROM sales/i.test(source)) {
       throw new Error('injected deleteSale failure');
     }
     return originalRun(source, ...params);
-  }) as typeof db.runAsync;
+  });
 
   await expect(deleteSale(db, sale.id)).rejects.toThrow('injected deleteSale failure');
 
@@ -367,8 +369,8 @@ test('a failing write does not roll back a concurrent successful one', async () 
   };
 
   let salesInserts = 0;
-  const originalRun = db.runAsync.bind(db);
-  db.runAsync = (async (source: string, ...params: unknown[]) => {
+  const originalRun = bindRunAsync(db);
+  spyRunAsync(db, async (source, ...params) => {
     if (/INSERT INTO sales\b/i.test(source)) {
       salesInserts += 1;
       if (salesInserts === 2) {
@@ -376,7 +378,7 @@ test('a failing write does not roll back a concurrent successful one', async () 
       }
     }
     return originalRun(source, ...params);
-  }) as typeof db.runAsync;
+  });
 
   const results = await Promise.allSettled([
     createSale(db, {

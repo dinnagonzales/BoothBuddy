@@ -9,7 +9,7 @@ import {
   startMarketDay,
   undoCloseMostRecentMarketDay,
 } from '@/lib/db/queries';
-import { createTestDb } from './helpers/sqlite-test-db';
+import { createTestDb } from '../test-utils/sqlite-test-db';
 
 async function openDayCount(db: SQLiteDatabase): Promise<number> {
   const row = await db.getFirstAsync<{ c: number }>(

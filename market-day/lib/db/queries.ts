@@ -285,16 +285,19 @@ export async function createItem(
     photoUri?: string | null;
   },
 ): Promise<{ id: number }> {
-  const result = await db.runAsync(
-    'INSERT INTO items (name, icon, photo_uri, cost_cents, price_cents) VALUES (?, ?, ?, ?, ?)',
-    draft.name,
-    draft.icon,
-    draft.photoUri ?? null,
-    draft.costCents,
-    draft.priceCents,
-  );
-  const id = Number(result.lastInsertRowId);
-  await addItemToActiveMenu(db, id);
+  let id = 0;
+  await withWriteTransaction(db, async (txn) => {
+    const result = await txn.runAsync(
+      'INSERT INTO items (name, icon, photo_uri, cost_cents, price_cents) VALUES (?, ?, ?, ?, ?)',
+      draft.name,
+      draft.icon,
+      draft.photoUri ?? null,
+      draft.costCents,
+      draft.priceCents,
+    );
+    id = Number(result.lastInsertRowId);
+    await addItemToActiveMenu(txn, id);
+  });
   return { id };
 }
 
@@ -328,13 +331,17 @@ export async function updateItem(
 }
 
 export async function archiveItem(db: SQLiteDatabase, id: number): Promise<void> {
-  await db.runAsync('UPDATE items SET archived = 1 WHERE id = ?', id);
-  await removeItemFromActiveMenu(db, id);
+  await withWriteTransaction(db, async (txn) => {
+    await txn.runAsync('UPDATE items SET archived = 1 WHERE id = ?', id);
+    await removeItemFromActiveMenu(txn, id);
+  });
 }
 
 export async function unarchiveItem(db: SQLiteDatabase, id: number): Promise<void> {
-  await db.runAsync('UPDATE items SET archived = 0 WHERE id = ?', id);
-  await addItemToActiveMenu(db, id);
+  await withWriteTransaction(db, async (txn) => {
+    await txn.runAsync('UPDATE items SET archived = 0 WHERE id = ?', id);
+    await addItemToActiveMenu(txn, id);
+  });
 }
 
 function isForeignKeyConstraintError(error: unknown): boolean {
@@ -343,18 +350,21 @@ function isForeignKeyConstraintError(error: unknown): boolean {
 }
 
 export async function deleteItem(db: SQLiteDatabase, id: number): Promise<void> {
-  const row = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) AS count FROM line_items WHERE item_id = ?',
-    id,
-  );
-  if (row && row.count > 0) {
-    throw new ItemHasSalesError();
-  }
-
   try {
-    await db.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
-    await db.runAsync('DELETE FROM items WHERE id = ?', id);
+    await withWriteTransaction(db, async (txn) => {
+      const row = await txn.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(*) AS count FROM line_items WHERE item_id = ?',
+        id,
+      );
+      if (row && row.count > 0) {
+        throw new ItemHasSalesError();
+      }
+
+      await txn.runAsync('DELETE FROM menu_items WHERE item_id = ?', id);
+      await txn.runAsync('DELETE FROM items WHERE id = ?', id);
+    });
   } catch (error) {
+    if (error instanceof ItemHasSalesError) throw error;
     if (isForeignKeyConstraintError(error)) {
       throw new ItemHasSalesError();
     }
@@ -1413,15 +1423,17 @@ export async function deleteMarketDay(db: SQLiteDatabase, marketDayId: number): 
     throw new CannotDeleteActiveMarketDayError();
   }
 
-  const saleRows = await db.getAllAsync<{ id: number }>(
-    'SELECT id FROM sales WHERE market_day_id = ?',
-    marketDayId,
-  );
-  for (const sale of saleRows) {
-    await deleteSale(db, sale.id);
-  }
+  await withWriteTransaction(db, async (txn) => {
+    const saleRows = await txn.getAllAsync<{ id: number }>(
+      'SELECT id FROM sales WHERE market_day_id = ?',
+      marketDayId,
+    );
+    for (const sale of saleRows) {
+      await deleteSaleTx(txn, sale.id);
+    }
 
-  await db.runAsync('DELETE FROM market_days WHERE id = ?', marketDayId);
+    await txn.runAsync('DELETE FROM market_days WHERE id = ?', marketDayId);
+  });
 }
 
 export type MarketDayExportRow = {
