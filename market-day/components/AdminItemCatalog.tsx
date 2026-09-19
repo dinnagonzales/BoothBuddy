@@ -13,7 +13,7 @@ import { createSqliteCatalog } from '@/lib/db/catalog';
 import { isItemVisualComplete, iconTileProps } from '@/lib/item-visual';
 import { deleteItemPhoto, persistItemPhoto, pickItemPhoto } from '@/lib/local-image';
 import { ItemHasSalesError } from '@/lib/market-day';
-import { formatMoney, parseMoneyInput } from '@/lib/money';
+import { formatMoney, parseMoneyInput, tryParseMoneyInput } from '@/lib/money';
 import { showUiError } from '@/lib/ui-errors';
 
 type AdminItemCatalogProps = {
@@ -97,11 +97,21 @@ export function AdminItemCatalog({ db, autoOpenAdd = false }: AdminItemCatalogPr
     void (async () => {
       try {
         const catalog = createSqliteCatalog(db);
+        const costResult = tryParseMoneyInput(form.cost);
+        const priceResult = tryParseMoneyInput(form.price);
+        if (!costResult.ok) {
+          Alert.alert('Check cost', costResult.message);
+          return;
+        }
+        if (!priceResult.ok) {
+          Alert.alert('Check price', priceResult.message);
+          return;
+        }
         const draft = {
           name: form.name.trim(),
           icon: form.visualMode === 'icon' ? form.icon.trim() : '',
-          costCents: parseMoneyInput(form.cost),
-          priceCents: parseMoneyInput(form.price),
+          costCents: costResult.cents,
+          priceCents: priceResult.cents,
           photoUri: form.visualMode === 'photo' ? form.photoUri : null,
         };
         if (!draft.name || draft.priceCents <= 0) return;

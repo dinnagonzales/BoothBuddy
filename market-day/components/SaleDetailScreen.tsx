@@ -37,7 +37,7 @@ import {
   preorderMetadataValid,
   saleHasUnsavedChanges,
 } from '@/lib/sale-edit';
-import { formatMoney, parseMoneyInput } from '@/lib/money';
+import { formatMoney, tryParseMoneyInput } from '@/lib/money';
 import { showUiError } from '@/lib/ui-errors';
 import type { CancelReason, CartLine, PaymentMethod } from '@/lib/types';
 
@@ -154,8 +154,12 @@ export function SaleDetailScreen({
   }, [loadSale]);
 
   const handleCashReceivedTextChange = (value: string) => {
+    const result = tryParseMoneyInput(value);
+    if (!result.ok) {
+      return;
+    }
     setDraftCashReceivedText(value);
-    setDraftCashReceivedCents(parseMoneyInput(value));
+    setDraftCashReceivedCents(result.cents);
   };
 
   const changePaymentMethod = (paymentMethod: PaymentMethod) => {
