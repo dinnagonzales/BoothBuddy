@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { Banknote, Check, ClipboardList, Smartphone } from 'lucide-react-native';
 
 import { Screen, ScreenHeader } from '@/components/Screen';
@@ -152,38 +152,48 @@ export default function PaymentScreen() {
         completeDate: saleCompleteDate,
       };
 
-      let sale;
-      if (editingSaleId != null) {
-        sale = await replaceSaleContents(db, editingSaleId, paymentFields);
-      } else {
-        let marketDayId: number | null;
-        if (isQuickSale) {
-          marketDayId = null;
+      try {
+        let sale;
+        if (editingSaleId != null) {
+          sale = await replaceSaleContents(db, editingSaleId, paymentFields);
         } else {
-          const marketDay = await getActiveMarketDay(db);
-          marketDayId = marketDay?.id ?? null;
+          let marketDayId: number | null;
+          if (isQuickSale) {
+            marketDayId = null;
+          } else {
+            const marketDay = await getActiveMarketDay(db);
+            marketDayId = marketDay?.id ?? null;
+          }
+
+          sale = await createSale(db, {
+            marketDayId,
+            ...paymentFields,
+            isPreorder: preorderCheckout,
+            saleNumber:
+              invoiceNumber != null && invoiceNumber > 0 ? invoiceNumber : undefined,
+          });
         }
 
-        sale = await createSale(db, {
-          marketDayId,
-          ...paymentFields,
-          isPreorder: preorderCheckout,
-          saleNumber:
-            invoiceNumber != null && invoiceNumber > 0 ? invoiceNumber : undefined,
+        clearCart();
+        router.replace({
+          pathname: '/celebration',
+          params: {
+            saleId: String(sale.id),
+            itemCount: String(itemCount),
+            totalCents: String(sale.totalCents),
+            isPreorder: preorderCheckout ? '1' : '0',
+            invoiceNumber: String(sale.saleNumber),
+          },
         });
+      } catch (error) {
+        Alert.alert(
+          'Could not save sale',
+          'Something went wrong saving this sale. Please try again.',
+        );
+        if (__DEV__) {
+          console.warn('[payment] completeSale failed', error);
+        }
       }
-
-      clearCart();
-      router.replace({
-        pathname: '/celebration',
-        params: {
-          saleId: String(sale.id),
-          itemCount: String(itemCount),
-          totalCents: String(sale.totalCents),
-          isPreorder: preorderCheckout ? '1' : '0',
-          invoiceNumber: String(sale.saleNumber),
-        },
-      });
     })();
   };
 
