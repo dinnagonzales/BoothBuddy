@@ -73,6 +73,50 @@ test('buildMarketDayCsv marks cancelled sales with zero money and reason', () =>
   expect(dataLine).toContain(',0.00,0.00,0.00,0.00,0.00,');
 });
 
+test('computeExportSummary ignores cancelled sales when mixed with active ones', () => {
+  expect(
+    computeExportSummary([
+      {
+        saleNumber: 1,
+        createdAt: '2026-08-28T20:32:00.000Z',
+        marketDayName: 'Fair',
+        itemName: 'Dragon',
+        quantity: 1,
+        priceCents: 400,
+        costCents: 100,
+        saleTotalCents: 400,
+        paymentMethod: 'cash',
+        cashReceivedCents: 400,
+        changeKeptCents: 0,
+        customerName: null,
+        ...activeRow,
+      },
+      {
+        saleNumber: 2,
+        createdAt: '2026-08-28T21:00:00.000Z',
+        marketDayName: 'Fair',
+        itemName: 'Unicorn',
+        quantity: 1,
+        priceCents: 0,
+        costCents: 0,
+        saleTotalCents: 0,
+        paymentMethod: 'cash',
+        cashReceivedCents: null,
+        changeKeptCents: 0,
+        customerName: null,
+        cancelled: true,
+        cancelReason: 'return',
+        cancelNote: null,
+      },
+    ]),
+  ).toEqual({
+    totalWithoutTipsCents: 400,
+    grossWithoutTipsCents: 400,
+    profitWithoutTipsCents: 300,
+    tipsTotalCents: 0,
+  });
+});
+
 test('computeExportSummary dedupes sale totals and tips across line items', () => {
   expect(
     computeExportSummary([

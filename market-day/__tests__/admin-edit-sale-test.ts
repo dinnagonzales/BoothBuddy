@@ -599,3 +599,110 @@ test('cancelled sales appear in export with zero money contribution', async () =
     cancelNote: null,
   });
 });
+
+test('cancelling a completed former preorder soft-cancels like any Sale', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  const { saleNumber } = await catalog.recordQuickSale({
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'pay_on_pickup',
+    cashReceivedCents: null,
+    name: 'Emma',
+    notes: 'Saturday pickup',
+    completeDate: '2026-08-30',
+    isPreorder: true,
+  });
+
+  await catalog.completePreorder(saleNumber, {
+    paymentMethod: 'cash',
+    cashReceivedCents: 400,
+  });
+
+  await catalog.cancelSale(saleNumber, { kind: 'return' });
+
+  expect(await catalog.getSale(saleNumber)).toMatchObject({
+    cancelled: true,
+    cancelReason: 'return',
+    isPreorder: false,
+  });
+  expect(await catalog.listPreorderSales()).toHaveLength(0);
+  expect(await catalog.getAllTimeStats()).toMatchObject({
+    totalCents: 0,
+    itemCount: 0,
+  });
+  expect(await catalog.listAllTimeSales()).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ saleNumber, cancelled: true }),
+    ]),
+  );
+});
+
+test('cancelled Sales cannot be edited or replaced', async () => {
+  const catalog = createCatalog();
+
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const marketDay = await catalog.startMarketDay('Spring Fair 2026');
+
+  const { saleNumber } = await catalog.recordSale({
+    marketDayId: marketDay.id,
+    lines: [
+      {
+        itemId: dragon.id,
+        name: 'Dragon',
+        icon: '🐉',
+        priceCents: 400,
+        costCents: 100,
+        quantity: 1,
+      },
+    ],
+    paymentMethod: 'cash',
+    cashReceivedCents: 400,
+  });
+
+  await catalog.cancelSale(saleNumber, { kind: 'return' });
+
+  await catalog.updateSale(saleNumber, { name: 'Should not stick', paymentMethod: 'venmo_zelle' });
+  expect(await catalog.getSale(saleNumber)).toMatchObject({
+    name: null,
+    paymentMethod: 'cash',
+    cancelled: true,
+  });
+
+  await expect(
+    catalog.replaceSale(saleNumber, {
+      lines: [
+        {
+          itemId: dragon.id,
+          name: 'Dragon',
+          icon: '🐉',
+          priceCents: 400,
+          costCents: 100,
+          quantity: 2,
+        },
+      ],
+      paymentMethod: 'cash',
+      cashReceivedCents: 800,
+    }),
+  ).rejects.toThrow('Cancelled sales cannot be edited');
+});
