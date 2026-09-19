@@ -102,9 +102,7 @@ We may update this page when the app changes (for example, optional cloud sync i
 
 Questions about this privacy policy:
 
-**[CONTACT_EMAIL]**
-
-Replace the placeholder above before linking this page in App Store Connect.
+**dinnavillacorta@gmail.com**
 
 ---
 

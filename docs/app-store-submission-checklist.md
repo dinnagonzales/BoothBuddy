@@ -47,8 +47,8 @@ Issue [010](../scratch/issues/010-app-store-submission.md) blocked by **001–00
 
 Draft ready — [docs/privacy-policy.md](./privacy-policy.md), publishable page [web/privacy.html](../web/privacy.html).
 
-- [ ] Replace `CONTACT_EMAIL` in both files
-- [ ] Host `web/privacy.html` (GitHub Pages, help site, or static host)
+- [x] Replace `CONTACT_EMAIL` in both files → `dinnavillacorta@gmail.com`
+- [x] Host `web/privacy.html` → https://dinnagonzales.github.io/BoothBuddy/privacy.html
 - [ ] App Store Connect → App Privacy → Privacy Policy URL
 - [ ] App Privacy questionnaire: **Data Not Collected** (see developer notes in `privacy-policy.md`)
 
