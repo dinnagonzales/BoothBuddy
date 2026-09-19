@@ -12,11 +12,14 @@ import { colors } from '@/constants/theme';
 import {
   canReopenMarketDay,
   deleteMarketDay,
+  getActiveMarketDay,
   getMarketDayById,
   getMarketDaySales,
   getMarketDayStats,
+  isReopenCandidateMarketDay,
   undoCloseMostRecentMarketDay,
 } from '@/lib/db/queries';
+import { ActiveMarketDayExistsError } from '@/lib/market-day';
 import { shareMarketDayCsv } from '@/lib/market-day-export';
 import { safeBack } from '@/lib/navigation';
 import type { MarketDay, SaleSummary } from '@/lib/types';
@@ -29,6 +32,7 @@ export default function PastMarketDayScreen() {
 
   const [marketDay, setMarketDay] = useState<MarketDay | null>(null);
   const [canReopen, setCanReopen] = useState(false);
+  const [reopenBlockedByActive, setReopenBlockedByActive] = useState(false);
   const [stats, setStats] = useState({
     totalCents: 0,
     itemCount: 0,
@@ -55,6 +59,7 @@ export default function PastMarketDayScreen() {
     setMarketDay(day);
     if (!day?.closedAt) {
       setCanReopen(false);
+      setReopenBlockedByActive(false);
       setStats({
         totalCents: 0,
         itemCount: 0,
@@ -69,7 +74,13 @@ export default function PastMarketDayScreen() {
       return;
     }
 
-    setCanReopen(await canReopenMarketDay(db, marketDayId));
+    const [reopenOk, active, candidate] = await Promise.all([
+      canReopenMarketDay(db, marketDayId),
+      getActiveMarketDay(db),
+      isReopenCandidateMarketDay(db, marketDayId),
+    ]);
+    setCanReopen(reopenOk);
+    setReopenBlockedByActive(!reopenOk && active !== null && candidate);
     setStats(await getMarketDayStats(db, marketDayId));
     setSales(await getMarketDaySales(db, marketDayId));
   }, [db, marketDayId]);
@@ -127,7 +138,11 @@ export default function PastMarketDayScreen() {
               } catch (error) {
                 Alert.alert(
                   'Could not reopen',
-                  error instanceof Error ? error.message : 'Try again in a moment.',
+                  error instanceof ActiveMarketDayExistsError
+                    ? "Close today's Market Day first."
+                    : error instanceof Error
+                      ? error.message
+                      : 'Try again in a moment.',
                 );
               } finally {
                 setReopening(false);
@@ -255,6 +270,16 @@ export default function PastMarketDayScreen() {
               {reopening ? 'Reopening…' : '↩ Reopen Market Day'}
             </Text>
           </Pressable>
+        ) : reopenBlockedByActive ? (
+          <View style={styles.reopenBlocked}>
+            <Pressable
+              accessibilityRole="button"
+              disabled
+              style={[styles.reopenButton, styles.buttonDisabled]}>
+              <Text style={styles.reopenButtonLabel}>↩ Reopen Market Day</Text>
+            </Pressable>
+            <Text style={styles.reopenHelper}>Close today&apos;s Market Day first.</Text>
+          </View>
         ) : null}
 
         <Pressable
@@ -356,6 +381,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: colors.purpleDark,
+  },
+  reopenBlocked: {
+    width: '100%',
+    gap: 6,
+  },
+  reopenHelper: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: colors.inkSoft,
+    textAlign: 'center',
   },
   deleteButton: {
     width: '100%',

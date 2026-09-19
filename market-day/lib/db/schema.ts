@@ -49,6 +49,46 @@ const DEPENDENT_SCHEMA = `
   );
 `;
 
+/**
+ * If more than one Market Day is open, keep the most recently started and close
+ * the rest. Uses closed_at = started_at so healed rows do not become the
+ * "most recently closed" reopen candidate. Never throws — launch must survive.
+ */
+async function healDuplicateOpenMarketDays(db: SQLiteDatabase): Promise<void> {
+  try {
+    const openRows = await db.getAllAsync<{
+      id: number;
+      started_at: string;
+      exported_at: string | null;
+    }>(
+      `SELECT id, started_at, exported_at FROM market_days
+       WHERE closed_at IS NULL
+       ORDER BY started_at DESC, id DESC`,
+    );
+
+    if (openRows.length <= 1) return;
+
+    const [keep, ...close] = openRows;
+    for (const row of close) {
+      await db.runAsync(
+        `UPDATE market_days
+         SET closed_at = started_at,
+             needs_reexport = CASE WHEN exported_at IS NOT NULL THEN 1 ELSE needs_reexport END
+         WHERE id = ? AND closed_at IS NULL`,
+        row.id,
+      );
+    }
+
+    console.warn(
+      `[db] healed ${close.length} duplicate open Market Day(s); kept id=${keep.id}, closed ids=${close
+        .map((row) => row.id)
+        .join(',')}`,
+    );
+  } catch (error) {
+    console.warn('[db] healDuplicateOpenMarketDays failed', error);
+  }
+}
+
 export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   // Must run outside a transaction — SQLite ignores this pragma inside one.
   await db.execAsync('PRAGMA foreign_keys = ON');
@@ -73,6 +113,19 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
     await db.execAsync(
       'ALTER TABLE market_days ADD COLUMN needs_reexport INTEGER NOT NULL DEFAULT 0',
     );
+  }
+
+  await healDuplicateOpenMarketDays(db);
+
+  try {
+    // Constant expression: SQLite treats NULLs as distinct in a plain UNIQUE index,
+    // so indexing closed_at alone would not enforce a single open row.
+    await db.execAsync(
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_market_days_one_active
+       ON market_days((1)) WHERE closed_at IS NULL`,
+    );
+  } catch (error) {
+    console.warn('[db] failed to create idx_market_days_one_active', error);
   }
 
   await migrateSalesTable(db);

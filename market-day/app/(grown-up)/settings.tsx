@@ -95,6 +95,11 @@ export default function SettingsScreen() {
       try {
         await startMarketDay(db, name, startedAt);
         await refreshDashboard();
+      } catch (error) {
+        Alert.alert(
+          'Could not start Market Day',
+          error instanceof Error ? error.message : 'Try again in a moment.',
+        );
       } finally {
         setStarting(false);
       }

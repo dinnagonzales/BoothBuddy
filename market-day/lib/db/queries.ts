@@ -385,49 +385,81 @@ export async function getActiveMarketDay(db: SQLiteDatabase): Promise<MarketDay 
   };
 }
 
+function isUniqueConstraintError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /UNIQUE constraint failed/i.test(message);
+}
+
 export async function startMarketDay(
   db: SQLiteDatabase,
   name: string,
   startedAt: string,
 ): Promise<MarketDay> {
-  const active = await getActiveMarketDay(db);
-  if (active) {
-    throw new ActiveMarketDayExistsError();
-  }
-
   const trimmedName = name.trim();
   if (!trimmedName) {
     throw new Error('Market Day name is required');
   }
 
-  const result = await db.runAsync(
-    'INSERT INTO market_days (name, started_at) VALUES (?, ?)',
-    trimmedName,
-    startedAt,
-  );
-  const row = await db.getFirstAsync<{
-    id: number;
-    name: string;
-    started_at: string;
-    closed_at: string | null;
-    exported_at: string | null;
-    needs_reexport: number;
-  }>('SELECT * FROM market_days WHERE id = ?', result.lastInsertRowId);
+  let created: MarketDay | null = null;
 
-  if (!row) {
+  try {
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      const active = await getActiveMarketDay(txn);
+      if (active) {
+        throw new ActiveMarketDayExistsError();
+      }
+
+      let result;
+      try {
+        result = await txn.runAsync(
+          'INSERT INTO market_days (name, started_at) VALUES (?, ?)',
+          trimmedName,
+          startedAt,
+        );
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          throw new ActiveMarketDayExistsError();
+        }
+        throw error;
+      }
+
+      const row = await txn.getFirstAsync<{
+        id: number;
+        name: string;
+        started_at: string;
+        closed_at: string | null;
+        exported_at: string | null;
+        needs_reexport: number;
+      }>('SELECT * FROM market_days WHERE id = ?', result.lastInsertRowId);
+
+      if (!row) {
+        throw new Error('Failed to create Market Day');
+      }
+
+      await populateMenuForMarketDay(txn, row.id);
+
+      created = {
+        id: row.id,
+        name: row.name,
+        startedAt: row.started_at,
+        closedAt: row.closed_at,
+        exportedAt: row.exported_at,
+        needsReexport: row.needs_reexport === 1,
+      };
+    });
+  } catch (error) {
+    if (error instanceof ActiveMarketDayExistsError) throw error;
+    if (isUniqueConstraintError(error)) {
+      throw new ActiveMarketDayExistsError();
+    }
+    throw error;
+  }
+
+  if (!created) {
     throw new Error('Failed to create Market Day');
   }
 
-  await populateMenuForMarketDay(db, row.id);
-
-  return {
-    id: row.id,
-    name: row.name,
-    startedAt: row.started_at,
-    closedAt: row.closed_at,
-    exportedAt: row.exported_at,
-    needsReexport: row.needs_reexport === 1,
-  };
+  return created;
 }
 
 export async function closeActiveMarketDay(db: SQLiteDatabase): Promise<void> {
@@ -435,18 +467,42 @@ export async function closeActiveMarketDay(db: SQLiteDatabase): Promise<void> {
 }
 
 export async function undoCloseMostRecentMarketDay(db: SQLiteDatabase): Promise<void> {
-  const closed = await db.getFirstAsync<{ id: number }>(
-    `SELECT id FROM market_days
-     WHERE closed_at IS NOT NULL AND exported_at IS NULL
-     ORDER BY closed_at DESC, id DESC
-     LIMIT 1`,
-  );
+  try {
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      const active = await getActiveMarketDay(txn);
+      if (active) {
+        throw new ActiveMarketDayExistsError();
+      }
 
-  if (!closed) {
-    throw new NothingToUndoCloseError();
+      const closed = await txn.getFirstAsync<{ id: number }>(
+        `SELECT id FROM market_days
+         WHERE closed_at IS NOT NULL AND exported_at IS NULL
+         ORDER BY closed_at DESC, id DESC
+         LIMIT 1`,
+      );
+
+      if (!closed) {
+        throw new NothingToUndoCloseError();
+      }
+
+      try {
+        await txn.runAsync('UPDATE market_days SET closed_at = NULL WHERE id = ?', closed.id);
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          throw new ActiveMarketDayExistsError();
+        }
+        throw error;
+      }
+    });
+  } catch (error) {
+    if (error instanceof ActiveMarketDayExistsError || error instanceof NothingToUndoCloseError) {
+      throw error;
+    }
+    if (isUniqueConstraintError(error)) {
+      throw new ActiveMarketDayExistsError();
+    }
+    throw error;
   }
-
-  await db.runAsync('UPDATE market_days SET closed_at = NULL WHERE id = ?', closed.id);
 }
 
 export async function canUndoCloseMarketDay(db: SQLiteDatabase): Promise<boolean> {
@@ -1321,7 +1377,8 @@ export async function getClosedMarketDays(
   }));
 }
 
-export async function canReopenMarketDay(
+/** Most recent closed, non-exported day — ignores whether another day is already open. */
+export async function isReopenCandidateMarketDay(
   db: SQLiteDatabase,
   marketDayId: number,
 ): Promise<boolean> {
@@ -1332,6 +1389,15 @@ export async function canReopenMarketDay(
      LIMIT 1`,
   );
   return reopenable?.id === marketDayId;
+}
+
+export async function canReopenMarketDay(
+  db: SQLiteDatabase,
+  marketDayId: number,
+): Promise<boolean> {
+  const active = await getActiveMarketDay(db);
+  if (active) return false;
+  return isReopenCandidateMarketDay(db, marketDayId);
 }
 
 export async function deleteMarketDay(db: SQLiteDatabase, marketDayId: number): Promise<void> {

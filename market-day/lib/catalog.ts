@@ -667,6 +667,9 @@ export function createCatalog(): Catalog {
       }
     },
     async undoCloseMostRecentMarketDay() {
+      if (marketDays.some((day) => day.closedAt === null)) {
+        throw new ActiveMarketDayExistsError();
+      }
       const closed = [...marketDays]
         .filter((day) => day.closedAt !== null && day.exportedAt === null)
         .sort((a, b) => b.closedAt!.localeCompare(a.closedAt!))[0];
@@ -1012,6 +1015,9 @@ export function createCatalog(): Catalog {
       };
     },
     async canReopenMarketDay(id) {
+      if (marketDays.some((day) => day.closedAt === null)) {
+        return false;
+      }
       const reopenable = [...marketDays]
         .filter((day) => day.closedAt !== null && day.exportedAt === null)
         .sort((a, b) => b.closedAt!.localeCompare(a.closedAt!) || b.id - a.id)[0];
