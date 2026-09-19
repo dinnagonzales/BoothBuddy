@@ -407,7 +407,7 @@ var GLOSSARY = [
   {term:'Events', def:'Owner tab for the active Market Day, Today’s Menu, Past Events, and ending the day.'},
   {term:'Running Tab', def:'Sales made when no Market Day is open (porch or one-offs). Always available.'},
   {term:'Available Items', def:'The Home list of what you can sell right now (today’s Menu when a Market Day is open; otherwise the full catalog). Tap an item to start a sale.'},
-  {term:'Menu', def:'What you are selling today (icon or photo, name, price).'},
+  {term:'Menu', def:'What you are selling today (icon or photo, name, price). Owners can drag to reorder in Today’s Menu.'},
   {term:'Inventory', def:'The full list of items the shop can sell (owners manage this).'},
   {term:'Cart', def:'What the customer is buying right now.'},
   {term:'Invoice #', def:'The order number for this sale (#1, #2, #3…).'},
@@ -599,7 +599,7 @@ PAGES['start-market-day'] = {
       'You’ll land on the <b>Events</b> tab. If it says <b>No market day yet</b>, fill in <b>Market Name</b> (required) and <b>Date</b> (defaults to today).',
       'Tap ' + pill('pill-purple', icon('play', 16, 'on-dark') + ' Start Market Day'),
       'The shop is open! All your items are on <b>Today’s Menu</b> automatically.',
-      '(Optional) Open <b>Today’s Menu</b> to mark things sold out or remove them for today.',
+      '(Optional) Open <b>Today’s Menu</b> to drag items into booth order, mark things sold out, or remove them for today.',
       'Hand the device back to staff — they can sell now.'
     ]) +
     warn('Only one Market Day can be open at a time. End the current day before starting a new one.') +
@@ -610,15 +610,16 @@ PAGES['menu'] = {
   title:'Today’s menu', icon:'clipboard-list', section:'owner', audience:'owner', crumb:'Today’s menu',
   body:
     '<div class="card">' +
-    '<p>The <b>Menu</b> is what you’re selling <b>today</b>. When you start a Market Day, every non-archived item joins the menu automatically.</p>' +
+    '<p>The <b>Menu</b> is what you’re selling <b>today</b>. When you start a Market Day, every non-archived item joins the menu automatically in Inventory A–Z order.</p>' +
     '<p>Open ' + icon('settings', 18) + ' → Pass Code → <b>Events</b> → <b>Today’s Menu</b> (only while a Market Day is active).</p>' +
     rows([
-      {ic:'circle-off', title:'Sold out toggle', desc:'Item stays on Home with “Sold out” — staff can’t add it to a cart'},
+      {ic:'grip-vertical', title:'Drag handle', desc:'Reorder the list — Home and Make a Sale show the same order'},
+      {ic:'circle-off', title:'Sold out toggle', desc:'Item stays on Home with “Sold out” — staff can’t add it to a cart (keeps its place)'},
       {ic:'trash-2', title:'Remove', desc:'Item hidden from Home and checkout for today only'},
-      {ic:'plus', title:'Add item to today’s menu', desc:'Bring a removed item back'}
+      {ic:'plus', title:'Add item to today’s menu', desc:'Bring a removed item back (lands at the end)'}
     ]) +
     info('Sold out and Remove are opposites — use one or the other, not both.') +
-    '<p>New items you add to <b>Inventory</b> during an open Market Day join today’s menu right away.</p>' +
+    '<p>New items you add to <b>Inventory</b> during an open Market Day join today’s menu at the end. Starting a <b>new</b> Market Day resets order to A–Z; <b>reopening</b> the same day keeps the order you set.</p>' +
     '</div>'
 };
 
@@ -1052,7 +1053,7 @@ function crumbTrail(page, slug){
 
 function renderChecklist(){
   var data = {
-    chkA: ['Home shortcut or ' + icon('settings', 16) + ' → Pass Code → Events → enter Market Day name + Date → Start Market Day', 'Check Today’s Menu (sold out / remove items)', 'Hand device to staff'],
+    chkA: ['Home shortcut or ' + icon('settings', 16) + ' → Pass Code → Events → enter Market Day name + Date → Start Market Day', 'Check Today’s Menu (drag to reorder / sold out / remove items)', 'Hand device to staff'],
     chkB: ['Tap an Available Item or ' + icon('shopping-cart', 16) + ' Make a Sale → cart → Checkout → pay → Sold!'],
     chkC: [icon('settings', 16) + ' → Events → review profit / Total with Tips', 'End Market Day', '(Optional) Past Events → export CSV for Excel']
   };

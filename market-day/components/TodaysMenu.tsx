@@ -2,7 +2,8 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { Trash2 } from 'lucide-react-native';
+import { GripVertical, Trash2 } from 'lucide-react-native';
+import Sortable from 'react-native-sortables';
 
 import { OutlineAddButton } from '@/components/ExpandableCard';
 import { UiIcon } from '@/components/ui/UiIcon';
@@ -126,6 +127,19 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
     );
   };
 
+  const persistOrder = (ordered: MenuItem[]) => {
+    setMenuItems(ordered);
+    void (async () => {
+      try {
+        const catalog = createSqliteCatalog(db);
+        await catalog.reorderMenu(ordered.map((item) => item.id));
+      } catch (error) {
+        showUiError(error);
+        await refreshMenu();
+      }
+    })();
+  };
+
   return (
     <View style={[styles.wrap, embedded && styles.wrapEmbedded]}>
       {menuItems.length === 0 ? (
@@ -133,35 +147,52 @@ export function TodaysMenu({ db, embedded = false }: TodaysMenuProps) {
           <Text style={styles.emptyText}>No items on today&apos;s menu yet.</Text>
         </View>
       ) : (
-        menuItems.map((item) => (
-          <View
-            key={item.id}
-            style={[
-              styles.itemRow,
-              embedded && styles.itemRowEmbedded,
-              item.soldOut && styles.itemRowSoldOut,
-            ]}>
-            <Text style={styles.icon}>{item.icon}</Text>
-            <View style={styles.meta}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.price}>{formatMoney(item.priceCents)}</Text>
+        <Sortable.Flex
+          flexDirection="column"
+          gap={8}
+          width="fill"
+          customHandle
+          onDragEnd={({ order }) => {
+            persistOrder(order(menuItems));
+          }}>
+          {menuItems.map((item) => (
+            <View
+              key={String(item.id)}
+              style={[
+                styles.itemRow,
+                embedded && styles.itemRowEmbedded,
+                item.soldOut && styles.itemRowSoldOut,
+              ]}>
+              <Sortable.Handle style={styles.handle}>
+                <View
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={`Reorder ${item.name}`}>
+                  <UiIcon icon={GripVertical} size={18} color={colors.inkSoft} />
+                </View>
+              </Sortable.Handle>
+              <Text style={styles.icon}>{item.icon}</Text>
+              <View style={styles.meta}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.price}>{formatMoney(item.priceCents)}</Text>
+              </View>
+              <View style={styles.toggleWrap}>
+                <SoldOutToggle
+                  soldOut={item.soldOut}
+                  onToggle={() => confirmSoldOut(item)}
+                />
+                <Text style={styles.toggleLabel}>Sold out</Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Remove ${item.name} from menu`}
+                onPress={() => confirmRemove(item)}
+                style={({ pressed }) => [styles.trash, pressed && styles.trashPressed]}>
+                <UiIcon icon={Trash2} size={20} color={colors.inkSoft} />
+              </Pressable>
             </View>
-            <View style={styles.toggleWrap}>
-              <SoldOutToggle
-                soldOut={item.soldOut}
-                onToggle={() => confirmSoldOut(item)}
-              />
-              <Text style={styles.toggleLabel}>Sold out</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Remove ${item.name} from menu`}
-              onPress={() => confirmRemove(item)}
-              style={({ pressed }) => [styles.trash, pressed && styles.trashPressed]}>
-              <UiIcon icon={Trash2} size={20} color={colors.inkSoft} />
-            </Pressable>
-          </View>
-        ))
+          ))}
+        </Sortable.Flex>
       )}
 
       <OutlineAddButton
@@ -211,6 +242,8 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'stretch',
+    width: '100%',
     gap: 8,
     backgroundColor: colors.white,
     borderRadius: 16,
@@ -222,6 +255,12 @@ const styles = StyleSheet.create({
   },
   itemRowSoldOut: {
     opacity: 0.55,
+  },
+  handle: {
+    width: 24,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     fontSize: 18,

@@ -25,7 +25,7 @@ A sellable product the vendor offers. Has name, price, cost (owner-only), and ic
 _Avoid_: Product, SKU, listing
 
 **Menu**:
-The set of Items offered during one Market Day. When the owner starts a Market Day, the Menu auto-populates with every non-archived Item. The owner can remove Items from the Menu or mark them sold out. New catalog Items auto-join the active Menu; archiving an Item drops it from the active Menu. A Closed Market Day's Menu is frozen as a historical snapshot.
+The set of Items offered during one Market Day, in owner-chosen display order. When the owner starts a Market Day, the Menu auto-populates with every non-archived Item in Inventory A–Z order. From **Events → Today's Menu**, the owner can **drag to reorder** (Home and Make a Sale follow that order), remove Items, or mark them sold out. New catalog Items and restored Items append at the end of the Menu; sold-out Items keep their place. Reopening a day restores its Menu including order; starting a brand-new Market Day resets order to Inventory A–Z. Archiving an Item drops it from the active Menu. A Closed Market Day's Menu is frozen as a historical snapshot. Running Tab and **+ Pre-order** ignore Menu order and use the catalog.
 _Avoid_: Day catalog, offering list, daily inventory
 
 **Items**:

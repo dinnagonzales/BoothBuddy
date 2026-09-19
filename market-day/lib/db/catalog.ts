@@ -34,6 +34,7 @@ import {
   marketDayNeedsReexport,
   addToMenu as addItemToMenu,
   removeFromMenu,
+  reorderMenu as reorderMenuItems,
   cancelSaleByNumber,
   deleteOpenPreorderByNumber,
   replaceSaleContents,
@@ -120,6 +121,9 @@ export function createSqliteCatalog(db: SQLiteDatabase): Catalog {
     },
     async addToMenu(itemId: number) {
       await addItemToMenu(db, itemId);
+    },
+    async reorderMenu(orderedItemIds: number[]) {
+      await reorderMenuItems(db, orderedItemIds);
     },
     async markSoldOut(itemId: number) {
       await markSoldOut(db, itemId);

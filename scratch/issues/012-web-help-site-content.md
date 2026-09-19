@@ -4,7 +4,7 @@
 **Status:** shipped (content lives in `web/index.html`; deploy via GitHub Pages)  
 **Audience:** Web page agent building **Booth Buddy** help / FAQ pages  
 **Tone:** Simple words a kid can read. Owner steps clearly labeled.  
-**Sync note (Sep 19 2026):** Help site aligned with latest app — Owner / Staff labels; idle Home shortcuts; Available Items / empty inventory; tips vs order totals on banner, dashboards, and CSV summary rows; Payment section collapsed by default; Mark Delivered for paid preorders. Prefer Owner / Staff over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
+**Sync note (Sep 19 2026):** Help site aligned with latest app — Owner / Staff labels; idle Home shortcuts; Available Items / empty inventory; tips vs order totals on banner, dashboards, and CSV summary rows; Payment section collapsed by default; Mark Delivered for paid preorders; **Today’s Menu drag-to-reorder** (Home / Make a Sale follow; new day A–Z; mid-day joiners append). Prefer Owner / Staff over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
 
 ---
 
@@ -69,7 +69,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | Word | Simple meaning |
 |------|----------------|
 | **Market Day** | “The shop is open today!” — one selling day with a name and date |
-| **Menu** | What you’re selling today (icon/photo, name, price) |
+| **Menu** | What you’re selling today (icon/photo, name, price) — owners can drag to reorder |
 | **Inventory** | All the things in your shop (grown-ups manage this) |
 | **Cart** | What the customer is buying right now |
 | **Invoice #** | The order number for this sale (#1, #2, #3…) |
@@ -253,7 +253,7 @@ This opens the shop so kids can sell.
    - **Date** — tap to pick; defaults to today
 4. Tap **▶️ Start Market Day**.
 5. The shop is open! All your items are on **Today’s Menu** automatically.
-6. (Optional) Open **Today’s Menu** to mark things sold out or remove them for today.
+6. (Optional) Open **Today’s Menu** to drag items into booth order, mark things sold out, or remove them for today.
 7. Tell the seller: **“You can sell now!”**
 
 **Only one Market Day can be open at a time.**
@@ -264,19 +264,20 @@ This opens the shop so kids can sell.
 
 **For grown-ups**
 
-The **Menu** is what you’re selling **today**. When you start a Market Day, every non-archived item joins the menu automatically — no extra step.
+The **Menu** is what you’re selling **today**. When you start a Market Day, every non-archived item joins the menu automatically in Inventory A–Z order — no extra step.
 
-Open **⚙️ → Pass Code → Settings → Today’s Menu** (only visible while a Market Day is active).
+Open **⚙️ → Pass Code → Events → Today’s Menu** (only visible while a Market Day is active).
 
 | Action | What happens |
 |--------|----------------|
-| **Sold out** toggle | Item stays on the home screen with “Sold out” — kid can’t add it to a cart |
+| **⠿ Drag handle** | Reorder the list — Home and Make a Sale show the same order |
+| **Sold out** toggle | Item stays on the home screen with “Sold out” — kid can’t add it to a cart (keeps its place) |
 | **🗑 Remove** | Item hidden from home and checkout for today only |
-| **➕ Add item to today’s menu** | Bring a removed item back |
+| **➕ Add item to today’s menu** | Bring a removed item back (lands at the end) |
 
 **Sold out** and **Remove** are opposites — use one or the other, not both.
 
-New items you add to **Inventory** during an open Market Day automatically join today’s menu.
+New items you add to **Inventory** during an open Market Day join today’s menu at the end. Starting a **new** Market Day resets order to A–Z; **reopening** the same day keeps the order you set.
 
 ---
 
@@ -593,7 +594,7 @@ This works only for the **most recently** closed day, and only until you **expor
 **Grown-up — morning (optional for porch sales; recommended for fairs)**
 
 - [ ] ⚙️ → Pass Code → enter **Market Day** name + **Date** → **Start Market Day**
-- [ ] Check **Today’s Menu** (sold out / remove items)
+- [ ] Check **Today’s Menu** (drag to reorder / sold out / remove items)
 - [ ] Hand device to seller
 
 **Seller — all day**
@@ -624,4 +625,4 @@ Friendly, colorful, kid-safe — match **Booth Buddy** logo palette (peach/coral
 - Biometric / Face ID Pass Code recovery (v2)
 - Edit item quantities on a saved sale (deferred — remove + re-log)
 
-**Now in app (documented in `web/index.html`):** change Pass Code in Settings; optional Item photos; **Mark Delivered** on paid preorders; idle Home setup shortcuts; tips vs order totals on banner / dashboards / CSV.
+**Now in app (documented in `web/index.html`):** change Pass Code in Settings; optional Item photos; **Mark Delivered** on paid preorders; idle Home setup shortcuts; tips vs order totals on banner / dashboards / CSV; **Today’s Menu drag-to-reorder**.

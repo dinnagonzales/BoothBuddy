@@ -102,6 +102,7 @@ export type Catalog = {
   listRemovedFromMenu(): Promise<RemovedMenuItem[]>;
   removeFromMenu(itemId: number): Promise<void>;
   addToMenu(itemId: number): Promise<void>;
+  reorderMenu(orderedItemIds: number[]): Promise<void>;
   markSoldOut(itemId: number): Promise<void>;
   markAvailable(itemId: number): Promise<void>;
   getActiveMarketDay(): Promise<{ id: number; name: string } | null>;
@@ -216,6 +217,7 @@ type StoredMenuEntry = {
   itemId: number;
   soldOut: boolean;
   removed: boolean;
+  position: number;
 };
 
 type StoredSale = {
@@ -266,16 +268,33 @@ export function createCatalog(): Catalog {
     return marketDays.find((day) => day.closedAt === null) ?? null;
   }
 
+  function nextMenuPosition(marketDayId: number): number {
+    let max = -1;
+    for (const entry of menuEntries) {
+      if (entry.marketDayId === marketDayId && entry.position > max) {
+        max = entry.position;
+      }
+    }
+    return max + 1;
+  }
+
   function populateMenu(marketDayId: number) {
-    for (const item of items) {
-      if (item.archived) continue;
+    const activeItems = items
+      .filter((item) => !item.archived)
+      .slice()
+      .sort((a, b) => {
+        const byName = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+        return byName !== 0 ? byName : a.id - b.id;
+      });
+    activeItems.forEach((item, index) => {
       menuEntries.push({
         marketDayId,
         itemId: item.id,
         soldOut: false,
         removed: false,
+        position: index,
       });
-    }
+    });
   }
 
   function getMenuEntry(marketDayId: number, itemId: number) {
@@ -287,6 +306,16 @@ export function createCatalog(): Catalog {
   function listMenuItemsForMarketDay(marketDayId: number): MenuItem[] {
     return menuEntries
       .filter((entry) => entry.marketDayId === marketDayId && !entry.removed)
+      .slice()
+      .sort((a, b) => {
+        if (a.position !== b.position) return a.position - b.position;
+        const itemA = items.find((candidate) => candidate.id === a.itemId);
+        const itemB = items.find((candidate) => candidate.id === b.itemId);
+        const byName = (itemA?.name ?? '').localeCompare(itemB?.name ?? '', undefined, {
+          sensitivity: 'base',
+        });
+        return byName !== 0 ? byName : a.itemId - b.itemId;
+      })
       .map((entry) => {
         const item = items.find((candidate) => candidate.id === entry.itemId);
         if (!item) {
@@ -437,6 +466,7 @@ export function createCatalog(): Catalog {
           itemId: item.id,
           soldOut: false,
           removed: false,
+          position: nextMenuPosition(active.id),
         });
       }
       return item;
@@ -456,19 +486,21 @@ export function createCatalog(): Catalog {
       if (!item) return;
       item.archived = false;
       const active = getActiveMarketDayRecord();
-      if (active && !getMenuEntry(active.id, id)) {
+      if (!active) return;
+
+      const entry = getMenuEntry(active.id, id);
+      if (entry) {
+        entry.removed = false;
+        entry.soldOut = false;
+        entry.position = nextMenuPosition(active.id);
+      } else {
         menuEntries.push({
           marketDayId: active.id,
           itemId: id,
           soldOut: false,
           removed: false,
+          position: nextMenuPosition(active.id),
         });
-      } else if (active) {
-        const entry = getMenuEntry(active.id, id);
-        if (entry) {
-          entry.removed = false;
-          entry.soldOut = false;
-        }
       }
     },
     async deleteItem(id: number) {
@@ -616,14 +648,26 @@ export function createCatalog(): Catalog {
       if (entry) {
         entry.removed = false;
         entry.soldOut = false;
+        entry.position = nextMenuPosition(active.id);
       } else {
         menuEntries.push({
           marketDayId: active.id,
           itemId,
           soldOut: false,
           removed: false,
+          position: nextMenuPosition(active.id),
         });
       }
+    },
+    async reorderMenu(orderedItemIds: number[]) {
+      const active = getActiveMarketDayRecord();
+      if (!active) return;
+      orderedItemIds.forEach((itemId, index) => {
+        const entry = getMenuEntry(active.id, itemId);
+        if (entry && !entry.removed) {
+          entry.position = index;
+        }
+      });
     },
     async markSoldOut(itemId: number) {
       const active = getActiveMarketDayRecord();

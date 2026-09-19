@@ -85,7 +85,7 @@ Off-day sales come from **Make a Sale** when no **Active Market Day** is open (o
 
 Behind gear icon + Pass Code (numeric code by default). Five bottom tabs:
 
-- **Events** — Active Market Day dashboard (totals, item count, Cash vs Venmo/Zelle breakdown with tips subline when applicable), Today's Menu, sales list; when no active day, start form + Past Events.
+- **Events** — Active Market Day dashboard (totals, item count, Cash vs Venmo/Zelle breakdown with tips subline when applicable), Today's Menu (drag to reorder, sold out, remove), sales list; when no active day, start form + Past Events.
 - **Inventory** — item catalog (cost, price, archive).
 - **Preorders** — open preorders, prep summary, printable export.
 - **Sales** — all-time completed sales + Running Tab date-range export.

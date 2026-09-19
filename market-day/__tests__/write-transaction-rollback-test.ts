@@ -37,7 +37,7 @@ test('createItem rolls back item insert if menu step fails', async () => {
   await initDatabase(db);
   await startMarketDay(db, 'Spring Fair 2026', '2026-03-01T12:00:00.000Z');
 
-  failOnSql(db, /INSERT OR IGNORE INTO menu_items/i, 'injected createItem menu failure');
+  failOnSql(db, /INSERT INTO menu_items/i, 'injected createItem menu failure');
 
   await expect(createItem(db, dragonDraft)).rejects.toThrow('injected createItem menu failure');
   expect(await db.getFirstAsync<{ c: number }>('SELECT COUNT(*) AS c FROM items')).toEqual({
@@ -77,7 +77,11 @@ test('unarchiveItem rolls back unarchive if menu step fails', async () => {
   const item = await createItem(db, dragonDraft);
   await archiveItem(db, item.id);
 
-  failOnSql(db, /INSERT OR IGNORE INTO menu_items/i, 'injected unarchiveItem menu failure');
+  failOnSql(
+    db,
+    /UPDATE menu_items\s+SET removed = 0, sold_out = 0, position/i,
+    'injected unarchiveItem menu failure',
+  );
 
   await expect(unarchiveItem(db, item.id)).rejects.toThrow('injected unarchiveItem menu failure');
 

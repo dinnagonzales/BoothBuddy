@@ -64,10 +64,19 @@ type MenuItemRow = {
   sold_out: number;
 };
 
+async function nextMenuPosition(db: SQLiteDatabase, marketDayId: number): Promise<number> {
+  const row = await db.getFirstAsync<{ max_position: number | null }>(
+    `SELECT MAX(position) AS max_position FROM menu_items WHERE market_day_id = ?`,
+    marketDayId,
+  );
+  return (row?.max_position ?? -1) + 1;
+}
+
 async function populateMenuForMarketDay(db: SQLiteDatabase, marketDayId: number): Promise<void> {
   await db.runAsync(
-    `INSERT INTO menu_items (market_day_id, item_id, sold_out, removed)
-     SELECT ?, id, 0, 0 FROM items WHERE archived = 0`,
+    `INSERT INTO menu_items (market_day_id, item_id, sold_out, removed, position)
+     SELECT ?, id, 0, 0, (ROW_NUMBER() OVER (ORDER BY name COLLATE NOCASE, id ASC) - 1)
+     FROM items WHERE archived = 0`,
     marketDayId,
   );
 }
@@ -77,8 +86,18 @@ export async function ensureActiveMarketDayMenu(db: SQLiteDatabase): Promise<voi
   if (!active) return;
 
   await db.runAsync(
-    `INSERT OR IGNORE INTO menu_items (market_day_id, item_id, sold_out, removed)
-     SELECT ?, id, 0, 0 FROM items WHERE archived = 0`,
+    `INSERT INTO menu_items (market_day_id, item_id, sold_out, removed, position)
+     SELECT ?, i.id, 0, 0,
+       (SELECT COALESCE(MAX(m2.position), -1) FROM menu_items m2 WHERE m2.market_day_id = ?)
+       + ROW_NUMBER() OVER (ORDER BY i.name COLLATE NOCASE, i.id ASC)
+     FROM items i
+     WHERE i.archived = 0
+       AND NOT EXISTS (
+         SELECT 1 FROM menu_items m
+         WHERE m.market_day_id = ? AND m.item_id = i.id
+       )`,
+    active.id,
+    active.id,
     active.id,
   );
 }
@@ -87,11 +106,33 @@ async function addItemToActiveMenu(db: SQLiteDatabase, itemId: number): Promise<
   const active = await getActiveMarketDay(db);
   if (!active) return;
 
-  await db.runAsync(
-    `INSERT OR IGNORE INTO menu_items (market_day_id, item_id, sold_out, removed)
-     VALUES (?, ?, 0, 0)`,
+  const existing = await db.getFirstAsync<{ removed: number }>(
+    `SELECT removed FROM menu_items WHERE market_day_id = ? AND item_id = ?`,
     active.id,
     itemId,
+  );
+  if (existing) {
+    if (existing.removed === 1) {
+      const position = await nextMenuPosition(db, active.id);
+      await db.runAsync(
+        `UPDATE menu_items
+         SET removed = 0, sold_out = 0, position = ?
+         WHERE market_day_id = ? AND item_id = ?`,
+        position,
+        active.id,
+        itemId,
+      );
+    }
+    return;
+  }
+
+  const position = await nextMenuPosition(db, active.id);
+  await db.runAsync(
+    `INSERT INTO menu_items (market_day_id, item_id, sold_out, removed, position)
+     VALUES (?, ?, 0, 0, ?)`,
+    active.id,
+    itemId,
+    position,
   );
 }
 
@@ -134,7 +175,7 @@ export async function getHomeItems(db: SQLiteDatabase): Promise<Array<Item & { s
      FROM menu_items m
      JOIN items i ON i.id = m.item_id
      WHERE m.market_day_id = ? AND m.removed = 0
-     ORDER BY i.name COLLATE NOCASE`,
+     ORDER BY m.position ASC, i.name COLLATE NOCASE, i.id ASC`,
     active.id,
   );
 
@@ -152,7 +193,7 @@ export async function getCheckoutItems(db: SQLiteDatabase): Promise<Item[]> {
      FROM menu_items m
      JOIN items i ON i.id = m.item_id
      WHERE m.market_day_id = ? AND m.removed = 0 AND m.sold_out = 0
-     ORDER BY i.name COLLATE NOCASE`,
+     ORDER BY m.position ASC, i.name COLLATE NOCASE, i.id ASC`,
     active.id,
   );
 
@@ -180,7 +221,7 @@ export async function getMenuForAdmin(db: SQLiteDatabase) {
      FROM menu_items m
      JOIN items i ON i.id = m.item_id
      WHERE m.market_day_id = ? AND m.removed = 0
-     ORDER BY i.name COLLATE NOCASE`,
+     ORDER BY m.position ASC, i.name COLLATE NOCASE, i.id ASC`,
     active.id,
   );
 
@@ -264,17 +305,47 @@ export async function addToMenu(db: SQLiteDatabase, itemId: number): Promise<voi
   const active = await getActiveMarketDay(db);
   if (!active) return;
 
-  const result = await db.runAsync(
-    `UPDATE menu_items
-     SET removed = 0, sold_out = 0
-     WHERE market_day_id = ? AND item_id = ? AND removed = 1`,
-    active.id,
-    itemId,
-  );
+  await withWriteTransaction(db, async (txn) => {
+    const removed = await txn.getFirstAsync<{ item_id: number }>(
+      `SELECT item_id FROM menu_items
+       WHERE market_day_id = ? AND item_id = ? AND removed = 1`,
+      active.id,
+      itemId,
+    );
 
-  if ((result.changes ?? 0) === 0) {
-    await addItemToActiveMenu(db, itemId);
-  }
+    if (removed) {
+      const position = await nextMenuPosition(txn, active.id);
+      await txn.runAsync(
+        `UPDATE menu_items
+         SET removed = 0, sold_out = 0, position = ?
+         WHERE market_day_id = ? AND item_id = ?`,
+        position,
+        active.id,
+        itemId,
+      );
+      return;
+    }
+
+    await addItemToActiveMenu(txn, itemId);
+  });
+}
+
+export async function reorderMenu(db: SQLiteDatabase, orderedItemIds: number[]): Promise<void> {
+  const active = await getActiveMarketDay(db);
+  if (!active) return;
+
+  await withWriteTransaction(db, async (txn) => {
+    for (let index = 0; index < orderedItemIds.length; index++) {
+      await txn.runAsync(
+        `UPDATE menu_items
+         SET position = ?
+         WHERE market_day_id = ? AND item_id = ? AND removed = 0`,
+        index,
+        active.id,
+        orderedItemIds[index]!,
+      );
+    }
+  });
 }
 
 export async function createItem(

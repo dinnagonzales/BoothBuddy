@@ -29,6 +29,7 @@ const CORE_SCHEMA = `
     item_id INTEGER NOT NULL REFERENCES items(id),
     sold_out INTEGER NOT NULL DEFAULT 0,
     removed INTEGER NOT NULL DEFAULT 0,
+    position INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (market_day_id, item_id)
   );
 `;
@@ -113,6 +114,34 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
     await db.execAsync(
       'ALTER TABLE market_days ADD COLUMN needs_reexport INTEGER NOT NULL DEFAULT 0',
     );
+  }
+
+  const menuItemColumns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(menu_items)');
+  const hasMenuPosition = menuItemColumns.some((column) => column.name === 'position');
+  if (!hasMenuPosition) {
+    await db.execAsync(
+      'ALTER TABLE menu_items ADD COLUMN position INTEGER NOT NULL DEFAULT 0',
+    );
+    // Backfill A–Z order per Market Day for installs that predate position.
+    const marketDayIds = await db.getAllAsync<{ id: number }>('SELECT id FROM market_days');
+    for (const day of marketDayIds) {
+      const ordered = await db.getAllAsync<{ item_id: number }>(
+        `SELECT m.item_id
+         FROM menu_items m
+         JOIN items i ON i.id = m.item_id
+         WHERE m.market_day_id = ?
+         ORDER BY i.name COLLATE NOCASE, m.item_id ASC`,
+        day.id,
+      );
+      for (let index = 0; index < ordered.length; index++) {
+        await db.runAsync(
+          `UPDATE menu_items SET position = ? WHERE market_day_id = ? AND item_id = ?`,
+          index,
+          day.id,
+          ordered[index]!.item_id,
+        );
+      }
+    }
   }
 
   await healDuplicateOpenMarketDays(db);

@@ -310,3 +310,212 @@ test('Running Tab checkout ignores the Menu', async () => {
     },
   ]);
 });
+
+test('starting a Market Day seeds Menu order A-Z by Inventory name', async () => {
+  const catalog = createCatalog();
+
+  const unicorn = await catalog.createItem({
+    name: 'Unicorn',
+    icon: '🦄',
+    costCents: 150,
+    priceCents: 500,
+  });
+  const cookie = await catalog.createItem({
+    name: 'Cookie',
+    icon: '🍪',
+    costCents: 50,
+    priceCents: 200,
+  });
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+
+  expect((await catalog.listMenuForAdmin()).map((item) => item.id)).toEqual([
+    cookie.id,
+    dragon.id,
+    unicorn.id,
+  ]);
+  expect((await catalog.listForSeller()).map((item) => item.id)).toEqual([
+    cookie.id,
+    dragon.id,
+    unicorn.id,
+  ]);
+});
+
+test('owner can reorder the Menu and Home/checkout follow immediately', async () => {
+  const catalog = createCatalog();
+
+  const cookie = await catalog.createItem({
+    name: 'Cookie',
+    icon: '🍪',
+    costCents: 50,
+    priceCents: 200,
+  });
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const unicorn = await catalog.createItem({
+    name: 'Unicorn',
+    icon: '🦄',
+    costCents: 150,
+    priceCents: 500,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.reorderMenu([unicorn.id, cookie.id, dragon.id]);
+
+  expect((await catalog.listMenuForAdmin()).map((item) => item.id)).toEqual([
+    unicorn.id,
+    cookie.id,
+    dragon.id,
+  ]);
+  expect((await catalog.listForSeller()).map((item) => item.id)).toEqual([
+    unicorn.id,
+    cookie.id,
+    dragon.id,
+  ]);
+  expect((await catalog.listForCheckout()).map((item) => item.id)).toEqual([
+    unicorn.id,
+    cookie.id,
+    dragon.id,
+  ]);
+});
+
+test('sold out Items keep their Menu position', async () => {
+  const catalog = createCatalog();
+
+  const cookie = await catalog.createItem({
+    name: 'Cookie',
+    icon: '🍪',
+    costCents: 50,
+    priceCents: 200,
+  });
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+  const unicorn = await catalog.createItem({
+    name: 'Unicorn',
+    icon: '🦄',
+    costCents: 150,
+    priceCents: 500,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.reorderMenu([unicorn.id, cookie.id, dragon.id]);
+  await catalog.markSoldOut(cookie.id);
+
+  expect((await catalog.listMenuForAdmin()).map((item) => item.id)).toEqual([
+    unicorn.id,
+    cookie.id,
+    dragon.id,
+  ]);
+  expect(await catalog.listForSeller()).toEqual([
+    expect.objectContaining({ id: unicorn.id, soldOut: false }),
+    expect.objectContaining({ id: cookie.id, soldOut: true }),
+    expect.objectContaining({ id: dragon.id, soldOut: false }),
+  ]);
+  expect((await catalog.listForCheckout()).map((item) => item.id)).toEqual([
+    unicorn.id,
+    dragon.id,
+  ]);
+});
+
+test('Items that join the Menu mid-day append at the end', async () => {
+  const catalog = createCatalog();
+
+  const cookie = await catalog.createItem({
+    name: 'Cookie',
+    icon: '🍪',
+    costCents: 50,
+    priceCents: 200,
+  });
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.reorderMenu([dragon.id, cookie.id]);
+
+  const zebra = await catalog.createItem({
+    name: 'Zebra',
+    icon: '🦓',
+    costCents: 80,
+    priceCents: 300,
+  });
+  await catalog.removeFromMenu(cookie.id);
+  await catalog.addToMenu(cookie.id);
+
+  expect((await catalog.listMenuForAdmin()).map((item) => item.id)).toEqual([
+    dragon.id,
+    zebra.id,
+    cookie.id,
+  ]);
+});
+
+test('undo close restores custom Menu order', async () => {
+  const catalog = createCatalog();
+
+  const cookie = await catalog.createItem({
+    name: 'Cookie',
+    icon: '🍪',
+    costCents: 50,
+    priceCents: 200,
+  });
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.reorderMenu([dragon.id, cookie.id]);
+  await catalog.closeActiveMarketDay();
+  await catalog.undoCloseMostRecentMarketDay();
+
+  expect((await catalog.listMenuForAdmin()).map((item) => item.id)).toEqual([
+    dragon.id,
+    cookie.id,
+  ]);
+});
+
+test('a brand-new Market Day resets Menu order to Inventory A-Z', async () => {
+  const catalog = createCatalog();
+
+  const cookie = await catalog.createItem({
+    name: 'Cookie',
+    icon: '🍪',
+    costCents: 50,
+    priceCents: 200,
+  });
+  const dragon = await catalog.createItem({
+    name: 'Dragon',
+    icon: '🐉',
+    costCents: 100,
+    priceCents: 400,
+  });
+
+  await catalog.startMarketDay('Spring Fair 2026');
+  await catalog.reorderMenu([dragon.id, cookie.id]);
+  await catalog.closeActiveMarketDay();
+  await catalog.startMarketDay('Fall Fair 2026');
+
+  expect((await catalog.listMenuForAdmin()).map((item) => item.id)).toEqual([
+    cookie.id,
+    dragon.id,
+  ]);
+});

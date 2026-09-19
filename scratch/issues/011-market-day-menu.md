@@ -1,4 +1,4 @@
-# 011 — Market Day Menu (default all Items, remove, sold out)
+# 011 — Market Day Menu (default all Items, remove, sold out, reorder)
 
 **Type:** AFK  
 **Status:** done  
@@ -6,9 +6,9 @@
 
 ## What shipped
 
-Each **Market Day** has a **Menu**. On start, auto-populates with every non-archived **Item**. **Events → Today's Menu** (active day only): **remove** or **sold out**. Remove hides from Home/checkout for that day; sold out stays visible but blocked in checkout. Mutually exclusive; sold out reversible.
+Each **Market Day** has a **Menu**. On start, auto-populates with every non-archived **Item** in Inventory A–Z order. **Events → Today's Menu** (active day only): **drag to reorder**, **remove**, or **sold out**. Remove hides from Home/checkout for that day; sold out stays visible but blocked in checkout (and keeps its place in the order). Mutually exclusive; sold out reversible.
 
-New catalog Items auto-join active Menu; archive drops from Menu. Reopen restores Menu snapshot. Closed Menu frozen (no closed-day menu UI). Running Tab ignores Menu.
+Custom order applies to Home and Make a Sale for the active day. Mid-day joiners (new Inventory items, restores) append at the end. Reopen restores Menu snapshot including order; a brand-new Market Day resets to Inventory A–Z. Closed Menu frozen (no closed-day menu UI). Running Tab ignores Menu.
 
 ## Acceptance criteria
 
@@ -22,6 +22,8 @@ New catalog Items auto-join active Menu; archive drops from Menu. Reopen restore
 - [x] Closed Menu persisted as snapshot
 - [x] Running Tab ignores Menu
 - [x] Home/checkout reflect Menu changes without restart
+- [x] Owner can drag-reorder Today's Menu; Home / Make a Sale follow
+- [x] New Market Day seeds A–Z; mid-day joiners append; sold out keeps position
 
 ## Blocked by
 
