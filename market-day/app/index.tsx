@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -21,6 +22,7 @@ import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getAdminProfile } from '@/lib/db/admin-profile';
+import { getBusinessSettings } from '@/lib/db/business-settings';
 import {
   getHomeItems,
   getActiveMarketDay,
@@ -49,6 +51,8 @@ function chunkMenuRows(items: HomeItem[]): MenuRow[] {
 }
 
 type ActiveMarketSummary = {
+  businessName: string;
+  businessLogoUri: string | null;
   name: string;
   dateLabel: string;
   totalCents: number;
@@ -67,41 +71,66 @@ function formatTicketDate(iso: string): string {
 }
 
 function TicketMarketBanner({
+  businessName,
+  businessLogoUri,
   name,
   dateLabel,
   totalCents,
   saleCount,
 }: ActiveMarketSummary) {
   const saleLabel = saleCount === 1 ? '1 sale' : `${saleCount} sales`;
+  const trimmedBusinessName = businessName.trim();
+  const showBusinessRow = Boolean(businessLogoUri || trimmedBusinessName);
 
   return (
     <View style={styles.ticketCard}>
-      <View style={styles.ticketStrip}>
-        <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
-          <Defs>
-            <SvgGradient id="ticketStripGradient" x1="0%" y1="15%" x2="100%" y2="85%">
-              <Stop offset="0%" stopColor={TICKET_PINK} />
-              <Stop offset="100%" stopColor={TICKET_PURPLE} />
-            </SvgGradient>
-          </Defs>
-          <Rect width="100%" height="100%" fill="url(#ticketStripGradient)" />
-        </Svg>
-        <View style={styles.ticketStripContent}>
-          <Text style={styles.ticketStripText} numberOfLines={1}>
-            {name.toUpperCase()} · {dateLabel}
-          </Text>
-          <View style={styles.ticketSalePill}>
-            <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
+      {showBusinessRow ? (
+        <View style={styles.ticketStrip}>
+          <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+            <Defs>
+              <SvgGradient id="ticketStripGradient" x1="0%" y1="15%" x2="100%" y2="85%">
+                <Stop offset="0%" stopColor={TICKET_PINK} />
+                <Stop offset="100%" stopColor={TICKET_PURPLE} />
+              </SvgGradient>
+            </Defs>
+            <Rect width="100%" height="100%" fill="url(#ticketStripGradient)" />
+          </Svg>
+          <View style={styles.ticketStripContent}>
+            <View style={styles.ticketBusinessRow}>
+              {businessLogoUri ? (
+                <Image
+                  source={{ uri: businessLogoUri }}
+                  style={styles.ticketLogo}
+                  resizeMode="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              ) : null}
+              {trimmedBusinessName ? (
+                <Text style={styles.ticketBusinessName} numberOfLines={1}>
+                  {trimmedBusinessName.toUpperCase()}
+                </Text>
+              ) : null}
+            </View>
           </View>
         </View>
-      </View>
+      ) : null}
 
       <View style={styles.ticketBody}>
-        <View style={styles.ticketAmountRow}>
-          <Text style={styles.ticketTotalAmount}>{formatMoney(totalCents)}</Text>
-          <Text style={styles.ticketBodyAction}>Sales →</Text>
+        <Text style={styles.ticketMarketMeta} numberOfLines={1}>
+          {name.toUpperCase()} · {dateLabel}
+        </Text>
+        <View style={styles.ticketBodyMain}>
+          <View style={styles.ticketBodyLeft}>
+            <Text style={styles.ticketTotalAmount}>{formatMoney(totalCents)}</Text>
+            <Text style={styles.ticketSoldLabel}>sold today</Text>
+          </View>
+          <View style={styles.ticketBodyRight}>
+            <View style={styles.ticketSalePill}>
+              <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
+            </View>
+            <Text style={styles.ticketBodyAction}>See Today's Sales →</Text>
+          </View>
         </View>
-        <Text style={styles.ticketSoldLabel}>sold today</Text>
       </View>
     </View>
   );
@@ -156,13 +185,18 @@ export default function HomeScreen() {
           setPasscodeGateEnabled(await getPasscodeGateEnabled(db));
           if (complete) {
             setItems(await getHomeItems(db));
-            const marketDay = await getActiveMarketDay(db);
+            const [marketDay, business] = await Promise.all([
+              getActiveMarketDay(db),
+              getBusinessSettings(db),
+            ]);
             if (marketDay) {
               const [dayStats, saleCount] = await Promise.all([
                 getMarketDayStats(db, marketDay.id),
                 getMarketDaySaleCount(db, marketDay.id),
               ]);
               setActiveMarket({
+                businessName: business.businessName,
+                businessLogoUri: business.businessLogoUri,
                 name: marketDay.name,
                 dateLabel: formatTicketDate(marketDay.startedAt),
                 totalCents: dayStats.totalCents,
@@ -431,36 +465,56 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   ticketStripContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  ticketBusinessRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ticketLogo: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+  },
+  ticketBusinessName: {
+    flex: 1,
+    fontFamily: fonts.body.extraBold,
+    fontSize: 13,
+    color: colors.white,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  ticketBody: {
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: colors.white,
+  },
+  ticketMarketMeta: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 10.5,
+    color: TICKET_MUTED,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  ticketBodyMain: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
   },
-  ticketStripText: {
-    flex: 1,
-    fontFamily: fonts.body.extraBold,
-    fontSize: 10.5,
-    color: colors.white,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-    opacity: 0.9,
+  ticketBodyLeft: {
+    flexShrink: 1,
   },
-  ticketBody: {
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 16,
-    backgroundColor: colors.white,
-  },
-  ticketAmountRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 12,
+  ticketBodyRight: {
+    alignItems: 'flex-end',
+    gap: 8,
   },
   ticketTotalAmount: {
-    flexShrink: 1,
     fontFamily: fonts.heading.bold,
     fontSize: 32,
     color: colors.ink,
