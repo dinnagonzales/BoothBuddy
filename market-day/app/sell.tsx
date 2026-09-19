@@ -1,7 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Search } from 'lucide-react-native';
 
 import { DatePickerField } from '@/components/DatePickerField';
@@ -21,6 +21,8 @@ import {
 import { safeBack } from '@/lib/navigation';
 import { preorderMetadataValid } from '@/lib/sale-edit';
 import type { Item } from '@/lib/types';
+
+const CART_LINES_MAX_HEIGHT = 160;
 
 export default function SellScreen() {
   const db = useSQLiteContext();
@@ -134,6 +136,47 @@ export default function SellScreen() {
         <View style={styles.container}>
           <ScreenHeader title={screenTitle} onBack={() => safeBack(router)} />
 
+          <View style={styles.cartContainer}>
+            <Card style={styles.cartCard}>
+              <Text style={styles.cartTitle}>Cart</Text>
+              <ScrollView
+                style={styles.cartLines}
+                nestedScrollEnabled
+                keyboardShouldPersistTaps="handled">
+                {lines.map((line) => (
+                  <View key={line.itemId} style={styles.cartLine}>
+                    <Text style={styles.cartLineName}>
+                      {line.name}({line.quantity})
+                    </Text>
+                    <Text style={styles.cartLinePrice}>
+                      {formatMoney(line.priceCents * line.quantity)}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+              <View style={styles.cartTotalRow}>
+                <Text style={styles.cartTotalLabel}>{itemCountLabel}</Text>
+                <Text style={styles.cartTotalValue}>{formatMoney(totalCents)}</Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                disabled={!canCheckout}
+                onPress={() => {
+                  leavingForPayment.current = true;
+                  router.push('/payment');
+                }}
+                style={({ pressed }) => [
+                  styles.checkoutButtonOuter,
+                  !canCheckout ? styles.checkoutButtonDisabled : null,
+                  pressed && canCheckout ? styles.checkoutButtonOuterPressed : null,
+                ]}>
+                <View style={styles.checkoutButtonInner}>
+                  <Text style={styles.checkoutButtonLabel}>Checkout →</Text>
+                </View>
+              </Pressable>
+            </Card>
+          </View>
+
           <FlatList
             data={items}
             keyExtractor={(item) => String(item.id)}
@@ -141,29 +184,7 @@ export default function SellScreen() {
             style={styles.list}
             keyboardShouldPersistTaps="handled"
             ListHeaderComponent={
-              <View style={styles.menuLabel}>
-                <View style={styles.menuLabelRow}>
-                  <UiIcon icon={Search} size={14} color={colors.inkSoft} />
-                  <Text style={styles.menuLabelText}>Menu · use − and + to adjust</Text>
-                </View>
-              </View>
-            }
-            ListEmptyComponent={
-              loaded ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Update inventory to complete a sale"
-                  onPress={() => router.push('/inventory?add=1')}
-                  style={({ pressed }) => [
-                    styles.emptyMenuCard,
-                    pressed && styles.emptyMenuCardPressed,
-                  ]}>
-                  <Text style={styles.emptyMenuText}>Update Inventory to Complete a Sale</Text>
-                </Pressable>
-              ) : null
-            }
-            ListFooterComponent={
-              <View style={styles.cartContainer}>
+              <View style={styles.listHeader}>
                 {showSaleMeta ? (
                   <Card style={styles.metaCard}>
                     <Text style={styles.metaLabel}>
@@ -203,40 +224,27 @@ export default function SellScreen() {
                     ) : null}
                   </Card>
                 ) : null}
-                <Card style={styles.cartCard}>
-                  <Text style={styles.cartTitle}>Cart</Text>
-                  {lines.map((line) => (
-                    <View key={line.itemId} style={styles.cartLine}>
-                      <Text style={styles.cartLineName}>
-                        {line.name}({line.quantity})
-                      </Text>
-                      <Text style={styles.cartLinePrice}>
-                        {formatMoney(line.priceCents * line.quantity)}
-                      </Text>
-                    </View>
-                  ))}
-                  <View style={styles.cartTotalRow}>
-                    <Text style={styles.cartTotalLabel}>{itemCountLabel}</Text>
-                    <Text style={styles.cartTotalValue}>{formatMoney(totalCents)}</Text>
+                <View style={styles.menuLabel}>
+                  <View style={styles.menuLabelRow}>
+                    <UiIcon icon={Search} size={14} color={colors.inkSoft} />
+                    <Text style={styles.menuLabelText}>Menu · use − and + to adjust</Text>
                   </View>
-                  <Pressable
-                    accessibilityRole="button"
-                    disabled={!canCheckout}
-                    onPress={() => {
-                      leavingForPayment.current = true;
-                      router.push('/payment');
-                    }}
-                    style={({ pressed }) => [
-                      styles.checkoutButtonOuter,
-                      !canCheckout ? styles.checkoutButtonDisabled : null,
-                      pressed && canCheckout ? styles.checkoutButtonOuterPressed : null,
-                    ]}>
-                    <View style={styles.checkoutButtonInner}>
-                      <Text style={styles.checkoutButtonLabel}>Checkout →</Text>
-                    </View>
-                  </Pressable>
-                </Card>
+                </View>
               </View>
+            }
+            ListEmptyComponent={
+              loaded ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Update inventory to complete a sale"
+                  onPress={() => router.push('/inventory?add=1')}
+                  style={({ pressed }) => [
+                    styles.emptyMenuCard,
+                    pressed && styles.emptyMenuCardPressed,
+                  ]}>
+                  <Text style={styles.emptyMenuText}>Update Inventory to Complete a Sale</Text>
+                </Pressable>
+              ) : null
             }
             renderItem={({ item }) => {
               const quantity = lines.find((line) => line.itemId === item.id)?.quantity ?? 0;
@@ -285,6 +293,9 @@ const styles = StyleSheet.create({
     gap: spacing.itemListGap,
     paddingBottom: 24,
   },
+  listHeader: {
+    gap: 12,
+  },
   menuLabel: {
     marginBottom: 0,
   },
@@ -319,8 +330,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   cartContainer: {
-    marginTop: 24,
-    gap: 12,
+    marginBottom: 12,
   },
   metaCard: {
     paddingHorizontal: 16,
@@ -361,6 +371,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.inkSoft,
     marginBottom: 6,
+  },
+  cartLines: {
+    maxHeight: CART_LINES_MAX_HEIGHT,
   },
   cartLine: {
     flexDirection: 'row',
