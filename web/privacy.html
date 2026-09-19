@@ -118,7 +118,8 @@
         <tbody>
           <tr><td>Items</td><td>Name, emoji, price, cost, optional photo</td></tr>
           <tr><td>Market Days</td><td>Event name and dates</td></tr>
-          <tr><td>Sales</td><td>Line items, totals, payment method, cash received, timestamps</td></tr>
+          <tr><td>Sales</td><td>Line items, totals, payment method, cash received, change kept, timestamps</td></tr>
+          <tr><td>Cancelled sales</td><td>Cancel flag, reason (return / error), optional note — kept for Invoice # history</td></tr>
           <tr><td>Sale name &amp; notes</td><td>Optional labels (e.g. customer name, pickup notes)</td></tr>
           <tr><td>Pass Code hash</td><td>Hashed owner gate code (iOS Keychain — not readable)</td></tr>
         </tbody>
@@ -158,7 +159,9 @@
 
       <h2>Security</h2>
       <p>
-        Shop records live in an on-device database. The Pass Code is stored as a one-way hash in the iOS Keychain. Use a device screen lock and protect your Pass Code.
+        Shop records live in an on-device database with checks so sale lines stay attached to real sales.
+        App updates that reshape the sales table use a crash-safe migration so a mid-update interruption does not wipe past sales.
+        The Pass Code is stored as a one-way hash in the iOS Keychain. Use a device screen lock and protect your Pass Code.
       </p>
 
       <h2>Changes</h2>

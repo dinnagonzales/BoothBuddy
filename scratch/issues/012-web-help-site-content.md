@@ -55,6 +55,7 @@ Kids never see **cost** (what you paid) or **profit**.
 | `/faq/venmo-zelle` | Venmo / Zelle payments | Seller |
 | `/faq/grown-up-settings` | Grown-up Settings tab | Grown-up |
 | `/faq/edit-sale-later` | Change a sale later | Grown-up |
+| `/faq/sales-after-update` | Will I lose sales when the app updates? | Grown-up |
 | `/faq/one-market-day` | Can I run two Market Days? | Grown-up |
 | `/faq/reopen` | I ended the day by mistake | Grown-up |
 | `/privacy` | Privacy Policy | Everyone |
@@ -77,8 +78,10 @@ Kids never see **cost** (what you paid) or **profit**.
 | **Complete date** | When a preorder should be ready for pickup — required for **+ Pre-order** |
 | **Pass Code** | 4-digit grown-up password for ⚙️ settings |
 | **Sold out** | Still on the menu, but you can’t add it to a sale |
-| **Preorder** | A sale for later pickup — pay when they pick up |
+| **Preorder** | A sale for later pickup — Pay on pickup at creation; Cash/Venmo when marked complete |
 | **+ Pre-order** | Button on Home to start a preorder |
+| **Cancel sale** | Owner marks a completed sale Cancelled (Return or Error); Invoice # stays; money totals exclude it |
+| **Cancelled** | Completed sale kept for history; not counted in revenue or tips |
 
 ---
 
@@ -303,6 +306,8 @@ Tap **📦 Archive Item**. It disappears from the menu, but old sales still show
 
 To bring it back: **UnArchive**.
 
+You can’t **Delete** an item that appears in past sales — the app blocks that so history stays intact. Use **Archive** instead.
+
 ---
 
 ## `/edit-items` — How to edit items
@@ -316,7 +321,7 @@ To bring it back: **UnArchive**.
 
 Changes show up on the home screen and in checkout right away — no restart needed.
 
-**Archive** if you want to stop selling something without deleting its history.
+**Archive** if you want to stop selling something without deleting its history. Delete is only allowed when the item has never appeared in a sale.
 
 ---
 
@@ -345,7 +350,7 @@ After you **End Market Day**, that day moves to **Past Events** on Settings (whe
 Each row shows the **name**, **date**, and **number of sales**. Tap one to open its dashboard:
 
 - Totals and profit (same summary as an active day; **Cash** shows total with a tips breakdown when kept change exists)
-- Full **Sales** list — tap to edit or remove
+- Full **Sales** list — tap to edit payment or **Cancel sale**
 - **Export sales as CSV** (or **Re-export** if you already exported)
 - **↩ Reopen Market Day** — only on the most recently closed day, and only before export
 
@@ -362,7 +367,7 @@ There is no **Today’s Menu** on past events — the menu was for that day only
 3. Tap **⬇ Export sales as CSV** (or **Re-export** if needed).
 4. Use the share sheet to save or email the file (Mail, AirDrop, Files, etc.).
 
-The CSV includes sale numbers, times, items, prices, costs, payment method, cash received, change kept, and profit — ready for Excel. After the sale rows, a blank line and summary totals: **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, and **Tips total**.
+The CSV includes sale numbers, times, items, prices, costs, payment method, cash received, change kept, cancel reason when cancelled, and profit — ready for Excel. Cancelled sales stay in the file for Invoice # history but do not add to money totals. After the sale rows, a blank line and summary totals: **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, and **Tips total**.
 
 If you edit a sale after exporting, the app shows **Re-export recommended**.
 
@@ -379,9 +384,9 @@ While a Market Day is active:
 1. **⚙️** → **Pass Code** → **Settings**.
 2. See totals: number of sales, **profit**, gross revenue, **Cash** (with a **$sales + $tips (tips)** subline when applicable) vs **Venmo/Zelle**.
 3. Scroll the **Sales** list — each row shows sale number (or name if you added one), time, amount, payment method.
-4. Tap a sale to change payment method, add optional **name** or **notes**, or remove the sale.
+4. Tap a sale to change payment method, add optional **name** or **notes**, or **Cancel sale** (completed sales stay visible as Cancelled).
 
-Kids see a simpler view (no profit) from the **Market Day banner** on the home screen.
+Kids see a simpler view (no profit) from the **Market Day banner** on the home screen. Cancelled sales do not count toward revenue or tips.
 
 **Past Events:** When no day is active, open a closed day from **Past Events** to review totals, edit sales, export, or reopen. See [Past Events](./past-events).
 
@@ -491,6 +496,8 @@ Use it when you stop selling something but want to keep history.
 
 **UnArchive** brings the item back.
 
+If an item appears in past sales, **Delete** is blocked — Archive instead.
+
 Only grown-ups can archive items, from **📦 Inventory**.
 
 ---
@@ -542,14 +549,22 @@ Grown-ups configure Zelle/Venmo under **⚙️ → Pass Code → Settings** (bot
 
 **Grown-ups:** Later — on an **active** day or from **Past Events**:
 
-1. **⚙️** → Pass Code → **Settings** (active day) or **Past Events → tap a day**.
-2. Under **Sales**, tap the sale.
-3. Change **payment method**, add optional **name** or **notes**, edit **Complete date** (preorders), or **Remove sale**.
-4. Tap **Save changes**.
+1. **⚙️** → Pass Code → **Events** (active day) or **Past Events → tap a day** (also Sales / Preorders tabs).
+2. Tap the sale.
+3. Change **payment method**, add optional **name** or **notes**, edit **Complete date** (preorders), or **Cancel sale** (Return or Error).
+4. Tap **Save changes** for edits. Cancel is permanent — the sale stays listed as **Cancelled**.
 
 **Name** and **notes** are optional for normal sales — leave them blank for a walk-up sale. **+ Pre-order** requires name, notes, and complete date at checkout.
 
-To change items/quantities on a saved sale: **Remove sale** and ring it up again (or use staff **Edit this sale** right after checkout).
+To change items/quantities on a saved sale: **Cancel sale** and ring it up again (or use staff **Edit this sale** right after checkout). Open preorders can be deleted instead of cancelled.
+
+---
+
+## `/faq/sales-after-update` — Will I lose sales when the app updates?
+
+**No.** Past sales stay on the device across app updates. Schema migrations (Pay on pickup, cancel fields, etc.) copy existing rows in place — including cancelled sales and line items linked to each Invoice #.
+
+There is still no cloud backup. Keep CSV exports you care about. Don’t use **Forgot your code?** unless you mean to erase the shop.
 
 ---
 

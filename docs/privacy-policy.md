@@ -28,7 +28,8 @@ All of the following is stored **locally** on your iPhone or iPad (SQLite databa
 |------|---------|---------------|
 | **Items** | Name, emoji, price, cost, optional photo | Owner |
 | **Market Days** | Event name and dates | Owner |
-| **Sales** | Line items, totals, payment method, cash received, timestamps | Staff / Owner |
+| **Sales** | Line items, totals, payment method, cash received, change kept, timestamps | Staff / Owner |
+| **Cancelled sales** | Cancel flag, reason (return / error), optional note — kept for Invoice # history | Owner |
 | **Sale name & notes** | Optional labels (e.g. customer name, pickup notes) | Owner |
 | **Pass Code hash** | Hashed owner gate code (SHA-256 in iOS Keychain via Secure Store) | Owner |
 
@@ -71,7 +72,7 @@ Booth Buddy is designed so staff can sell without seeing bookkeeping details (co
 
 We do not knowingly collect personal information from children on our servers — because we do not collect data on servers at all. Optional **sale names** or **notes** that an owner types (for example a customer's first name) are stored locally under the owner's control.
 
-If you believe a minor's information was entered into the app in error, delete that sale from owner settings or reset the app.
+If you believe a minor's information was entered into the app in error, cancel that sale from owner settings (or reset the app).
 
 ---
 
@@ -86,7 +87,8 @@ There is no cloud backup from Booth Buddy v1. Keep exports you care about in Fil
 
 ## Security
 
-- Shop records live in an on-device database.
+- Shop records live in an on-device database with foreign-key checks so sales lines stay attached to real sales.
+- App updates that reshape the sales table use a crash-safe migration so a mid-update interruption does not wipe past sales.
 - The Pass Code is stored as a one-way hash in the iOS Keychain (Secure Store), not as plain text.
 - Protect your device with a screen lock and Pass Code, especially before a market day.
 

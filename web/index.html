@@ -415,9 +415,11 @@ var GLOSSARY = [
   {term:'Complete date', def:'When a preorder should be ready for pickup.'},
   {term:'Pass Code', def:'4-digit owner password that unlocks Events, Inventory, Preorders, Sales, and Settings.'},
   {term:'Sold out', def:'Still on the menu, but you cannot add it to a sale today.'},
-  {term:'Preorder', def:'A sale for later pickup. Defaults to Pay on pickup; can also take Cash or Venmo/Zelle now.'},
+  {term:'Preorder', def:'A sale for later pickup. Payment at creation is always Pay on pickup; Cash or Venmo/Zelle is recorded when marked complete.'},
   {term:'+ Pre-order', def:'Button on Home to start a preorder (uses the full catalog, not only today’s Menu).'},
-  {term:'Archive', def:'Hide an item from the menu while keeping old sales that used it.'}
+  {term:'Cancel sale', def:'Owner action that keeps a completed sale visible with its Invoice #, marks it Cancelled with a reason, and excludes it from money totals.'},
+  {term:'Cancelled', def:'A completed sale the owner cancelled. Still in lists and CSV for history; not counted in revenue or tips.'},
+  {term:'Archive', def:'Hide an item from the menu while keeping old sales that used it. Prefer Archive over Delete when an item has past sales.'}
 ];
 
 /* ============ page content ============ */
@@ -433,6 +435,7 @@ PAGES['home'] = {
     '<p><b>Staff</b> get big taps: pick items, take cash or Venmo/Zelle, celebrate the sale.</p>' +
     '<p><b>Owners</b> get inventory, Market Days, preorders, and Excel-ready exports behind a Pass Code — so staff never see costs or profit.</p>' +
     '<p>Everything stays on your device. No accounts or cloud login. Sales do not leave the iPad for a server. You keep them in local storage and export when you want reconciliation.</p>' +
+    '<p>App updates keep your past sales on the device — the shop database migrates in place, including cancelled sales and invoice history.</p>' +
     '<p>One device, one Pass Code for owners, and a selling flow staff can run alone when the booth is busy.</p></div>' +
     '<div class="card">' + sectionHead('shopping-cart','For staff') +
     '<p>Booth Buddy is your shop on a phone or tablet. A <b>Market Day</b> is one fair or booth day.</p>' +
@@ -627,6 +630,7 @@ PAGES['inventory'] = {
     info('If a Market Day is already open, the new item appears on today’s menu right away.') +
     '<h3>Hide an item you’re done selling</h3>' +
     '<p>Tap ' + pill('pill-white', icon('archive', 16) + ' Archive Item') + '. It disappears from the menu, but old sales still show it. To bring it back: <b>UnArchive Item</b>.</p>' +
+    warn('You can’t <b>Delete</b> an item that appears in past sales — the app blocks that so history stays intact. Use <b>Archive</b> instead.') +
     '</div>'
 };
 
@@ -642,6 +646,7 @@ PAGES['edit-items'] = {
     ]) +
     info('Changes show up on Home and in checkout right away — no restart needed.') +
     '<p><b>Archive</b> if you want to stop selling something without deleting its history.</p>' +
+    warn('Delete is only allowed when the item has never appeared in a sale. Otherwise use Archive.') +
     '</div>'
 };
 
@@ -667,7 +672,7 @@ PAGES['past-events'] = {
     '<p>Each row shows the <b>name</b>, <b>date</b>, and <b>number of sales</b>. Tap one to open its dashboard:</p>' +
     rows([
       {ic:'receipt', title:'Totals and profit', desc:'Same summary as an active day, including cash tips when kept change exists'},
-      {ic:'pencil', title:'Sales list', desc:'Tap a sale to edit or remove'},
+      {ic:'pencil', title:'Sales list', desc:'Tap a sale to edit payment or Cancel sale'},
       {ic:'download', title:'Export sales as CSV', desc:'Or Re-export if you already exported'},
       {ic:'undo-2', title:'Reopen Market Day', desc:'Only on the most recently closed day, and only before export'}
     ]) +
@@ -691,7 +696,7 @@ PAGES['export-sales'] = {
       icon('settings', 18) + ' → Pass Code → <b>Sales</b>.',
       'Pick a date range, then tap <b>Export sales as CSV</b>.'
     ]) +
-    '<p>The CSV is ready for Excel: sale numbers, times, items, prices, costs, payment method, cash received, change kept, and profit — plus summary totals and tips.</p>' +
+    '<p>The CSV is ready for Excel: sale numbers, times, items, prices, costs, payment method, cash received, change kept, cancel reason when cancelled, and profit — plus summary totals and tips. Cancelled sales stay in the file for Invoice # history but do not add to money totals.</p>' +
     warn('After you export a Market Day, <b>Reopen</b> is no longer available for that day. If you edit a sale later, the app may show <b>Re-export recommended</b>.') +
     '</div>'
 };
@@ -705,9 +710,9 @@ PAGES['sales-dashboard'] = {
       icon('settings', 18) + ' → <b>Pass Code</b> → <b>Events</b>.',
       'See totals: number of sales, <b>profit</b>, gross revenue, <b>Cash</b> vs <b>Venmo/Zelle</b>.',
       'Scroll the sales list on Events — or open the <b>Sales</b> tab for all-time history.',
-      'Tap a sale to change payment, add a name or notes, or remove the sale.'
+      'Tap a sale to change payment, add a name or notes, or <b>Cancel sale</b> (completed sales stay visible as Cancelled).'
     ]) +
-    info('Staff see a simpler view (no profit) from the Market Day banner on Home.') +
+    info('Staff see a simpler view (no profit) from the Market Day banner on Home. Cancelled sales do not count toward revenue or tips.') +
     '<p>When no day is active, open a closed day from <a href="#/past-events">Past Events</a> (on the Events tab) to review, edit, export, or reopen.</p>' +
     '</div>'
 };
@@ -746,6 +751,7 @@ PAGES['faq'] = {
       {ic:'frown', title:'I forgot the Pass Code', href:'faq/forgot-pass-code'},
       {ic:'archive', title:'What is Archive?', href:'faq/archive'},
       {ic:'refresh-cw', title:'Change a sale later', href:'faq/edit-sale-later'},
+      {ic:'shield', title:'Will I lose sales when the app updates?', href:'faq/sales-after-update'},
       {ic:'clipboard-list', title:'Prepare and print preorders', href:'preorders'},
       {ic:'tent', title:'Can I run two Market Days?', href:'faq/one-market-day'},
       {ic:'undo-2', title:'I ended the day by mistake', href:'faq/reopen'}
@@ -811,6 +817,7 @@ PAGES['faq/archive'] = {
     '<p><b>Archive</b> hides an item from the menu. It does <b>not</b> delete old sales that included that item.</p>' +
     '<p>Use it when you stop selling something but want to keep history.</p>' +
     '<p><b>UnArchive Item</b> brings the item back.</p>' +
+    warn('If an item appears in past sales, <b>Delete</b> is blocked — Archive instead.') +
     info('Only owners can archive items, from ' + icon('package', 18) + ' Inventory.') +
     '</div>'
 };
@@ -872,10 +879,20 @@ PAGES['faq/edit-sale-later'] = {
     steps([
       icon('settings', 18) + ' → Pass Code → <b>Events</b> (active day) or <b>Past Events → tap a day</b>. You can also open a sale from the <b>Sales</b> tab, or a preorder from <b>Preorders</b>.',
       'Tap the sale.',
-      'Change payment method, add optional <b>name</b> or <b>notes</b>, edit <b>Complete date</b> (preorders), or <b>Remove sale</b>.',
-      'Tap ' + pill('pill-green', icon('check', 16, 'on-dark') + ' Save changes')
+      'Change payment method, add optional <b>name</b> or <b>notes</b>, edit <b>Complete date</b> (preorders), or <b>Cancel sale</b> (pick Return or Error).',
+      'Tap ' + pill('pill-green', icon('check', 16, 'on-dark') + ' Save changes') + ' for edits. Cancel is permanent — the sale stays listed as Cancelled.'
     ]) +
-    info('To change items or quantities on a saved sale: Remove sale and ring it up again (or use staff Edit this sale right after checkout).') +
+    info('To change items or quantities on a saved sale: <b>Cancel sale</b> and ring it up again (or use staff Edit this sale right after checkout). Open preorders can be deleted instead of cancelled.') +
+    '</div>'
+};
+
+PAGES['faq/sales-after-update'] = {
+  title:'Will I lose sales when the app updates?', icon:'shield', section:'faq', audience:'owner', crumb:'Will I lose sales when the app updates?',
+  body:
+    '<div class="card">' +
+    '<p><b>No.</b> Past sales stay on your device across app updates.</p>' +
+    '<p>When Booth Buddy needs a newer sales-table shape (for example Pay on pickup or cancel fields), it migrates your existing rows in place — including cancelled sales and the line items linked to each Invoice #.</p>' +
+    info('There is still no cloud backup. Keep CSV exports you care about, and don’t use <b>Forgot your code?</b> unless you mean to erase the shop.') +
     '</div>'
 };
 
@@ -950,6 +967,7 @@ var NAV = [
     {title:'Cash change', href:'faq/cash-change', ic:'banknote'},
     {title:'Venmo / Zelle', href:'faq/venmo-zelle', ic:'smartphone'},
     {title:'Change a sale later', href:'faq/edit-sale-later', ic:'refresh-cw'},
+    {title:'Sales after an app update', href:'faq/sales-after-update', ic:'shield'},
     {title:'Two Market Days?', href:'faq/one-market-day', ic:'tent'},
     {title:'Undo an ended day', href:'faq/reopen', ic:'undo-2'}
   ]},

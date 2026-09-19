@@ -11,3 +11,5 @@ Booth-ready point of sale for craft fairs and markets. Staff ring up sales on de
 ## App
 
 Expo app source lives in [`market-day/`](./market-day/).
+
+Technical decisions: [`docs/adr/`](./docs/adr/) (including [SQLite foreign keys and crash-safe sales rebuilds](./docs/adr/0003-sqlite-fk-and-crash-safe-sales-rebuild.md)).

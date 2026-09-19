@@ -28,10 +28,10 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Sales tab** — all-time sales across Market Days + Running Tab export
 - **Preorders tab** — prep summary (what to make), overdue/upcoming sections sorted by complete date, printable export, open preorders; mark complete from admin edit
 - **Inventory** — item CRUD, archive, delete (when no past sales)
-- **Sale detail (admin)** — edit payment method, optional name/notes/complete date (preorders), remove sale
-- **Export** — closed Market Day + Running Tab date range (CSV with **Change kept** column + tips summary footer) + preorder printout (text) → share sheet
+- **Sale detail (admin)** — edit payment method, optional name/notes/complete date (preorders); **Cancel sale** (Return / Error) on completed sales; delete open preorders
+- **Export** — closed Market Day + Running Tab date range (CSV with **Change kept**, cancel columns, + tips summary footer) + preorder printout (text) → share sheet
 - **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`); optional bypass in Settings
-- **SQLite** — local-first data on device
+- **SQLite** — local-first on device; foreign keys on at init; crash-safe `sales` rebuilds with leftover-table recovery (see [ADR 0003](../docs/adr/0003-sqlite-fk-and-crash-safe-sales-rebuild.md))
 
 ## UI
 

@@ -1,0 +1,7 @@
+# SQLite foreign keys and crash-safe sales rebuild
+
+Booth Buddy keeps every Sale on-device in SQLite. We turn **`PRAGMA foreign_keys = ON`** for the app connection at database init (outside any transaction — SQLite ignores the pragma inside one), so line items must belong to a real Sale and items with history cannot be hard-deleted. Schema upgrades that rebuild the `sales` table (for example adding **Pay on pickup** to the payment-method CHECK) run in an explicit **`BEGIN IMMEDIATE`** on that **same** connection: copy into `sales_new`, verify row counts, drop/rename, fail closed if foreign-key violations *increase*, then `COMMIT`, with `PRAGMA foreign_keys=OFF` only outside the transaction and restored in `finally`. Interrupted older rebuilds recover by renaming leftover `sales_preorder_migration` / `sales_new` back to `sales` before creating an empty table. We avoid `withExclusiveTransactionAsync` here because expo-sqlite opens a **new** connection for it and pragmas are per-connection.
+
+**Considered options:** Rely on app-level checks only (orphans still possible); rebuild with multi-statement `execAsync` and no transaction (crash between `DROP` and `RENAME` could lose sales); use exclusive transactions for the rebuild (FK pragma would not apply on the txn connection).
+
+**Consequences:** Migrations live in `market-day/lib/db/sales-schema.ts` and `schema.ts`; coverage in `foreign-keys-test.ts` and `sales-rebuild-migration-test.ts`. Pre-existing FK violations warn at startup but do not wipe data; a rebuild only aborts if it *adds* violations.
