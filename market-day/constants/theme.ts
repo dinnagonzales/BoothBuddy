@@ -60,6 +60,7 @@ export const colors = {
   successSurface: c.successSurface,
   dangerSurface: c.dangerSurface,
   warningSurface: c.warningSurface,
+  warningBorder: c.warningBorder,
 } as const;
 
 export { tokens };
