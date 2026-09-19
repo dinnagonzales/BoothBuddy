@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Settings } from 'lucide-react-native';
@@ -13,6 +13,7 @@ import { leaveGrownUpArea } from '@/lib/navigation';
 export default function BusinessSettingsScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
+  const { payment } = useLocalSearchParams<{ payment?: string }>();
 
   return (
     <View style={styles.screen}>
@@ -22,7 +23,7 @@ export default function BusinessSettingsScreen() {
         onBack={() => leaveGrownUpArea(router)}
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <BusinessSettingsForm db={db} />
+        <BusinessSettingsForm db={db} expandPayment={payment === '1'} />
       </ScrollView>
     </View>
   );

@@ -45,15 +45,17 @@ import { showUiError } from '@/lib/ui-errors';
 
 type BusinessSettingsFormProps = {
   db: SQLiteDatabase;
+  /** When true (e.g. deep-linked to add payment methods), Payment starts expanded. */
+  expandPayment?: boolean;
 };
 
-export function BusinessSettingsForm({ db }: BusinessSettingsFormProps) {
+export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSettingsFormProps) {
   const router = useRouter();
   const [saved, setSaved] = useState<BusinessSettings | null>(null);
   const [draft, setDraft] = useState<BusinessSettings | null>(null);
   const [savedProfile, setSavedProfile] = useState<AdminProfile | null>(null);
   const [profileDraft, setProfileDraft] = useState<AdminProfile | null>(null);
-  const [paymentOpen, setPaymentOpen] = useState(true);
+  const [paymentOpen, setPaymentOpen] = useState(expandPayment);
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
 

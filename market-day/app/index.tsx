@@ -10,9 +10,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 import {
-  CalendarDays,
+  CalendarPlus,
   HandCoins,
   Plus,
   Receipt,
@@ -28,7 +28,7 @@ import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
 import { IconTile } from '@/components/ui/IconTile';
-import { UiIcon } from '@/components/ui/UiIcon';
+import { UiIcon, UI_ICON_STROKE } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii, spacing } from '@/constants/visual';
 import { useCart } from '@/context/CartContext';
@@ -78,7 +78,13 @@ type IdleBusinessSummary = {
   businessLogoUri: string | null;
 };
 
-type GrownUpPath = '/settings' | '/inventory' | '/inventory?add=1' | '/sales' | '/business';
+type GrownUpPath =
+  | '/settings'
+  | '/inventory'
+  | '/inventory?add=1'
+  | '/sales'
+  | '/business'
+  | '/business?payment=1';
 
 type IdleHomeAction = {
   key: string;
@@ -87,7 +93,7 @@ type IdleHomeAction = {
   path: GrownUpPath;
 };
 
-const IDLE_HOME_ACTION_LIMIT = 3;
+const IDLE_HOME_ACTION_LIMIT = 4;
 
 function buildIdleHomeActions(input: {
   hasInventory: boolean;
@@ -95,6 +101,12 @@ function buildIdleHomeActions(input: {
   hasLogo: boolean;
 }): IdleHomeAction[] {
   const actions: IdleHomeAction[] = [
+    {
+      key: 'start-market-day',
+      label: 'Start Market Day',
+      icon: CalendarPlus,
+      path: '/settings',
+    },
     input.hasInventory
       ? {
           key: 'inventory-update',
@@ -115,33 +127,25 @@ function buildIdleHomeActions(input: {
       key: 'payment',
       label: 'Add Mobile Payment Methods',
       icon: HandCoins,
-      path: '/business',
+      path: '/business?payment=1',
     });
   }
 
   if (!input.hasLogo) {
     actions.push({
       key: 'logo',
-      label: 'Add Business Logo',
+      label: 'Add Logo',
       icon: UserRoundPen,
       path: '/business',
     });
   }
 
-  actions.push(
-    {
-      key: 'sales',
-      label: 'Go to Sales',
-      icon: Receipt,
-      path: '/sales',
-    },
-    {
-      key: 'events',
-      label: 'Go to Events',
-      icon: CalendarDays,
-      path: '/settings',
-    },
-  );
+  actions.push({
+    key: 'sales',
+    label: 'Go to Sales',
+    icon: Receipt,
+    path: '/sales',
+  });
 
   return actions.slice(0, IDLE_HOME_ACTION_LIMIT);
 }
@@ -228,21 +232,16 @@ function TicketMarketBanner({
   );
 }
 
-function IdleActionIcon({ icon, gradientId }: { icon: LucideIcon; gradientId: string }) {
+function IdleActionIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
     <View style={styles.idleActionIcon}>
-      <Svg width={48} height={48} style={styles.idleActionIconBg} pointerEvents="none">
-        <Defs>
-          <SvgGradient id={gradientId} x1="0%" y1="15%" x2="100%" y2="85%">
-            <Stop offset="0%" stopColor={TICKET_PINK} />
-            <Stop offset="100%" stopColor={TICKET_PURPLE} />
-          </SvgGradient>
-        </Defs>
-        <Circle cx={24} cy={24} r={24} fill={`url(#${gradientId})`} />
-      </Svg>
-      <View style={styles.idleActionIconGlyph} pointerEvents="none">
-        <UiIcon icon={icon} size={22} color={colors.white} />
-      </View>
+      <Icon
+        size={22}
+        color={colors.white}
+        strokeWidth={UI_ICON_STROKE}
+        width={22}
+        height={22}
+      />
     </View>
   );
 }
@@ -300,7 +299,7 @@ function IdleHomeBanner({
             accessibilityLabel={action.label}
             onPress={() => onActionPress(action.path)}
             style={({ pressed }) => [styles.idleActionButton, pressed && styles.idleActionPressed]}>
-            <IdleActionIcon icon={action.icon} gradientId={`idleActionGradient-${action.key}`} />
+            <IdleActionIcon icon={action.icon} />
             <Text style={styles.idleActionLabel}>{action.label}</Text>
           </Pressable>
         ))}
@@ -803,18 +802,10 @@ const styles = StyleSheet.create({
   idleActionIcon: {
     width: 48,
     height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-  },
-  idleActionIconBg: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  idleActionIconGlyph: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: TICKET_PURPLE,
   },
   idleActionLabel: {
     fontFamily: fonts.body.extraBold,
