@@ -50,6 +50,9 @@ const DEPENDENT_SCHEMA = `
 `;
 
 export async function initDatabase(db: SQLiteDatabase): Promise<void> {
+  // Must run outside a transaction — SQLite ignores this pragma inside one.
+  await db.execAsync('PRAGMA foreign_keys = ON');
+
   await db.execAsync(CORE_SCHEMA);
 
   const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(items)');
@@ -76,4 +79,17 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(DEPENDENT_SCHEMA);
 
   await ensureActiveMarketDayMenu(db);
+
+  const violations = await db.getAllAsync<{
+    table: string;
+    rowid: number;
+    parent: string;
+    fkid: number;
+  }>('PRAGMA foreign_key_check');
+  if (violations.length > 0) {
+    console.warn(
+      `[db] foreign_key_check found ${violations.length} violation(s) on startup`,
+      violations,
+    );
+  }
 }
