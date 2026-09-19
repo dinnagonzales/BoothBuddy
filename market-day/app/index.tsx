@@ -10,7 +10,19 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
+import {
+  CalendarDays,
+  HandCoins,
+  Plus,
+  Receipt,
+  Search,
+  Settings,
+  ShelvingUnit,
+  ShoppingCartPlus,
+  UserRoundPen,
+  type LucideIcon,
+} from 'lucide-react-native';
 
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
@@ -37,8 +49,8 @@ import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { isSetupComplete } from '@/lib/setup';
 import { showUiError } from '@/lib/ui-errors';
 import { homeVisualSize, resolveItemVisual, iconTileProps, HOME_MENU_ICON_SIZE } from '@/lib/item-visual';
+import { hasVenmoZellePaymentInfo } from '@/lib/venmo-payment';
 import type { Item } from '@/lib/types';
-import { Plus, Search, Settings, ShoppingCartPlus } from 'lucide-react-native';
 
 type HomeItem = Item & { soldOut?: boolean };
 
@@ -60,6 +72,79 @@ type ActiveMarketSummary = {
   totalCents: number;
   saleCount: number;
 };
+
+type IdleBusinessSummary = {
+  businessName: string;
+  businessLogoUri: string | null;
+};
+
+type GrownUpPath = '/settings' | '/inventory' | '/inventory?add=1' | '/sales' | '/business';
+
+type IdleHomeAction = {
+  key: string;
+  label: string;
+  icon: LucideIcon;
+  path: GrownUpPath;
+};
+
+const IDLE_HOME_ACTION_LIMIT = 3;
+
+function buildIdleHomeActions(input: {
+  hasInventory: boolean;
+  hasPaymentMethod: boolean;
+  hasLogo: boolean;
+}): IdleHomeAction[] {
+  const actions: IdleHomeAction[] = [
+    input.hasInventory
+      ? {
+          key: 'inventory-update',
+          label: 'Update Inventory',
+          icon: ShelvingUnit,
+          path: '/inventory',
+        }
+      : {
+          key: 'inventory-add',
+          label: 'Add Inventory',
+          icon: ShelvingUnit,
+          path: '/inventory?add=1',
+        },
+  ];
+
+  if (!input.hasPaymentMethod) {
+    actions.push({
+      key: 'payment',
+      label: 'Add Mobile Payment Methods',
+      icon: HandCoins,
+      path: '/business',
+    });
+  }
+
+  if (!input.hasLogo) {
+    actions.push({
+      key: 'logo',
+      label: 'Add Business Logo',
+      icon: UserRoundPen,
+      path: '/business',
+    });
+  }
+
+  actions.push(
+    {
+      key: 'sales',
+      label: 'Go to Sales',
+      icon: Receipt,
+      path: '/sales',
+    },
+    {
+      key: 'events',
+      label: 'Go to Events',
+      icon: CalendarDays,
+      path: '/settings',
+    },
+  );
+
+  return actions.slice(0, IDLE_HOME_ACTION_LIMIT);
+}
 
 const TICKET_PINK = '#FB6AA3';
 const TICKET_PURPLE = '#9B5DE6';
@@ -143,6 +228,87 @@ function TicketMarketBanner({
   );
 }
 
+function IdleActionIcon({ icon, gradientId }: { icon: LucideIcon; gradientId: string }) {
+  return (
+    <View style={styles.idleActionIcon}>
+      <Svg width={48} height={48} style={styles.idleActionIconBg} pointerEvents="none">
+        <Defs>
+          <SvgGradient id={gradientId} x1="0%" y1="15%" x2="100%" y2="85%">
+            <Stop offset="0%" stopColor={TICKET_PINK} />
+            <Stop offset="100%" stopColor={TICKET_PURPLE} />
+          </SvgGradient>
+        </Defs>
+        <Circle cx={24} cy={24} r={24} fill={`url(#${gradientId})`} />
+      </Svg>
+      <View style={styles.idleActionIconGlyph} pointerEvents="none">
+        <UiIcon icon={icon} size={22} color={colors.white} />
+      </View>
+    </View>
+  );
+}
+
+function IdleHomeBanner({
+  businessName,
+  businessLogoUri,
+  actions,
+  onActionPress,
+}: IdleBusinessSummary & {
+  actions: IdleHomeAction[];
+  onActionPress: (path: GrownUpPath) => void;
+}) {
+  const trimmedBusinessName = businessName.trim();
+  const showBusinessRow = Boolean(businessLogoUri || trimmedBusinessName);
+
+  return (
+    <View style={styles.ticketCard}>
+      {showBusinessRow ? (
+        <View style={styles.ticketStrip}>
+          <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+            <Defs>
+              <SvgGradient id="idleStripGradient" x1="0%" y1="15%" x2="100%" y2="85%">
+                <Stop offset="0%" stopColor={TICKET_PINK} />
+                <Stop offset="100%" stopColor={TICKET_PURPLE} />
+              </SvgGradient>
+            </Defs>
+            <Rect width="100%" height="100%" fill="url(#idleStripGradient)" />
+          </Svg>
+          <View style={styles.ticketStripContent}>
+            <View style={styles.idleBusinessRow}>
+              {businessLogoUri ? (
+                <Image
+                  source={{ uri: businessLogoUri }}
+                  style={styles.ticketLogo}
+                  resizeMode="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              ) : null}
+              {trimmedBusinessName ? (
+                <Text style={styles.ticketBusinessName} numberOfLines={1}>
+                  {trimmedBusinessName.toUpperCase()}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        </View>
+      ) : null}
+
+      <View style={styles.idleActionsRow}>
+        {actions.map((action) => (
+          <Pressable
+            key={action.key}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            onPress={() => onActionPress(action.path)}
+            style={({ pressed }) => [styles.idleActionButton, pressed && styles.idleActionPressed]}>
+            <IdleActionIcon icon={action.icon} gradientId={`idleActionGradient-${action.key}`} />
+            <Text style={styles.idleActionLabel}>{action.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
@@ -151,6 +317,8 @@ export default function HomeScreen() {
   const [setupReady, setSetupReady] = useState<boolean | null>(null);
   const [items, setItems] = useState<HomeItem[]>([]);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
+  const [idleBusiness, setIdleBusiness] = useState<IdleBusinessSummary | null>(null);
+  const [hasPaymentMethod, setHasPaymentMethod] = useState(true);
   const [passCodeOpen, setPassCodeOpen] = useState(false);
   const [passcodeGateEnabled, setPasscodeGateEnabled] = useState(true);
   const [postUnlockPath, setPostUnlockPath] = useState<Href>('/settings');
@@ -161,7 +329,7 @@ export default function HomeScreen() {
     router.push('/sell');
   };
 
-  const openGrownUpRoute = (path: '/settings' | '/inventory' | '/inventory?add=1') => {
+  const openGrownUpRoute = (path: GrownUpPath) => {
     if (!passcodeGateEnabled) {
       unlock();
       router.push(path);
@@ -191,11 +359,13 @@ export default function HomeScreen() {
           setSetupReady(complete);
           setPasscodeGateEnabled(await getPasscodeGateEnabled(db));
           if (complete) {
-            setItems(await getHomeItems(db));
-            const [marketDay, business] = await Promise.all([
+            const [homeItems, marketDay, business] = await Promise.all([
+              getHomeItems(db),
               getActiveMarketDay(db),
               getBusinessSettings(db),
             ]);
+            setItems(homeItems);
+            setHasPaymentMethod(hasVenmoZellePaymentInfo(business));
             if (marketDay) {
               const [dayStats, saleCount] = await Promise.all([
                 getMarketDayStats(db, marketDay.id),
@@ -209,8 +379,13 @@ export default function HomeScreen() {
                 totalCents: dayStats.totalCents,
                 saleCount,
               });
+              setIdleBusiness(null);
             } else {
               setActiveMarket(null);
+              setIdleBusiness({
+                businessName: business.businessName,
+                businessLogoUri: business.businessLogoUri,
+              });
             }
           }
         })
@@ -237,6 +412,12 @@ export default function HomeScreen() {
   };
 
   const menuRows = chunkMenuRows(items);
+  const hasInventory = items.length > 0;
+  const idleActions = buildIdleHomeActions({
+    hasInventory,
+    hasPaymentMethod,
+    hasLogo: Boolean(idleBusiness?.businessLogoUri),
+  });
 
   if (setupReady === null) {
     return (
@@ -270,12 +451,14 @@ export default function HomeScreen() {
             <View pointerEvents="none" style={styles.titleWrap}>
               <BoothBuddyLogo variant="long" />
             </View>
-            <Pressable
-              accessibilityLabel="Pre-order"
-              style={styles.preorderButton}
-              onPress={openPreorder}>
-              <Text style={styles.preorderButtonLabel}>+ Pre-order</Text>
-            </Pressable>
+            {hasInventory ? (
+              <Pressable
+                accessibilityLabel="Pre-order"
+                style={styles.preorderButton}
+                onPress={openPreorder}>
+                <Text style={styles.preorderButtonLabel}>+ Pre-order</Text>
+              </Pressable>
+            ) : null}
           </View>
 
           {activeMarket ? (
@@ -286,26 +469,36 @@ export default function HomeScreen() {
               style={({ pressed }) => [styles.ticketWrap, pressed && styles.ticketPressed]}>
               <TicketMarketBanner {...activeMarket} />
             </Pressable>
+          ) : idleBusiness ? (
+            <View style={styles.ticketWrap}>
+              <IdleHomeBanner
+                {...idleBusiness}
+                actions={idleActions}
+                onActionPress={openGrownUpRoute}
+              />
+            </View>
           ) : null}
 
-          <View style={styles.sellButtonWrap}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => {
-                setIsQuickSale(false);
-                setIsPreorder(false);
-                router.push('/sell');
-              }}
-              style={({ pressed }) => [
-                styles.sellButtonOuter,
-                pressed ? styles.sellButtonOuterPressed : null,
-              ]}>
-              <View style={styles.sellButtonInner}>
-                <Text style={styles.sellButtonLabel}>Make a Sale</Text>
-                <UiIcon icon={ShoppingCartPlus} size={20} color={colors.white} />
-              </View>
-            </Pressable>
-          </View>
+          {hasInventory ? (
+            <View style={styles.sellButtonWrap}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setIsQuickSale(false);
+                  setIsPreorder(false);
+                  router.push('/sell');
+                }}
+                style={({ pressed }) => [
+                  styles.sellButtonOuter,
+                  pressed ? styles.sellButtonOuterPressed : null,
+                ]}>
+                <View style={styles.sellButtonInner}>
+                  <Text style={styles.sellButtonLabel}>Make a Sale</Text>
+                  <UiIcon icon={ShoppingCartPlus} size={20} color={colors.white} />
+                </View>
+              </Pressable>
+            </View>
+          ) : null}
 
           <View style={styles.menuLabelRow}>
             <UiIcon icon={Search} size={14} color={colors.inkSoft} />
@@ -313,7 +506,7 @@ export default function HomeScreen() {
           </View>
           <Text style={styles.menuHint}>Tap an item to start a sale</Text>
 
-          {items.length === 0 ? (
+          {!hasInventory ? (
             <View style={styles.itemList}>
               <Text style={styles.emptyMenuText}>Update Inventory to Complete a Sale</Text>
               <View style={styles.menuGridRow}>
@@ -577,6 +770,58 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 12,
     color: colors.white,
+  },
+  idleBusinessRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minWidth: 0,
+  },
+  idleActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    paddingBottom: 14,
+    backgroundColor: colors.white,
+  },
+  idleActionButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 10,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingTop: 14,
+    paddingBottom: 12,
+    minHeight: 118,
+  },
+  idleActionPressed: {
+    opacity: 0.88,
+  },
+  idleActionIcon: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  idleActionIconBg: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  idleActionIconGlyph: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  idleActionLabel: {
+    fontFamily: fonts.body.extraBold,
+    fontSize: 12,
+    lineHeight: 15,
+    color: colors.purpleDark,
+    textAlign: 'center',
   },
   menuLabelRow: {
     flexDirection: 'row',
