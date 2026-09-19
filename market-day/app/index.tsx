@@ -99,38 +99,43 @@ function TicketMarketBanner({
           </Svg>
           <View style={styles.ticketStripContent}>
             <View style={styles.ticketBusinessRow}>
-              {businessLogoUri ? (
-                <Image
-                  source={{ uri: businessLogoUri }}
-                  style={styles.ticketLogo}
-                  resizeMode="cover"
-                  accessibilityIgnoresInvertColors
-                />
-              ) : null}
-              {trimmedBusinessName ? (
-                <Text style={styles.ticketBusinessName} numberOfLines={1}>
-                  {trimmedBusinessName.toUpperCase()}
-                </Text>
-              ) : null}
+              <View style={styles.ticketBusinessLeft}>
+                {businessLogoUri ? (
+                  <Image
+                    source={{ uri: businessLogoUri }}
+                    style={styles.ticketLogo}
+                    resizeMode="cover"
+                    accessibilityIgnoresInvertColors
+                  />
+                ) : null}
+                {trimmedBusinessName ? (
+                  <Text style={styles.ticketBusinessName} numberOfLines={1}>
+                    {trimmedBusinessName.toUpperCase()}
+                  </Text>
+                ) : null}
+              </View>
+              <Text style={styles.ticketSeeMore}>See More →</Text>
             </View>
           </View>
         </View>
       ) : null}
 
       <View style={styles.ticketBody}>
-        <Text style={styles.ticketMarketMeta} numberOfLines={1}>
-          {name.toUpperCase()} · {dateLabel}
-        </Text>
+        <View style={styles.ticketMarketMetaRow}>
+          <Text style={styles.ticketMarketMeta} numberOfLines={1}>
+            Today's Market Day: {name.toUpperCase()}
+          </Text>
+          <Text style={styles.ticketMarketDate}>{dateLabel}</Text>
+        </View>
         <View style={styles.ticketBodyMain}>
           <View style={styles.ticketBodyLeft}>
             <Text style={styles.ticketTotalAmount}>{formatMoney(totalCents)}</Text>
-            <Text style={styles.ticketSoldLabel}>this Market Day</Text>
+            <Text style={styles.ticketSoldLabel}>Total Sales(does not include tips)</Text>
           </View>
           <View style={styles.ticketBodyRight}>
             <View style={styles.ticketSalePill}>
               <Text style={styles.ticketSalePillText}>{saleLabel}</Text>
             </View>
-            <Text style={styles.ticketBodyAction}>See Market Day Sales →</Text>
           </View>
         </View>
       </View>
@@ -477,7 +482,15 @@ const styles = StyleSheet.create({
   ticketBusinessRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  ticketBusinessLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    minWidth: 0,
   },
   ticketLogo: {
     width: 28,
@@ -486,9 +499,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   ticketBusinessName: {
-    flex: 1,
+    flexShrink: 1,
     fontFamily: fonts.body.extraBold,
     fontSize: 13,
+    color: colors.white,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  ticketSeeMore: {
+    flexShrink: 0,
+    fontFamily: fonts.body.extraBold,
+    fontSize: 10.5,
     color: colors.white,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
@@ -500,7 +521,22 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     backgroundColor: colors.white,
   },
+  ticketMarketMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   ticketMarketMeta: {
+    flex: 1,
+    fontFamily: fonts.body.extraBold,
+    fontSize: 10.5,
+    color: TICKET_MUTED,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  ticketMarketDate: {
+    flexShrink: 0,
     fontFamily: fonts.body.extraBold,
     fontSize: 10.5,
     color: TICKET_MUTED,
@@ -524,13 +560,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.bold,
     fontSize: 32,
     color: colors.ink,
-  },
-  ticketBodyAction: {
-    fontFamily: fonts.body.extraBold,
-    fontSize: 10.5,
-    color: colors.purple,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
   },
   ticketSoldLabel: {
     fontFamily: fonts.body.bold,

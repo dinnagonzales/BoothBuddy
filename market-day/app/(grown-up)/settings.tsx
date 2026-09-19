@@ -2,7 +2,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Home, Store, XCircle } from 'lucide-react-native';
+import { Store, XCircle } from 'lucide-react-native';
 
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { AdminSalesList } from '@/components/AdminSalesList';
@@ -232,19 +232,6 @@ export default function SettingsScreen() {
       <View style={styles.endDock}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Go to Dashboard"
-          onPress={() => leaveGrownUpArea(router)}
-          style={({ pressed }) => [
-            styles.dashboardButton,
-            pressed && styles.dashboardButtonPressed,
-          ]}>
-          <View style={styles.dashboardButtonRow}>
-            <UiIcon icon={Home} size={18} color={colors.ink} />
-            <Text style={styles.dashboardButtonLabel}>Go to Dashboard</Text>
-          </View>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
           onPress={handleEndMarketDay}
           style={({ pressed }) => [styles.endButton, pressed && styles.endButtonPressed]}>
           <View style={styles.endButtonRow}>
@@ -263,30 +250,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.screen,
   },
   scrollContent: {
-    paddingBottom: 132,
+    paddingBottom: 88,
   },
   summarySection: {
     marginBottom: 4,
-  },
-  dashboardButton: {
-    width: '100%',
-    borderRadius: radii.completeBtn,
-    backgroundColor: colors.grayLight,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  dashboardButtonPressed: {
-    opacity: 0.85,
-  },
-  dashboardButtonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dashboardButtonLabel: {
-    fontFamily: fonts.heading.semiBold,
-    fontSize: 16,
-    color: colors.ink,
   },
   reexportBanner: {
     backgroundColor: colors.warningSurface,

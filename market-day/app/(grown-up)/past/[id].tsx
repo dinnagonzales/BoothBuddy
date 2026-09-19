@@ -258,52 +258,48 @@ export default function PastMarketDayScreen() {
           </View>
         </Pressable>
 
-        {canReopen ? (
+        <View style={styles.actionRow}>
           <Pressable
             accessibilityRole="button"
-            disabled={reopening}
+            accessibilityLabel="Reopen"
+            disabled={!canReopen || reopening}
             onPress={handleReopen}
             style={({ pressed }) => [
               styles.reopenButton,
-              reopening && styles.buttonDisabled,
-              pressed && !reopening && styles.reopenButtonPressed,
+              (!canReopen || reopening) && styles.buttonDisabled,
+              pressed && canReopen && !reopening && styles.reopenButtonPressed,
             ]}>
             <Text style={styles.reopenButtonLabel}>
-              {reopening ? 'Reopening…' : '↩ Reopen Market Day'}
+              {reopening ? 'Reopening…' : 'Reopen'}
             </Text>
           </Pressable>
-        ) : reopenBlockedByActive ? (
-          <View style={styles.reopenBlocked}>
-            <Pressable
-              accessibilityRole="button"
-              disabled
-              style={[styles.reopenButton, styles.buttonDisabled]}>
-              <Text style={styles.reopenButtonLabel}>↩ Reopen Market Day</Text>
-            </Pressable>
-            <Text style={styles.reopenHelper}>Close today&apos;s Market Day first.</Text>
-          </View>
-        ) : null}
 
-        <Pressable
-          accessibilityRole="button"
-          disabled={deleting}
-          onPress={handleDelete}
-          style={({ pressed }) => [
-            styles.deleteButton,
-            deleting && styles.buttonDisabled,
-            pressed && !deleting && styles.deleteButtonPressed,
-          ]}>
-          <View style={styles.deleteButtonRow}>
-            {deleting ? (
-              <Text style={styles.deleteButtonLabel}>Deleting…</Text>
-            ) : (
-              <>
-                <UiIcon icon={Trash2} size={18} color={colors.redDark} />
-                <Text style={styles.deleteButtonLabel}>Delete Market Day</Text>
-              </>
-            )}
-          </View>
-        </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Delete"
+            disabled={deleting}
+            onPress={handleDelete}
+            style={({ pressed }) => [
+              styles.deleteButton,
+              deleting && styles.buttonDisabled,
+              pressed && !deleting && styles.deleteButtonPressed,
+            ]}>
+            <View style={styles.deleteButtonRow}>
+              {deleting ? (
+                <Text style={styles.deleteButtonLabel}>Deleting…</Text>
+              ) : (
+                <>
+                  <UiIcon icon={Trash2} size={18} color={colors.redDark} />
+                  <Text style={styles.deleteButtonLabel}>Delete</Text>
+                </>
+              )}
+            </View>
+          </Pressable>
+        </View>
+
+        {reopenBlockedByActive ? (
+          <Text style={styles.reopenHelper}>Close today&apos;s Market Day first.</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -346,6 +342,10 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     gap: 10,
   },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   exportButtonOuter: {
     width: '100%',
     borderRadius: 18,
@@ -368,13 +368,14 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   reopenButton: {
-    width: '100%',
+    flex: 1,
     backgroundColor: colors.white,
     borderWidth: 2,
     borderColor: colors.borderSubtle,
     borderRadius: 16,
     paddingVertical: 13,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   reopenButtonPressed: {
     opacity: 0.85,
@@ -384,24 +385,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.purpleDark,
   },
-  reopenBlocked: {
-    width: '100%',
-    gap: 6,
-  },
   reopenHelper: {
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 12,
     color: colors.inkSoft,
     textAlign: 'center',
+    marginTop: -4,
   },
   deleteButton: {
-    width: '100%',
+    flex: 1,
     backgroundColor: colors.white,
     borderWidth: 2,
     borderColor: colors.borderDanger,
     borderRadius: 16,
     paddingVertical: 13,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteButtonPressed: {
     opacity: 0.85,
