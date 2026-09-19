@@ -44,6 +44,18 @@ function escapeCsvField(value: string | number): string {
   return str;
 }
 
+/** Prefix free-text values that spreadsheets treat as formulas. */
+export function neutralizeSpreadsheetFormula(value: string): string {
+  if (/^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
+  }
+  return value;
+}
+
+function escapeCsvTextField(value: string): string {
+  return escapeCsvField(neutralizeSpreadsheetFormula(value));
+}
+
 function formatCentsForCsv(cents: number): string {
   return (cents / 100).toFixed(2);
 }
@@ -127,27 +139,27 @@ export function buildMarketDayCsv(
   for (const row of rows) {
     const lineTotalCents = row.priceCents * row.quantity;
     const lineProfitCents = (row.priceCents - row.costCents) * row.quantity;
+    const cancelReason =
+      cancelReasonDisplayLabel(row.cancelReason, row.cancelNote) ?? '';
     lines.push(
       [
-        row.saleNumber,
-        formatSaleDateTime(row.createdAt),
-        row.marketDayName,
-        row.itemName,
-        row.quantity,
-        formatCentsForCsv(row.priceCents),
-        formatCentsForCsv(row.costCents),
-        formatCentsForCsv(lineTotalCents),
-        formatCentsForCsv(lineProfitCents),
-        formatCentsForCsv(row.saleTotalCents),
-        paymentMethodLabel(row.paymentMethod),
-        row.cashReceivedCents == null ? '' : formatCentsForCsv(row.cashReceivedCents),
-        row.changeKeptCents > 0 ? formatCentsForCsv(row.changeKeptCents) : '',
-        row.customerName ?? '',
-        row.cancelled ? 'Cancelled' : '',
-        cancelReasonDisplayLabel(row.cancelReason, row.cancelNote) ?? '',
-      ]
-        .map(escapeCsvField)
-        .join(','),
+        escapeCsvField(row.saleNumber),
+        escapeCsvField(formatSaleDateTime(row.createdAt)),
+        escapeCsvTextField(row.marketDayName),
+        escapeCsvTextField(row.itemName),
+        escapeCsvField(row.quantity),
+        escapeCsvField(formatCentsForCsv(row.priceCents)),
+        escapeCsvField(formatCentsForCsv(row.costCents)),
+        escapeCsvField(formatCentsForCsv(lineTotalCents)),
+        escapeCsvField(formatCentsForCsv(lineProfitCents)),
+        escapeCsvField(formatCentsForCsv(row.saleTotalCents)),
+        escapeCsvField(paymentMethodLabel(row.paymentMethod)),
+        escapeCsvField(row.cashReceivedCents == null ? '' : formatCentsForCsv(row.cashReceivedCents)),
+        escapeCsvField(row.changeKeptCents > 0 ? formatCentsForCsv(row.changeKeptCents) : ''),
+        escapeCsvTextField(row.customerName ?? ''),
+        escapeCsvField(row.cancelled ? 'Cancelled' : ''),
+        escapeCsvTextField(cancelReason),
+      ].join(','),
     );
   }
 
@@ -189,7 +201,9 @@ export function buildPreorderPrintout(
     lines.push('  (none)');
   } else {
     for (const item of prepSummary) {
-      lines.push(`  ${item.quantity}x ${item.icon} ${item.name}`);
+      lines.push(
+        `  ${item.quantity}x ${item.icon} ${neutralizeSpreadsheetFormula(item.name)}`,
+      );
     }
   }
   lines.push('');
@@ -206,11 +220,17 @@ export function buildPreorderPrintout(
 
   for (const [saleNumber, orderRows] of orders) {
     const header = orderRows[0];
-    const titleParts = [`#${saleNumber}`, header.customerName, header.notes].filter(Boolean);
+    const titleParts = [
+      `#${saleNumber}`,
+      neutralizeSpreadsheetFormula(header.customerName),
+      neutralizeSpreadsheetFormula(header.notes),
+    ].filter(Boolean);
     lines.push(titleParts.join(' · '));
     for (const row of orderRows) {
       const lineTotal = row.priceCents * row.quantity;
-      lines.push(`  [ ] ${row.quantity}x ${row.icon} ${row.itemName} ($${formatLineMoney(lineTotal)})`);
+      lines.push(
+        `  [ ] ${row.quantity}x ${row.icon} ${neutralizeSpreadsheetFormula(row.itemName)} ($${formatLineMoney(lineTotal)})`,
+      );
     }
     lines.push(`  Total: ${formatMoney(header.saleTotalCents)}`);
     lines.push('');

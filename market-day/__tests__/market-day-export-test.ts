@@ -244,3 +244,87 @@ test('buildPreorderPrintout includes prep summary and checkbox lines per order',
   expect(printout).toContain('#2 · Jake · Sunday');
   expect(printout).toContain('[ ] 1x 🦄 Unicorn ($3.00)');
 });
+
+test('buildMarketDayCsv prefixes formula-like free-text cells with a single quote', () => {
+  const cases: { customerName: string; itemName: string; expectInCsv: string | RegExp }[] = [
+    { customerName: '=1+1', itemName: 'Dragon', expectInCsv: "'=1+1" },
+    { customerName: '+cmd', itemName: 'Dragon', expectInCsv: "'+cmd" },
+    { customerName: '-2', itemName: 'Dragon', expectInCsv: "'-2" },
+    { customerName: '@SUM(A1)', itemName: 'Dragon', expectInCsv: "'@SUM(A1)" },
+    { customerName: 'a,b', itemName: 'Dragon', expectInCsv: '"a,b"' },
+    { customerName: 'he said "hi"', itemName: 'Dragon', expectInCsv: '"he said ""hi"""' },
+    { customerName: '🐉', itemName: '🐉', expectInCsv: '🐉' },
+  ];
+
+  for (const { customerName, itemName, expectInCsv } of cases) {
+    const csv = buildMarketDayCsv([
+      {
+        saleNumber: 1,
+        createdAt: '2026-08-28T20:32:00.000Z',
+        marketDayName: 'Fair',
+        itemName,
+        quantity: 1,
+        priceCents: -250,
+        costCents: 0,
+        saleTotalCents: -250,
+        paymentMethod: 'cash',
+        cashReceivedCents: null,
+        changeKeptCents: 0,
+        customerName,
+        ...activeRow,
+      },
+    ]);
+
+    const dataLine = csv.trim().split('\n')[1]!;
+    expect(dataLine).toContain(',-2.50,');
+    expect(dataLine).not.toMatch(/,'-2\.50/);
+    if (typeof expectInCsv === 'string') {
+      expect(dataLine).toContain(expectInCsv);
+    } else {
+      expect(dataLine).toMatch(expectInCsv);
+    }
+  }
+
+  const multilineCsv = buildMarketDayCsv([
+    {
+      saleNumber: 1,
+      createdAt: '2026-08-28T20:32:00.000Z',
+      marketDayName: 'Fair',
+      itemName: 'Dragon',
+      quantity: 1,
+      priceCents: 400,
+      costCents: 100,
+      saleTotalCents: 400,
+      paymentMethod: 'cash',
+      cashReceivedCents: 400,
+      changeKeptCents: 0,
+      customerName: 'line1\nline2',
+      ...activeRow,
+    },
+  ]);
+  expect(multilineCsv).toContain('"line1\nline2"');
+});
+
+test('buildPreorderPrintout neutralizes formula-like free-text for spreadsheet paste', () => {
+  const printout = buildPreorderPrintout(
+    [{ itemId: 1, name: '=1+1', icon: '🐉', quantity: 1 }],
+    [
+      {
+        saleNumber: 1,
+        createdAt: '2026-08-28T20:32:00.000Z',
+        customerName: '+cmd',
+        notes: '@SUM(A1)',
+        itemName: '-2',
+        icon: '🐉',
+        quantity: 1,
+        priceCents: 400,
+        saleTotalCents: 400,
+      },
+    ],
+  );
+
+  expect(printout).toContain("'=1+1");
+  expect(printout).toContain("'+cmd");
+  expect(printout).toContain("'@SUM(A1)");
+  expect(printout).toContain("'-2");
+});
