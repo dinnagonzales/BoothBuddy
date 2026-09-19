@@ -61,7 +61,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 1. Tap **+ Pre-order** on Home (top bar, next to gear).
 2. Same cart flow as staff checkout, but always a **Preorder**: **Sale name**, **Sale notes**, and **Complete date** required above the cart; screen title **Pre-order**.
 3. Uses the global non-archived catalog (not today's **Menu**), whether or not an **Active Market Day** is running.
-4. **Payment** — **Pay on pickup** only at creation; sale saves to **Running Tab** (`marketDayId` null) and appears in the **Preorders tab** until **Mark complete**.
+4. **Payment** — **Pay on pickup** by default at creation; **Cash** or **Venmo/Zelle** allowed if they pay now. Sale saves to **Running Tab** (`marketDayId` null) and appears in the **Preorders tab** until **Mark complete** / **Mark Delivered**.
 5. **Celebration** — "Preorder saved!" + **Invoice #N**; dismiss → **Home**.
 
 ### Fulfill preorders (admin)
@@ -69,7 +69,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 1. **Preorders tab** — **Prepare** summary at top shows total quantity per item across all open orders.
 2. **Overdue** section lists orders past their **Complete date**; **Upcoming** lists the rest (sorted by complete date).
 3. **Export preorders for printing** — share sheet → printable checklist with prep summary and one block per order (`[ ]` lines to cross off).
-4. Tap an order to record payment and **Mark complete**; sale moves to **Sales tab**.
+4. Tap an order to record payment and **Mark complete**, or **Mark Delivered** if already paid; sale moves to **Sales tab**.
 
 ### Log a Running Tab sale (off-day)
 
@@ -130,7 +130,7 @@ Price and cost snapshot at checkout. Owner edit re-snapshots on save.
 - **Running Tab:** date range picker → CSV for sales in range; marks sales exported.
 - **Preorders:** printable text file from the **Preorders tab** — prep summary (total quantities per item) plus one block per open order with checkbox lines for crossing off at pickup. Share sheet (Mail, AirDrop, Files).
 - Columns (CSV) include: sale number, date/time, market day name (if any), items (name, qty, price, cost), line total, line profit, sale total, payment method, cash received, change kept, customer name (when set on the sale).
-- Summary footer (blank line, then four rows): **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, **Tips total** — amounts in the Sale Total column.
+- Summary footer (blank lines between blocks): **Zelle total** / **Zelle order total** / **Zelle tips total**; **Cash total** / **Cash order total** / **Cash tips total**; **Overall total** / **Order overall total** / **Tips overall total** / **Overall profit** — amounts in the Sale Total column.
 - Export locks undo-close for Market Days.
 - Edits after export flag bucket **out of date — re-export recommended**.
 
@@ -140,7 +140,7 @@ Price and cost snapshot at checkout. Owner edit re-snapshots on save.
 
 - Staff completes a 3-item cash sale start-to-finish without help.
 - No sale requires keyboard typing (numeric entry only for cash).
-- End-of-day export reconciles against manual cash/Venmo/Zelle counts; kept change appears in **Tips total** and **Change kept** per row.
+- End-of-day export reconciles against manual cash/Venmo/Zelle counts; kept change appears in **Tips overall total** / per-method tips rows and **Change kept** per row.
 - Staff never see cost or sales totals.
 
 ## Resolved open questions (from v0.1)

@@ -19,7 +19,7 @@ Issue [010](../scratch/issues/010-app-store-submission.md) blocked by **001–00
 | [009 — Visual polish](../scratch/issues/009-visual-polish.md) | Code shipped | iPad visual sign-off |
 | [005 — Owner edit sale](../scratch/issues/005-admin-edit-sale.md) | **done** | Quantity edit deferred per PRD |
 
-**Not blockers for v1 store submit:** [012 help site](../scratch/issues/012-web-help-site-content.md).
+**Not blockers for v1 store submit:** [012 help site](../scratch/issues/012-web-help-site-content.md) (shipped in `web/`; keep content synced when UX changes).
 
 ---
 

@@ -1,10 +1,10 @@
 # 012 — Web help site content (features + FAQ)
 
 **Type:** HITL  
-**Status:** open  
+**Status:** shipped (content lives in `web/index.html`; deploy via GitHub Pages)  
 **Audience:** Web page agent building **Booth Buddy** help / FAQ pages  
 **Tone:** Simple words a kid can read. Owner steps clearly labeled.  
-**Sync note (Sep 18 2026):** App rebranded to Booth Buddy (Owner / Staff). Prefer those labels over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
+**Sync note (Sep 19 2026):** Help site aligned with latest app — Owner / Staff labels; idle Home shortcuts; Available Items / empty inventory; tips vs order totals on banner, dashboards, and CSV summary rows; Payment section collapsed by default; Mark Delivered for paid preorders. Prefer Owner / Staff over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
 
 ---
 
@@ -349,7 +349,7 @@ After you **End Market Day**, that day moves to **Past Events** on Settings (whe
 
 Each row shows the **name**, **date**, and **number of sales**. Tap one to open its dashboard:
 
-- Totals and profit (same summary as an active day; **Cash** shows total with a tips breakdown when kept change exists)
+- Totals and profit (same summary as an active day; **Total with Tips** plus Cash / Zelle–Venmo with tip breakdowns when kept change exists)
 - Full **Sales** list — tap to edit payment or **Cancel sale**
 - **Export sales as CSV** (or **Re-export** if you already exported)
 - **↩ Reopen Market Day** — only on the most recently closed day, and only before export
@@ -367,7 +367,7 @@ There is no **Today’s Menu** on past events — the menu was for that day only
 3. Tap **⬇ Export sales as CSV** (or **Re-export** if needed).
 4. Use the share sheet to save or email the file (Mail, AirDrop, Files, etc.).
 
-The CSV includes sale numbers, times, items, prices, costs, payment method, cash received, change kept, cancel reason when cancelled, and profit — ready for Excel. Cancelled sales stay in the file for Invoice # history but do not add to money totals. After the sale rows, a blank line and summary totals: **Total (without tips)**, **Gross (without tips)**, **Profit (without tips)**, and **Tips total**.
+The CSV includes sale numbers, times, items, prices, costs, payment method, cash received, change kept, cancel reason when cancelled, and profit — ready for Excel. Cancelled sales stay in the file for Invoice # history but do not add to money totals. After the sale rows, summary blocks: **Zelle total** / Zelle order total / Zelle tips total; **Cash total** / Cash order total / Cash tips total; **Overall total** / Order overall total / Tips overall total / Overall profit.
 
 If you edit a sale after exporting, the app shows **Re-export recommended**.
 
@@ -382,7 +382,7 @@ After export, **Reopen** is no longer available for that day.
 While a Market Day is active:
 
 1. **⚙️** → **Pass Code** → **Settings**.
-2. See totals: number of sales, **profit**, gross revenue, **Cash** (with a **$sales + $tips (tips)** subline when applicable) vs **Venmo/Zelle**.
+2. See <b>Profit</b>, <b>Total with Tips</b> (order + tips), and **Cash** / **Venmo/Zelle** (with tip breakdowns when applicable).
 3. Scroll the **Sales** list — each row shows sale number (or name if you added one), time, amount, payment method.
 4. Tap a sale to change payment method, add optional **name** or **notes**, or **Cancel sale** (completed sales stay visible as Cancelled).
 
@@ -624,4 +624,4 @@ Friendly, colorful, kid-safe — match **Booth Buddy** logo palette (peach/coral
 - Biometric / Face ID Pass Code recovery (v2)
 - Edit item quantities on a saved sale (deferred — remove + re-log)
 
-**Now in app (document when help site ships):** change Pass Code in Settings; optional Item photos (008 WIP — confirm before publishing); **Mark Delivered** on paid preorders.
+**Now in app (documented in `web/index.html`):** change Pass Code in Settings; optional Item photos; **Mark Delivered** on paid preorders; idle Home setup shortcuts; tips vs order totals on banner / dashboards / CSV.

@@ -13,11 +13,11 @@ The always-open bucket for sales that are not part of an Active Market Day — p
 _Avoid_: Orphan bucket, misc tab, default session
 
 **+ Pre-order**:
-Preorder checkout launched from the **+ Pre-order** button next to the gear on Home. Same cart flow as staff — **Sale number** shown as **Invoice #N** in the header — with required **Sale name**, **Sale notes**, and **Complete date** above the cart (no checkbox; entering via this button is always a preorder). Saves to the Running Tab (`marketDayId` null), whether or not an Active Market Day is running. Payment at creation is always **Pay on pickup** only. Dismissing celebration returns to Home.
+Preorder checkout launched from the **+ Pre-order** button next to the gear on Home (hidden when inventory is empty). Same cart flow as staff — **Sale number** shown as **Invoice #N** in the header — with required **Sale name**, **Sale notes**, and **Complete date** above the cart (no checkbox; entering via this button is always a preorder). Saves to the Running Tab (`marketDayId` null), whether or not an Active Market Day is running. Payment at creation defaults to **Pay on pickup**; Cash or Venmo/Zelle is allowed if they pay now. Dismissing celebration returns to Home.
 _Avoid_: Quick Sale, log a sale, porch mode
 
 **Home**:
-Staff's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog). **Make a Sale** is always available. When a day is active, a **Market Day** banner appears at the top. The top bar has a gear icon (owner settings) and **+ Pre-order**. Does not show sales totals — those are owner-only.
+Staff's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog) under **Available Items** — tap an item to start a sale. **Make a Sale** and **+ Pre-order** are available when inventory is non-empty. When a day is active, a **Market Day** ticket banner appears at the top (optional business logo/name, market name, order total without tips, sale count). When no day is active, an idle banner can show business branding plus owner shortcuts (**Start Market Day**, inventory, payment/logo setup, **Go to Sales**) behind the Pass Code. The top bar has a gear icon (owner settings) and **+ Pre-order** (when inventory exists). Does not show profit — those are owner-only.
 _Avoid_: Dashboard, today view
 
 **Item**:
@@ -51,7 +51,7 @@ Optional free-text note on a Sale (e.g. special requests, running-tab context). 
 The date a **Preorder** should be ready for pickup. Required when placing a **+ Pre-order**; defaults to today but can be changed with a date picker. Shown on the **Preorders tab** under each order's notes. Orders past their complete date appear in the **Overdue** section. Can be edited later via owner edit on the **Preorders tab**.
 
 **Preorder**:
-A Sale created via **+ Pre-order**. **Sale name**, **Sale notes**, and **Complete date** are required. Payment at creation is always **Pay on pickup** — no money collected yet. Gets a **Sale number** immediately and appears only in the **Preorders tab**, not the **Sales tab** stats or list. Always saves with no Market Day (`marketDayId` null), even during an Active Market Day. Open preorders are sorted by complete date; overdue orders are grouped at the top. **Mark complete** records Cash or Venmo/Zelle payment and moves the Sale into the **Sales tab**.
+A Sale created via **+ Pre-order**. **Sale name**, **Sale notes**, and **Complete date** are required. Payment at creation defaults to **Pay on pickup**; staff may also choose **Cash** or **Venmo/Zelle** if the customer pays now. Gets a **Sale number** immediately and appears only in the **Preorders tab**, not the **Sales tab** stats or list, until fulfilled. Always saves with no Market Day (`marketDayId` null), even during an Active Market Day. Open preorders are sorted by complete date; overdue orders are grouped at the top. **Mark complete** records Cash or Venmo/Zelle when still unpaid; **Mark Delivered** moves already-paid orders into the **Sales tab**.
 _Avoid_: Pending order, reservation, hold
 
 **Pay on pickup**:
@@ -59,7 +59,7 @@ A payment method used only when placing a **Preorder**. Means payment is deferre
 _Avoid_: Unpaid, TBD, invoice open
 
 **Mark complete**:
-The owner action that fulfills a **Preorder**: record **Cash** or **Venmo/Zelle** payment (required — blocked until payment is on file), then clear the preorder flag so the Sale moves to the **Sales tab**. Done from **Owner edit** on the **Preorders tab**.
+The owner action that fulfills a **Preorder**: if still unpaid, record **Cash** or **Venmo/Zelle** payment (required — blocked until payment is on file), then clear the preorder flag so the Sale moves to the **Sales tab**. Already-paid preorders use **Mark Delivered** instead. Done from **Owner edit** on the **Preorders tab**.
 _Avoid_: Close order, fulfill, checkout
 
 **Sale number**:
@@ -107,7 +107,7 @@ Optional staff action at **Cash** or **Venmo/Zelle** checkout when amount paid e
 _Avoid_: Tip, overpay, donation
 
 **Change kept**:
-The portion of **Change** the customer asked staff to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; **Tips total** in the summary footer) and on market summary cards with the matching payment method — Cash tips roll into the **Cash** tile and Venmo/Zelle tips into **Zelle / Venmo**, each showing a **$sales + $tips (tips)** breakdown when tips exist for that method. Switching payment method between Cash and Venmo/Zelle preserves tender and change kept. Sale total and profit exclude kept change — tips are tracked separately for reconciliation.
+The portion of **Change** the customer asked staff to keep, recorded when **Keep Change?** is checked at checkout. Appears in CSV export (**Change kept** column per row; summary footer splits **order totals** from **tips** — Zelle/Cash/Overall blocks with order, tips, and combined totals, plus **Overall profit**) and on market summary cards as **Total with Tips** (order total + tips) with matching payment tiles — Cash tips roll into the **Cash** tile and Venmo/Zelle tips into **Zelle / Venmo**, each showing an order/tips breakdown when tips exist. The Home Market Day banner shows order totals only (**Total Sales (does not include tips)**). Switching payment method between Cash and Venmo/Zelle preserves tender and change kept. Sale total and profit exclude kept change — tips are tracked separately for reconciliation.
 _Avoid_: Tip, bonus, extra revenue
 
 **Active Market Day**:

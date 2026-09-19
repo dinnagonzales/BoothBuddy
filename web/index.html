@@ -406,6 +406,7 @@ var GLOSSARY = [
   {term:'Market Day', def:'One fair or booth day — a named selling day with a date.'},
   {term:'Events', def:'Owner tab for the active Market Day, Today’s Menu, Past Events, and ending the day.'},
   {term:'Running Tab', def:'Sales made when no Market Day is open (porch or one-offs). Always available.'},
+  {term:'Available Items', def:'The Home list of what you can sell right now (today’s Menu when a Market Day is open; otherwise the full catalog). Tap an item to start a sale.'},
   {term:'Menu', def:'What you are selling today (icon or photo, name, price).'},
   {term:'Inventory', def:'The full list of items the shop can sell (owners manage this).'},
   {term:'Cart', def:'What the customer is buying right now.'},
@@ -415,8 +416,9 @@ var GLOSSARY = [
   {term:'Complete date', def:'When a preorder should be ready for pickup.'},
   {term:'Pass Code', def:'4-digit owner password that unlocks Events, Inventory, Preorders, Sales, and Settings.'},
   {term:'Sold out', def:'Still on the menu, but you cannot add it to a sale today.'},
-  {term:'Preorder', def:'A sale for later pickup. Payment at creation is always Pay on pickup; Cash or Venmo/Zelle is recorded when marked complete.'},
-  {term:'+ Pre-order', def:'Button on Home to start a preorder (uses the full catalog, not only today’s Menu).'},
+  {term:'Preorder', def:'A sale for later pickup. Defaults to Pay on pickup; Cash or Venmo/Zelle can be recorded at creation or when marked complete / delivered.'},
+  {term:'+ Pre-order', def:'Button on Home to start a preorder (uses the full catalog, not only today’s Menu). Hidden when inventory is empty.'},
+  {term:'Tips', def:'Kept change from an overpay — tracked separately from order totals on banners, dashboards, and CSV summaries.'},
   {term:'Cancel sale', def:'Owner action that keeps a completed sale visible with its Invoice #, marks it Cancelled with a reason, and excludes it from money totals.'},
   {term:'Cancelled', def:'A completed sale the owner cancelled. Still in lists and CSV for history; not counted in revenue or tips.'},
   {term:'Archive', def:'Hide an item from the menu while keeping old sales that used it. Prefer Archive over Delete when an item has past sales.'}
@@ -440,13 +442,16 @@ PAGES['home'] = {
     '<div class="card">' + sectionHead('shopping-cart','For staff') +
     '<p>Booth Buddy is your shop on a phone or tablet. A <b>Market Day</b> is one fair or booth day.</p>' +
     steps([
-      'Tap ' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + ' to ring up a customer anytime.',
-      'When an owner has started a <b>Market Day</b>, you see today’s <b>Menu</b> and a banner at the top — those sales count for that day.',
+      'Under <b>Available Items</b>, tap an item — or tap ' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + ' — to ring up a customer.',
+      'When an owner has started a <b>Market Day</b>, you see today’s <b>Menu</b> and a ticket banner at the top (shop logo/name, market name, amount sold without tips, sale count) — those sales count for that day.',
       'Take <b>payment</b>, then celebrate — <b>Sold!</b> 🎉',
       'For orders to pick up later, tap ' + pill('pill-green', icon('plus', 16, 'on-dark') + ' Pre-order') + ' (top right).'
-    ]) + '</div>' +
+    ]) +
+    info('If the shop has no items yet, <b>Make a Sale</b> and <b>+ Pre-order</b> stay hidden until an owner adds inventory.') +
+    '</div>' +
     '<div class="card">' + sectionHead('settings','For owners') +
     '<p>You set up items, start and end Market Days, and check sales behind a <b>4-digit Pass Code</b>. Tap ' + icon('settings', 18) + ' on the home screen and enter the code.</p>' +
+    '<p>When no Market Day is open, Home shows owner shortcuts (after the Pass Code): <b>Start Market Day</b>, inventory, optional payment/logo setup, and <b>Go to Sales</b>.</p>' +
     '<p>Starting a Market Day is optional for porch or one-off sales, but it helps organize fair-day totals.</p></div>' +
     '<div class="who-grid">' +
       '<div class="who-card staff"><h3>' + icon('shopping-cart', 20, 'on-dark') + ' Staff</h3><p>Ring up sales, take payment, and fix a sale.</p><a href="#/sell">Start selling →</a></div>' +
@@ -468,7 +473,7 @@ PAGES['sell'] = {
     '<div class="card">' +
     steps([
       'Open Booth Buddy on the home screen.',
-      'Tap ' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale'),
+      'Under <b>Available Items</b>, tap an item to start with quantity 1 — or tap ' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + '.',
       'At the top you’ll see <b>CART: Invoice #___</b>. That’s this order’s number.',
       'Use <b>−</b> and <b>+</b> on each menu row to set quantities (the box in the middle shows the count).',
       'Check the cart summary — each line is <b>Name(qty)</b> and subtotal; the footer shows <b>N items</b> and the total.',
@@ -480,6 +485,7 @@ PAGES['sell'] = {
     '<p>' + pill('pill-purple', icon('shopping-cart', 16, 'on-dark') + ' Make a Sale') + ' still works. You can optionally add <b>Name</b> and <b>Notes</b> above the cart (for example, porch-sale context). Payment is Cash or Venmo/Zelle as usual.</p>' +
     '<h3>If an item is gray</h3>' +
     '<p>It might be <b>Sold out</b> for today. Pick something else, or ask an owner to mark it available again.</p>' +
+    warn('If you see <b>Update Inventory to Complete a Sale</b>, the shop has no items yet — ask an owner to add inventory first.') +
     '</div>'
 };
 
@@ -521,11 +527,11 @@ PAGES['see-todays-sales'] = {
   body:
     '<div class="card">' +
     steps([
-      'On the home screen, tap the colorful <b>Market Day</b> banner at the top (market name, date, amount sold today, and sale count).',
-      'On the next screen, see <b>Cash</b> and <b>Venmo/Zelle</b> totals (no profit).',
+      'On the home screen, tap the colorful <b>Market Day</b> ticket banner (shop logo/name when set, market name, date, <b>Total Sales (does not include tips)</b>, and sale count — or <b>See More →</b>).',
+      'On the next screen, see <b>Total with Tips</b> (order total + tips), plus <b>Cash</b> and <b>Zelle / Venmo</b> (no profit).',
       'Tap a sale to see what was in it.'
     ]) +
-    info('This is <b>look only</b> — you can’t change sales here. To fix something right after selling, use <b>Edit this sale</b> on the celebration screen. Staff never see cost or profit.') +
+    info('This is <b>look only</b> — you can’t change sales here. To fix something right after selling, use <b>Edit this sale</b> on the celebration screen. Staff never see cost or profit. Tips are kept change — separate from order totals.') +
     '</div>'
 };
 
@@ -534,12 +540,14 @@ PAGES['fix-a-sale'] = {
   body:
     '<div class="card">' + sectionHead('shopping-cart','Right after checkout') +
     steps([
-      'On the <b>Sold!</b> screen, tap ' + pill('pill-white', icon('pencil', 16) + ' Edit this sale'),
+      'On the <b>Sold!</b> screen, tap ' + pill('pill-white', icon('pencil', 16) + ' Edit this sale') + ' (or <b>Edit preorder</b> for a preorder).',
       'Your cart opens again with the <b>same invoice number</b>.',
       'Fix the items or amounts.',
       'Tap ' + pill('pill-green', 'Checkout ' + icon('arrow-right', 16, 'on-dark')) + ' and complete payment again.',
       'The old sale is replaced with the fixed one.'
-    ]) + '</div>' +
+    ]) +
+    tip('Tap <b>Go to Dashboard</b> (or the ✕) when you’re done — that returns to Home.') +
+    '</div>' +
     '<div class="card">' + sectionHead('settings','Later in the day (owners)') +
     '<p>See <a href="#/faq/edit-sale-later">Change a sale later</a>.</p></div>'
 };
@@ -556,7 +564,7 @@ PAGES['preorder'] = {
       'Tap ' + pill('pill-green', 'Checkout ' + icon('arrow-right', 16, 'on-dark')),
       'Payment defaults to <b>Pay on pickup</b>. You can also choose <b>Cash</b> or <b>Venmo / Zelle</b> if they pay now.',
       'Tap ' + pill('pill-purple', icon('check', 16, 'on-dark') + ' Save preorder'),
-      '<b>Preorder saved!</b> 🎉 If they still owe money, an owner marks it complete when they pay.'
+      '<b>Preorder saved!</b> 🎉 If they still owe money, an owner records payment and marks it complete. If they already paid, an owner taps <b>Mark Delivered</b> when handing it off.'
     ]) +
     info('Preorders always save separately from today’s <b>Market Day</b> (they go to the Running Tab), even during a fair. Right after saving, tap <b>Edit preorder</b> on the celebration screen if you need to fix it.') +
     '</div>'
@@ -671,7 +679,7 @@ PAGES['past-events'] = {
     '<p>After you <b>End Market Day</b>, that day moves to <b>Past Events</b> on the <b>Events</b> tab (when no day is active).</p>' +
     '<p>Each row shows the <b>name</b>, <b>date</b>, and <b>number of sales</b>. Tap one to open its dashboard:</p>' +
     rows([
-      {ic:'receipt', title:'Totals and profit', desc:'Same summary as an active day, including cash tips when kept change exists'},
+      {ic:'receipt', title:'Totals and profit', desc:'Profit, Total with Tips (order + tips), Cash and Zelle/Venmo with tip breakdowns'},
       {ic:'pencil', title:'Sales list', desc:'Tap a sale to edit payment or Cancel sale'},
       {ic:'download', title:'Export sales as CSV', desc:'Or Re-export if you already exported'},
       {ic:'undo-2', title:'Reopen Market Day', desc:'Only on the most recently closed day, and only before export'}
@@ -696,7 +704,11 @@ PAGES['export-sales'] = {
       icon('settings', 18) + ' → Pass Code → <b>Sales</b>.',
       'Pick a date range, then tap <b>Export sales as CSV</b>.'
     ]) +
-    '<p>The CSV is ready for Excel: sale numbers, times, items, prices, costs, payment method, cash received, change kept, cancel reason when cancelled, and profit — plus summary totals and tips. Cancelled sales stay in the file for Invoice # history but do not add to money totals.</p>' +
+    '<p>The CSV is ready for Excel: sale numbers, times, items, prices, costs, payment method, cash received, change kept, cancel reason when cancelled, and profit. Cancelled sales stay in the file for Invoice # history but do not add to money totals.</p>' +
+    '<p>After the sale rows, summary blocks split <b>order totals</b> from <b>tips</b> (kept change):</p>' +
+    '<ul><li><b>Zelle total</b> / Zelle order total / Zelle tips total</li>' +
+    '<li><b>Cash total</b> / Cash order total / Cash tips total</li>' +
+    '<li><b>Overall total</b> / Order overall total / Tips overall total / Overall profit</li></ul>' +
     warn('After you export a Market Day, <b>Reopen</b> is no longer available for that day. If you edit a sale later, the app may show <b>Re-export recommended</b>.') +
     '</div>'
 };
@@ -708,11 +720,11 @@ PAGES['sales-dashboard'] = {
     '<p>While a Market Day is active:</p>' +
     steps([
       icon('settings', 18) + ' → <b>Pass Code</b> → <b>Events</b>.',
-      'See totals: number of sales, <b>profit</b>, gross revenue, <b>Cash</b> vs <b>Venmo/Zelle</b>.',
+      'See <b>Profit</b> (with gross + sale count), <b>Total with Tips</b> (order total + tips), and <b>Cash</b> vs <b>Zelle / Venmo</b> (with tip breakdowns when kept change exists).',
       'Scroll the sales list on Events — or open the <b>Sales</b> tab for all-time history.',
       'Tap a sale to change payment, add a name or notes, or <b>Cancel sale</b> (completed sales stay visible as Cancelled).'
     ]) +
-    info('Staff see a simpler view (no profit) from the Market Day banner on Home. Cancelled sales do not count toward revenue or tips.') +
+    info('Staff see a simpler view (no profit) from the Market Day banner on Home — banner amounts exclude tips. Cancelled sales do not count toward revenue or tips.') +
     '<p>When no day is active, open a closed day from <a href="#/past-events">Past Events</a> (on the Events tab) to review, edit, export, or reopen.</p>' +
     '</div>'
 };
@@ -861,12 +873,13 @@ PAGES['faq/owner-settings'] = {
   body:
     '<div class="card">' +
     steps([
-      icon('settings', 18) + ' → <b>Pass Code</b> → tap Settings in the bottom nav (last tab).',
-      '<b>Business</b> — shop name and optional logo.',
+      icon('settings', 18) + ' → <b>Pass Code</b> → tap <b>Settings</b> in the bottom nav (last tab).',
+      '<b>Business</b> — shop name and optional logo (shows on the Market Day banner and idle Home).',
       '<b>Passcode</b> — change the 4-digit code. <b>Require Pass Code for Settings</b> is on by default.',
-      '<b>Payment</b> — Zelle full name, email/phone, optional QR; Venmo username, optional QR.',
+      '<b>Payment</b> — tap to expand (collapsed by default). Zelle full name, email/phone, optional QR; Venmo username, optional QR.',
       'Tap <b>Save changes</b> at the bottom for payment/business fields. Passcode and gate toggle save on their own.'
     ]) +
+    tip('From idle Home (no Market Day), shortcuts can jump straight to <b>Add Mobile Payment Methods</b> or <b>Add Logo</b> after the Pass Code.') +
     '</div>'
 };
 
@@ -1039,9 +1052,9 @@ function crumbTrail(page, slug){
 
 function renderChecklist(){
   var data = {
-    chkA: [icon('settings', 16) + ' → Pass Code → Events → enter Market Day name + Date → Start Market Day', 'Check Today’s Menu (sold out / remove items)', 'Hand device to staff'],
-    chkB: [icon('shopping-cart', 16) + ' Make a Sale → cart → Checkout → pay → Sold!'],
-    chkC: [icon('settings', 16) + ' → Events → review sales & profit', 'End Market Day', '(Optional) Past Events → export CSV for Excel']
+    chkA: ['Home shortcut or ' + icon('settings', 16) + ' → Pass Code → Events → enter Market Day name + Date → Start Market Day', 'Check Today’s Menu (sold out / remove items)', 'Hand device to staff'],
+    chkB: ['Tap an Available Item or ' + icon('shopping-cart', 16) + ' Make a Sale → cart → Checkout → pay → Sold!'],
+    chkC: [icon('settings', 16) + ' → Events → review profit / Total with Tips', 'End Market Day', '(Optional) Past Events → export CSV for Excel']
   };
   Object.keys(data).forEach(function(id){
     var el = document.getElementById(id);
