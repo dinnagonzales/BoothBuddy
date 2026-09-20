@@ -1,6 +1,5 @@
-import { Check } from 'lucide-react-native';
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,9 +9,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SetupPrimaryButton } from '@/components/onboarding/SetupPrimaryButton';
 import { checkmarkScale } from '@/components/onboarding/setup-motion';
 import { BrandCard } from '@/components/ui/BrandCard';
-import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts } from '@/constants/visual';
+
+const buddyImage = require('@/assets/images/buddy.png');
 
 type SetupSuccessCardProps = {
   firstName: string;
@@ -31,7 +31,7 @@ export function SetupSuccessCard({
     scale.value = checkmarkScale(reduceMotion);
   }, [reduceMotion, scale]);
 
-  const checkStyle = useAnimatedStyle(() => ({
+  const buddyStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
@@ -40,20 +40,27 @@ export function SetupSuccessCard({
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
-        <BrandCard surface="peach" style={styles.card}>
-          <Animated.View style={[styles.checkCircle, checkStyle]}>
-            <UiIcon icon={Check} size={36} color={colors.white} />
+        <View style={styles.stack}>
+          <Animated.View style={[styles.buddyWrap, buddyStyle]} pointerEvents="none">
+            <Image
+              source={buddyImage}
+              style={styles.buddy}
+              resizeMode="contain"
+              accessibilityLabel="Booth Buddy"
+            />
           </Animated.View>
 
-          <Text style={styles.title}>You&apos;re all set, {displayName}!</Text>
-          <Text style={styles.subtext}>Your shop is ready to go.</Text>
+          <BrandCard surface="peach" style={styles.card}>
+            <Text style={styles.title}>You&apos;re all set, {displayName}!</Text>
+            <Text style={styles.subtext}>Your shop is ready to go.</Text>
 
-          <SetupPrimaryButton
-            label="Go to my shop"
-            onPress={onContinue}
-            reduceMotion={reduceMotion}
-          />
-        </BrandCard>
+            <SetupPrimaryButton
+              label="Go to my shop"
+              onPress={onContinue}
+              reduceMotion={reduceMotion}
+            />
+          </BrandCard>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -70,22 +77,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
-  card: {
+  stack: {
     width: '100%',
     maxWidth: 380,
-    borderRadius: 28,
-    paddingVertical: 36,
-    paddingHorizontal: 28,
     alignItems: 'center',
   },
-  checkCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.success,
+  buddyWrap: {
+    zIndex: 2,
+    marginBottom: -36,
+  },
+  buddy: {
+    width: 112,
+    height: 112,
+  },
+  card: {
+    width: '100%',
+    borderRadius: 28,
+    paddingTop: 48,
+    paddingBottom: 36,
+    paddingHorizontal: 28,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
+    zIndex: 1,
   },
   title: {
     fontFamily: fonts.heading.semiBold,

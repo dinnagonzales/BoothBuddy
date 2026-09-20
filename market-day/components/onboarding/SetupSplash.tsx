@@ -43,7 +43,6 @@ export function SetupSplash({ progress, reduceMotion = false, onReady }: SetupSp
 
   useEffect(() => {
     if (clamped < 1 || !onReady) return;
-    // Wait a beat so "Ready!" is visible, and so the parent can finish setting destination.
     const timer = setTimeout(onReady, reduceMotion ? 200 : 450);
     return () => clearTimeout(timer);
   }, [clamped, onReady, reduceMotion]);
@@ -54,11 +53,12 @@ export function SetupSplash({ progress, reduceMotion = false, onReady }: SetupSp
 
   return (
     <SafeAreaView style={styles.page}>
+      <View style={styles.topBar}>
+        <BoothBuddyLogo variant="long" />
+      </View>
+
       <View style={styles.center}>
-        <View style={styles.mascotBadge}>
-          <BoothBuddyLogo variant="fullSm" style={styles.mascot} />
-        </View>
-        <Text style={styles.wordmark}>Booth Buddy</Text>
+        <Text style={styles.welcome}>Welcome to Booth Buddy!</Text>
 
         <View
           accessibilityRole="progressbar"
@@ -85,6 +85,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  topBar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 38,
+    paddingHorizontal: 20,
+    marginTop: 4,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
@@ -92,22 +99,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     gap: 16,
   },
-  mascotBadge: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    backgroundColor: colors.surfaceMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    marginBottom: 4,
-  },
-  mascot: {
-    width: 88,
-  },
-  wordmark: {
+  welcome: {
     fontFamily: fonts.heading.semiBold,
-    fontSize: 28,
+    fontSize: 26,
     color: colors.ink,
     textAlign: 'center',
   },

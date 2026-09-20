@@ -81,17 +81,15 @@ export function ProfileSetupCard({
 
   return (
     <SafeAreaView style={styles.page}>
+      <View style={styles.topBar}>
+        <BoothBuddyLogo variant="long" />
+      </View>
+
       <View style={styles.center}>
         <StepDots activeIndex={0} />
         <BrandCard surface="peach" style={styles.card}>
           <Animated.View style={shakeStyle}>
-            <View style={styles.logoWrap}>
-              <View style={styles.avatarBadge}>
-                <BoothBuddyLogo variant="fullSm" style={styles.avatar} />
-              </View>
-            </View>
-
-            <Text style={styles.title}>Let&apos;s set up your shop</Text>
+            <Text style={styles.title}>Welcome to Booth Buddy!</Text>
             <Text style={styles.subtext}>Just for you — your staff won&apos;t see this.</Text>
 
             <View style={styles.form}>
@@ -152,12 +150,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  topBar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 38,
+    paddingHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 8,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
     gap: 16,
+    paddingBottom: 24,
   },
   card: {
     width: '100%',
@@ -165,22 +172,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     paddingVertical: 28,
     paddingHorizontal: 24,
-  },
-  logoWrap: {
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  avatarBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.surfaceMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatar: {
-    width: 52,
   },
   title: {
     fontFamily: fonts.heading.semiBold,

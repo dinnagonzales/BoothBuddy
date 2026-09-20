@@ -1,4 +1,4 @@
-import { ChevronLeft, Lock } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -7,6 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { PasscodeKeypad } from '@/components/onboarding/PasscodeKeypad';
 import { StepDots } from '@/components/onboarding/StepDots';
 import { digitPopScale, shakeTranslateX } from '@/components/onboarding/setup-motion';
@@ -146,6 +147,10 @@ export function GrownUpSetupCard({
 
   return (
     <SafeAreaView style={styles.page}>
+      <View style={styles.topBar}>
+        <BoothBuddyLogo variant="long" />
+      </View>
+
       <View style={styles.center}>
         <View style={styles.topRow}>
           <Pressable
@@ -161,12 +166,6 @@ export function GrownUpSetupCard({
         </View>
 
         <BrandCard surface="peach" style={styles.card}>
-          <View style={styles.logoWrap}>
-            <View style={styles.lockBadge}>
-              <UiIcon icon={Lock} size={26} color={colors.purpleDark} />
-            </View>
-          </View>
-
           <Text style={styles.title}>{headline}</Text>
           <Text style={styles.subtext}>{subcopy}</Text>
           {phase === 'create' ? (
@@ -222,12 +221,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  topBar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 38,
+    paddingHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 8,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
     gap: 12,
+    paddingBottom: 24,
   },
   topRow: {
     width: '100%',
@@ -248,18 +256,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     paddingVertical: 28,
     paddingHorizontal: 24,
-  },
-  logoWrap: {
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  lockBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.surfaceMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontFamily: fonts.heading.semiBold,

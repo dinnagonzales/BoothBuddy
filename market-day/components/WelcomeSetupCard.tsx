@@ -16,13 +16,13 @@ type WelcomeSetupCardProps = {
 export function WelcomeSetupCard({ onContinue }: WelcomeSetupCardProps) {
   return (
     <SafeAreaView style={styles.page}>
+      <View style={styles.topBar}>
+        <BoothBuddyLogo variant="long" />
+      </View>
+
       <View style={styles.center}>
         <BrandCard surface="peach" style={styles.card}>
-          <View style={styles.logoWrap}>
-            <BoothBuddyLogo variant="fullSm" />
-          </View>
-
-          <Text style={styles.title}>Booth Buddy</Text>
+          <Text style={styles.title}>Welcome to Booth Buddy!</Text>
           <Text style={styles.subtext}>Ring up sales from a phone or tablet.</Text>
 
           <View style={styles.sections}>
@@ -71,11 +71,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  topBar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 38,
+    paddingHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 8,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+    paddingBottom: 24,
   },
   card: {
     width: '100%',
@@ -83,10 +92,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     paddingVertical: 32,
     paddingHorizontal: 28,
-  },
-  logoWrap: {
-    alignSelf: 'center',
-    marginBottom: 16,
   },
   title: {
     fontFamily: fonts.heading.semiBold,
