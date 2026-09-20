@@ -1,6 +1,7 @@
 import { usePathname, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ClipboardList, Receipt, Settings, ShelvingUnit, Store } from 'lucide-react-native';
 
 import { UiIcon } from '@/components/ui/UiIcon';
@@ -19,11 +20,12 @@ function activeTab(pathname: string): Tab {
 export function GrownUpNav() {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
   const current = activeTab(pathname);
   const iconColor = (active: boolean) => (active ? colors.purpleDark : colors.inkSoft);
 
   return (
-    <View style={styles.nav}>
+    <View style={[styles.nav, { paddingBottom: Math.max(insets.bottom, 4) }]}>
       <NavItem
         icon={<UiIcon icon={Store} size={22} color={iconColor(current === 'events')} />}
         label="Events"
@@ -81,15 +83,15 @@ const styles = StyleSheet.create({
   nav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    width: '100%',
     backgroundColor: colors.white,
-    borderTopWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.borderSubtle,
     paddingTop: 10,
-    paddingBottom: 4,
   },
   navItem: {
+    flex: 1,
     alignItems: 'center',
-    minWidth: 64,
   },
   navIcon: {
     marginBottom: 2,

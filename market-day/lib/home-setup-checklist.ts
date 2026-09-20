@@ -18,8 +18,6 @@ export type HomeSetupTask = {
 
 export const HOME_SETUP_REQUIRED_SUBTEXT = 'Add an item to start selling';
 export const HOME_SETUP_READY_SUBTEXT = 'Ready to sell ✓ — optional steps below';
-export const HOME_SETUP_HIDDEN_STRIP =
-  '✓ Ready to sell — tap to see optional setup steps.';
 
 export function buildHomeSetupTasks(completions: HomeSetupCompletions): HomeSetupTask[] {
   return [
@@ -71,7 +69,11 @@ export function canHideHomeSetupChecklist(completions: HomeSetupCompletions): bo
   return isHomeSetupRequiredComplete(completions);
 }
 
-/** Card stays until every task is done, or the user Hides after required is met. */
-export function shouldShowHomeSetupChecklist(completions: HomeSetupCompletions): boolean {
+/** Gone once dismissed forever, or once every remaining task is done. */
+export function shouldShowHomeSetupChecklist(
+  completions: HomeSetupCompletions,
+  dismissed: boolean,
+): boolean {
+  if (dismissed) return false;
   return !isHomeSetupFullyComplete(completions);
 }

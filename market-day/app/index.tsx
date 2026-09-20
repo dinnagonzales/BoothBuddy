@@ -13,14 +13,12 @@ import {
 import Svg, { Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 import {
   CalendarPlus,
-  HandCoins,
   Plus,
   Receipt,
   Search,
   Settings,
   ShelvingUnit,
   ShoppingCartPlus,
-  UserRoundPen,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -43,6 +41,10 @@ import {
   getMarketDayStats,
 } from '@/lib/db/queries';
 import { getPasscodeGateEnabled, migratePasscodeGateIfNeeded } from '@/lib/db/passcode-gate-settings';
+import {
+  getHomeSetupChecklistDismissed,
+  setHomeSetupChecklistDismissed,
+} from '@/lib/db/home-setup-checklist-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import { unlockGrownUpPasscode } from '@/lib/grown-up-passcode';
 import {
@@ -100,61 +102,27 @@ type IdleHomeAction = {
   path: GrownUpPath;
 };
 
-const IDLE_HOME_ACTION_LIMIT = 4;
-
-function buildIdleHomeActions(input: {
-  hasInventory: boolean;
-  hasPaymentMethod: boolean;
-  hasLogo: boolean;
-}): IdleHomeAction[] {
-  const actions: IdleHomeAction[] = [
+function buildIdleHomeActions(): IdleHomeAction[] {
+  return [
     {
       key: 'start-market-day',
       label: 'Start Market Day',
       icon: CalendarPlus,
       path: '/settings',
     },
-    input.hasInventory
-      ? {
-          key: 'inventory-update',
-          label: 'Update Inventory',
-          icon: ShelvingUnit,
-          path: '/inventory',
-        }
-      : {
-          key: 'inventory-add',
-          label: 'Add Inventory',
-          icon: ShelvingUnit,
-          path: '/inventory?add=1',
-        },
+    {
+      key: 'inventory-update',
+      label: 'Update Inventory',
+      icon: ShelvingUnit,
+      path: '/inventory',
+    },
+    {
+      key: 'sales',
+      label: 'Go to Sales',
+      icon: Receipt,
+      path: '/sales',
+    },
   ];
-
-  if (!input.hasPaymentMethod) {
-    actions.push({
-      key: 'payment',
-      label: 'Add Mobile Payment Methods',
-      icon: HandCoins,
-      path: '/business?payment=1',
-    });
-  }
-
-  if (!input.hasLogo) {
-    actions.push({
-      key: 'logo',
-      label: 'Add Logo',
-      icon: UserRoundPen,
-      path: '/business',
-    });
-  }
-
-  actions.push({
-    key: 'sales',
-    label: 'Go to Sales',
-    icon: Receipt,
-    path: '/sales',
-  });
-
-  return actions.slice(0, IDLE_HOME_ACTION_LIMIT);
 }
 
 const TICKET_PINK = '#FB6AA3';
@@ -326,6 +294,7 @@ export default function HomeScreen() {
   const [idleBusiness, setIdleBusiness] = useState<IdleBusinessSummary | null>(null);
   const [hasPaymentMethod, setHasPaymentMethod] = useState(false);
   const [hasLogo, setHasLogo] = useState(false);
+  const [checklistDismissed, setChecklistDismissed] = useState(false);
   const [passCodeOpen, setPassCodeOpen] = useState(false);
   const [passcodeGateEnabled, setPasscodeGateEnabled] = useState(false);
   const [postUnlockPath, setPostUnlockPath] = useState<Href>('/settings');
@@ -372,16 +341,18 @@ export default function HomeScreen() {
 
           if (!complete) return;
 
-          const [homeItems, marketDay, business] = await Promise.all([
+          const [homeItems, marketDay, business, dismissed] = await Promise.all([
             getHomeItems(db),
             getActiveMarketDay(db),
             getBusinessSettings(db),
+            getHomeSetupChecklistDismissed(db),
           ]);
           if (cancelled) return;
 
           setItems(homeItems);
           setHasPaymentMethod(hasVenmoZellePaymentInfo(business));
           setHasLogo(Boolean(business.businessLogoUri));
+          setChecklistDismissed(dismissed);
           if (marketDay) {
             const [dayStats, saleCount] = await Promise.all([
               getMarketDayStats(db, marketDay.id),
@@ -434,12 +405,8 @@ export default function HomeScreen() {
     hasPaymentMethod,
     hasLogo,
   };
-  const showSetupChecklist = shouldShowHomeSetupChecklist(setupCompletions);
-  const idleActions = buildIdleHomeActions({
-    hasInventory,
-    hasPaymentMethod,
-    hasLogo,
-  });
+  const showSetupChecklist = shouldShowHomeSetupChecklist(setupCompletions, checklistDismissed);
+  const idleActions = buildIdleHomeActions();
 
   const openSetupTask = (taskId: HomeSetupTaskId) => {
     switch (taskId) {
@@ -453,6 +420,11 @@ export default function HomeScreen() {
         openGrownUpRoute('/business');
         return;
     }
+  };
+
+  const hideSetupChecklist = () => {
+    setChecklistDismissed(true);
+    void setHomeSetupChecklistDismissed(db, true).catch(showUiError);
   };
 
   if (setupReady === null) {
@@ -512,6 +484,7 @@ export default function HomeScreen() {
               <HomeSetupChecklistCard
                 completions={setupCompletions}
                 onTaskPress={openSetupTask}
+                onHide={hideSetupChecklist}
               />
             </View>
           ) : idleBusiness && !activeMarket ? (

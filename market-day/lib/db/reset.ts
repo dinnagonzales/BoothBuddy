@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { clearAdminProfile } from '@/lib/db/admin-profile';
+import { clearHomeSetupChecklistDismissed } from '@/lib/db/home-setup-checklist-settings';
 
 export async function clearShopData(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(`
@@ -11,4 +12,5 @@ export async function clearShopData(db: SQLiteDatabase): Promise<void> {
     DELETE FROM items;
   `);
   await clearAdminProfile(db);
+  await clearHomeSetupChecklistDismissed(db);
 }

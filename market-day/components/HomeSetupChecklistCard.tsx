@@ -22,7 +22,6 @@ import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
 import {
-  HOME_SETUP_HIDDEN_STRIP,
   buildHomeSetupTasks,
   homeSetupHeaderSubtext,
   homeSetupProgress,
@@ -46,25 +45,20 @@ const TASK_ICONS: Record<HomeSetupTaskId, LucideIcon> = {
 type HomeSetupChecklistCardProps = {
   completions: HomeSetupCompletions;
   onTaskPress: (taskId: HomeSetupTaskId) => void;
+  onHide: () => void;
 };
 
 export function HomeSetupChecklistCard({
   completions,
   onTaskPress,
+  onHide,
 }: HomeSetupChecklistCardProps) {
   const reduceMotion = useReducedMotion();
-  const requiredComplete = isHomeSetupRequiredComplete(completions);
-  const canHide = requiredComplete;
-  const [hidden, setHidden] = useState(false);
+  const canHide = isHomeSetupRequiredComplete(completions);
   const [expanded, setExpanded] = useState(true);
 
   const progress = homeSetupProgress(completions);
   const fill = useSharedValue(progress);
-
-  // Hide (strip) is only allowed after required is done; if that unlock goes away, leave strip mode.
-  useEffect(() => {
-    if (!canHide) setHidden(false);
-  }, [canHide]);
 
   useEffect(() => {
     const duration = reduceMotion ? 0 : PROGRESS_MS;
@@ -76,21 +70,6 @@ export function HomeSetupChecklistCard({
   }));
 
   const toggleExpanded = () => setExpanded((value) => !value);
-
-  if (hidden && canHide) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={HOME_SETUP_HIDDEN_STRIP}
-        onPress={() => {
-          setHidden(false);
-          setExpanded(true);
-        }}
-        style={({ pressed }) => [styles.strip, pressed && styles.pressed]}>
-        <Text style={styles.stripText}>{HOME_SETUP_HIDDEN_STRIP}</Text>
-      </Pressable>
-    );
-  }
 
   const tasks = buildHomeSetupTasks(completions);
   const requiredTask = tasks.find((task) => task.kind === 'required');
@@ -125,7 +104,7 @@ export function HomeSetupChecklistCard({
               hitSlop={10}
               onPress={(event) => {
                 event.stopPropagation?.();
-                setHidden(true);
+                onHide();
               }}
               style={({ pressed }) => [styles.hideButton, pressed && styles.pressed]}>
               <Text style={styles.hideLabel}>Hide</Text>
@@ -435,23 +414,6 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.border,
     marginLeft: 52,
-  },
-  strip: {
-    backgroundColor: colors.white,
-    borderRadius: radii.cart,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    shadowColor: colors.ink,
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  stripText: {
-    fontFamily: fonts.body.semiBold,
-    fontSize: 14,
-    color: colors.ink,
-    textAlign: 'center',
   },
   pressed: {
     opacity: 0.85,

@@ -1,5 +1,4 @@
 import {
-  HOME_SETUP_HIDDEN_STRIP,
   HOME_SETUP_READY_SUBTEXT,
   HOME_SETUP_REQUIRED_SUBTEXT,
   buildHomeSetupTasks,
@@ -67,10 +66,10 @@ test('optional completions do not move progress or header text', () => {
   expect(tasks.find((task) => task.id === 'inventory')?.complete).toBe(false);
 });
 
-test('checklist leaves home only when every task is complete', () => {
-  expect(shouldShowHomeSetupChecklist(requiredOnly)).toBe(true);
+test('checklist leaves home when dismissed or every task is complete', () => {
+  expect(shouldShowHomeSetupChecklist(requiredOnly, false)).toBe(true);
+  expect(shouldShowHomeSetupChecklist(requiredOnly, true)).toBe(false);
   expect(isHomeSetupFullyComplete(requiredOnly)).toBe(false);
-  expect(shouldShowHomeSetupChecklist(allDone)).toBe(false);
+  expect(shouldShowHomeSetupChecklist(allDone, false)).toBe(false);
   expect(isHomeSetupFullyComplete(allDone)).toBe(true);
-  expect(HOME_SETUP_HIDDEN_STRIP).toContain('optional setup steps');
 });

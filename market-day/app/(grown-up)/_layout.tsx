@@ -2,11 +2,12 @@ import { Slot, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GrownUpNav } from '@/components/GrownUpNav';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
-import { Screen } from '@/components/Screen';
 import { colors } from '@/constants/theme';
+import { spacing } from '@/constants/visual';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
@@ -72,18 +73,27 @@ export default function GrownUpLayout() {
   }
 
   return (
-    <Screen>
-      <View style={styles.page}>
-        <View style={styles.content}>
-          <Slot />
+    <View style={styles.root}>
+      <SafeAreaView style={styles.safeTop} edges={['top', 'left', 'right']}>
+        <View style={styles.page}>
+          <View style={styles.content}>
+            <Slot />
+          </View>
         </View>
-        <GrownUpNav />
-      </View>
-    </Screen>
+      </SafeAreaView>
+      <GrownUpNav />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: colors.screen,
+  },
+  safeTop: {
+    flex: 1,
+  },
   loadingPage: {
     flex: 1,
     alignItems: 'center',
@@ -102,5 +112,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingHorizontal: spacing.screen,
   },
 });
