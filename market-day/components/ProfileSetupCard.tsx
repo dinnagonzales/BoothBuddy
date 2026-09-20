@@ -1,11 +1,17 @@
-import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
-import { BrandButton } from '@/components/ui/BrandButton';
-import { BrandCard } from '@/components/ui/BrandCard';
-import { BrandInput } from '@/components/ui/BrandInput';
-import type { ComponentProps } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
+import { FloatingLabelInput } from '@/components/onboarding/FloatingLabelInput';
+import { SetupPrimaryButton } from '@/components/onboarding/SetupPrimaryButton';
+import { StepDots } from '@/components/onboarding/StepDots';
+import { shakeTranslateX } from '@/components/onboarding/setup-motion';
+import { BrandCard } from '@/components/ui/BrandCard';
 import { colors } from '@/constants/theme';
 import { fonts } from '@/constants/visual';
 import { normalizeAdminProfile } from '@/lib/admin-profile';
@@ -18,6 +24,7 @@ type ProfileSetupCardProps = {
   onFirstNameChange: (value: string) => void;
   onLastNameChange: (value: string) => void;
   onSave: () => void;
+  reduceMotion?: boolean;
 };
 
 export function ProfileSetupCard({
@@ -28,78 +35,115 @@ export function ProfileSetupCard({
   onFirstNameChange,
   onLastNameChange,
   onSave,
+  reduceMotion = false,
 }: ProfileSetupCardProps) {
-  const canSave = isProfileDraftValid({ businessName, firstName, lastName });
+  const businessRef = useRef<TextInput>(null);
+  const firstNameRef = useRef<TextInput>(null);
+  const [businessError, setBusinessError] = useState<string | null>(null);
+  const [firstNameError, setFirstNameError] = useState<string | null>(null);
+  const shakeX = useSharedValue(0);
+
+  const shakeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: shakeX.value }],
+  }));
+
+  useEffect(() => {
+    if (!businessError) return;
+    shakeX.value = shakeTranslateX(reduceMotion);
+  }, [businessError, reduceMotion, shakeX]);
+
+  useEffect(() => {
+    if (!firstNameError || businessError) return;
+    shakeX.value = shakeTranslateX(reduceMotion);
+  }, [firstNameError, businessError, reduceMotion, shakeX]);
+
+  const handleContinue = () => {
+    const normalized = normalizeAdminProfile({ businessName, firstName, lastName });
+    const nextBusinessError =
+      normalized.businessName.length === 0 ? 'Enter your business name to continue' : null;
+    const nextFirstNameError =
+      normalized.firstName.length === 0 ? 'Enter your first name to continue' : null;
+
+    setBusinessError(nextBusinessError);
+    setFirstNameError(nextFirstNameError);
+
+    if (nextBusinessError) {
+      businessRef.current?.focus();
+      return;
+    }
+    if (nextFirstNameError) {
+      firstNameRef.current?.focus();
+      return;
+    }
+
+    onSave();
+  };
 
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.center}>
+        <StepDots activeIndex={0} />
         <BrandCard surface="peach" style={styles.card}>
-          <View style={styles.logoWrap}>
-            <BoothBuddyLogo variant="full" style={styles.logo} />
-          </View>
+          <Animated.View style={shakeStyle}>
+            <View style={styles.logoWrap}>
+              <View style={styles.avatarBadge}>
+                <BoothBuddyLogo variant="fullSm" style={styles.avatar} />
+              </View>
+            </View>
 
-          <Text style={styles.title}>Your shop</Text>
-          <Text style={styles.subtext}>
-            Business name and your name. Staff won&apos;t see this.
-          </Text>
+            <Text style={styles.title}>Let&apos;s set up your shop</Text>
+            <Text style={styles.subtext}>Just for you — your staff won&apos;t see this.</Text>
 
-          <View style={styles.form}>
-            <Field
-              label="Business name"
-              value={businessName}
-              onChangeText={onBusinessNameChange}
-            />
-            <Field
-              label="First name"
-              value={firstName}
-              onChangeText={onFirstNameChange}
-              autoComplete="given-name"
-            />
-            <Field
-              label="Last name"
-              value={lastName}
-              onChangeText={onLastNameChange}
-              autoComplete="family-name"
-            />
+            <View style={styles.form}>
+              <FloatingLabelInput
+                label="Business name *"
+                placeholder="e.g. Chupa Chups Booth"
+                value={businessName}
+                onChangeText={(value) => {
+                  onBusinessNameChange(value);
+                  if (businessError) setBusinessError(null);
+                }}
+                error={businessError}
+                inputRef={businessRef}
+                autoCapitalize="words"
+                returnKeyType="next"
+                onSubmitEditing={() => firstNameRef.current?.focus()}
+              />
+              <FloatingLabelInput
+                label="Your first name *"
+                placeholder="e.g. Dinna"
+                value={firstName}
+                onChangeText={(value) => {
+                  onFirstNameChange(value);
+                  if (firstNameError) setFirstNameError(null);
+                }}
+                error={firstNameError}
+                inputRef={firstNameRef}
+                autoComplete="given-name"
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+              <FloatingLabelInput
+                label="Last name (optional)"
+                placeholder="e.g. Reyes"
+                value={lastName}
+                onChangeText={onLastNameChange}
+                autoComplete="family-name"
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={handleContinue}
+              />
 
-            <BrandButton
-              label="Continue"
-              onPress={onSave}
-              disabled={!canSave}
-              style={!canSave ? styles.buttonDisabled : undefined}
-            />
-          </View>
+              <SetupPrimaryButton
+                label="Continue"
+                onPress={handleContinue}
+                reduceMotion={reduceMotion}
+              />
+            </View>
+          </Animated.View>
         </BrandCard>
       </View>
     </SafeAreaView>
-  );
-}
-
-function isProfileDraftValid(input: {
-  businessName: string;
-  firstName: string;
-  lastName: string;
-}): boolean {
-  const normalized = normalizeAdminProfile(input);
-  return (
-    normalized.businessName.length > 0 &&
-    normalized.firstName.length > 0 &&
-    normalized.lastName.length > 0
-  );
-}
-
-function Field({
-  label,
-  ...props
-}: {
-  label: string;
-} & ComponentProps<typeof BrandInput>) {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-      <BrandInput {...props} />
-    </View>
   );
 }
 
@@ -113,20 +157,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+    gap: 16,
   },
   card: {
     width: '100%',
     maxWidth: 380,
     borderRadius: 28,
-    paddingVertical: 32,
-    paddingHorizontal: 28,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
   },
   logoWrap: {
     alignSelf: 'center',
     marginBottom: 16,
   },
-  logo: {
-    width: 96,
+  avatarBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatar: {
+    width: 52,
   },
   title: {
     fontFamily: fonts.heading.semiBold,
@@ -145,18 +199,5 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 16,
-  },
-  field: {
-    gap: 8,
-  },
-  label: {
-    fontFamily: fonts.body.bold,
-    fontSize: 12,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: colors.inkSoft,
-  },
-  buttonDisabled: {
-    opacity: 0.45,
   },
 });

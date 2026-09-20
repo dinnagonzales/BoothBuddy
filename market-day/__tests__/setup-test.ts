@@ -40,6 +40,26 @@ test('setup is incomplete with profile only', async () => {
   expect(await getSetupStep(deps)).toBe('code');
 });
 
+test('beginFreshSetupIfNoCode does not clear shop when profile progress already exists', async () => {
+  const deps = createSetupDeps();
+  await deps.profile.save({
+    firstName: 'Emma',
+    lastName: '',
+    businessName: 'Dragon Shop',
+  });
+  let shopCleared = false;
+
+  await beginFreshSetupIfNoCode(
+    deps.gate,
+    async () => {
+      shopCleared = true;
+    },
+    async () => true,
+  );
+
+  expect(shopCleared).toBe(false);
+});
+
 test('setup is complete after profile and a parental code are set', async () => {
   const deps = createSetupDeps();
   await deps.profile.save({

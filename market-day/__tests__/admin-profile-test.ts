@@ -19,11 +19,19 @@ test('normalizeAdminProfile trims text fields', () => {
   });
 });
 
-test('isAdminProfileComplete requires first name, last name, and business name', () => {
+test('isAdminProfileComplete requires first name and business name; last name optional', () => {
   expect(
     isAdminProfileComplete({
       firstName: 'Emma',
       lastName: 'Gonzalez',
+      businessName: 'Dragon Shop',
+    }),
+  ).toBe(true);
+
+  expect(
+    isAdminProfileComplete({
+      firstName: 'Emma',
+      lastName: '',
       businessName: 'Dragon Shop',
     }),
   ).toBe(true);

@@ -13,10 +13,11 @@ export async function isSetupComplete(deps: SetupDeps): Promise<boolean> {
 export async function beginFreshSetupIfNoCode(
   gate: { isConfigured(): Promise<boolean> },
   clearShop: () => Promise<void>,
+  hasExistingProgress?: () => Promise<boolean>,
 ): Promise<void> {
-  if (!(await gate.isConfigured())) {
-    await clearShop();
-  }
+  if (await gate.isConfigured()) return;
+  if (hasExistingProgress && (await hasExistingProgress())) return;
+  await clearShop();
 }
 
 export type SetupStep = 'profile' | 'code';

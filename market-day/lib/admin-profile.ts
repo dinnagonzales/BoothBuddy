@@ -26,11 +26,7 @@ export function normalizeAdminProfile(input: Partial<AdminProfile>): AdminProfil
 
 export function isAdminProfileComplete(profile: AdminProfile): boolean {
   const normalized = normalizeAdminProfile(profile);
-  return (
-    normalized.firstName.length > 0 &&
-    normalized.lastName.length > 0 &&
-    normalized.businessName.length > 0
-  );
+  return normalized.firstName.length > 0 && normalized.businessName.length > 0;
 }
 
 export function adminProfileDisplayName(profile: AdminProfile): string {
