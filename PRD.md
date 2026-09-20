@@ -83,13 +83,13 @@ Off-day sales come from **Make a Sale** when no **Active Market Day** is open (o
 
 ### Owner area
 
-Behind gear icon + Pass Code (numeric code by default). Five bottom tabs:
+Behind gear icon. Unlocked after setup by default; optional Pass Code when the owner locks on exit. Five bottom tabs:
 
 - **Events** — Active Market Day dashboard (totals, item count, Cash vs Venmo/Zelle breakdown with tips subline when applicable), Today's Menu (drag to reorder, sold out, remove), sales list; when no active day, start form + Past Events.
 - **Inventory** — item catalog (cost, price, archive).
 - **Preorders** — open preorders, prep summary, printable export.
 - **Sales** — all-time completed sales + Running Tab date-range export.
-- **Settings** — business profile (name, logo), **Passcode** (change 4-digit code; **Require Pass Code for Settings** toggle — on by default; turning off skips the gear gate; changing the toggle requires the current code), and **Payment** (Zelle full name, email/phone, optional QR upload; Venmo username, optional QR upload).
+- **Settings** — business profile (name, logo), **Passcode** (change 4-digit code), and **Payment** (Zelle full name, email/phone, optional QR upload; Venmo username, optional QR upload). Header **lock** turns on Pass Code protection and returns to Home; **← Dashboard** leaves without locking.
 
 Same summary card metrics on Past Events detail, Market Day staff dashboard (without profit), and Sales tab (all-time).
 

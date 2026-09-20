@@ -22,7 +22,7 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Sell flow** — menu **− / qty / +** steppers (**0** when not in cart), read-only cart (**Name(qty)** + **N items** total), payment (**Order Total**; Venmo/Zelle pay-to card when configured; amount-entry for Cash and Venmo/Zelle: **Amount Paid** → chips → change → **Keep change?**; payment-method selectors below; pay on pickup for preorders)
 - **Celebration** — Edit this sale / Go to Dashboard; tap ✕ → Home
 - **Events tab** — Active Market Day dashboard (sales, profit, Cash with tips breakdown, Venmo/Zelle; Today's Menu, sales list)
-- **Settings tab** — business name/logo, change Pass Code, **Require Pass Code for Settings** toggle (default on), Zelle/Venmo payment info + optional QR uploads
+- **Settings tab** — business name/logo, change Pass Code, Zelle/Venmo payment info + optional QR uploads
 - **Past Events** — closed days on Events empty state; detail view with export + Reopen
 - **Start Market Day** — name + date form on Events (date defaults to today)
 - **Sales tab** — all-time sales across Market Days + Running Tab export
@@ -30,7 +30,7 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 - **Inventory** — item CRUD, archive, delete (when no past sales)
 - **Sale detail (admin)** — edit payment method, optional name/notes/complete date (preorders); **Cancel sale** (Return / Error) on completed sales; delete open preorders
 - **Export** — closed Market Day + Running Tab date range (CSV with **Change kept**, cancel columns, + tips summary footer) + preorder printout (text) → share sheet
-- **Parental gate** — 4-digit Pass Code for grown-up area (`expo-secure-store`); optional bypass in Settings
+- **Parental gate** — 4-digit Pass Code (`expo-secure-store`); unlocked after setup; lock via header **Lock & go to Dashboard**
 - **SQLite** — local-first on device; foreign keys on at init; crash-safe `sales` rebuilds with leftover-table recovery (see [ADR 0003](../docs/adr/0003-sqlite-fk-and-crash-safe-sales-rebuild.md))
 
 ## UI

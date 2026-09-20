@@ -17,7 +17,7 @@ Preorder checkout launched from the **+ Pre-order** button next to the gear on H
 _Avoid_: Quick Sale, log a sale, porch mode
 
 **Home**:
-Staff's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog) under **Available Items** — tap an item to start a sale. **Make a Sale** and **+ Pre-order** are available when inventory is non-empty. When a day is active, a **Market Day** ticket banner appears at the top (optional business logo/name, market name, order total without tips, sale count). When no day is active, an idle banner can show business branding plus owner shortcuts (**Start Market Day**, inventory, payment/logo setup, **Go to Sales**) behind the Pass Code. The top bar has a gear icon (owner settings) and **+ Pre-order** (when inventory exists). Does not show profit — those are owner-only.
+Staff's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog) under **Available Items** — tap an item to start a sale. **Make a Sale** and **+ Pre-order** are available when inventory is non-empty. When a day is active, a **Market Day** ticket banner appears at the top (optional business logo/name, market name, order total without tips, sale count). When no day is active, an idle banner can show business branding plus owner shortcuts (**Start Market Day**, inventory, payment/logo setup, **Go to Sales**) — Pass Code only if the owner locked. The top bar has a gear icon (owner settings) and **+ Pre-order** (when inventory exists). Does not show profit — those are owner-only.
 _Avoid_: Dashboard, today view
 
 **Item**:
@@ -139,9 +139,9 @@ The shop owner who sets up items and prices before a Market Day and exports sale
 _Avoid_: Parent, grown-up, admin (UI label only)
 
 **Owner settings** (code: grown-up settings):
-The owner-only area behind the gear icon. Protected by a Pass Code when **Require Pass Code for Settings** is on (default). Five tabs: **Events** (Active Market Day dashboard, Today's Menu, past events), **Inventory** (item catalog), **Preorders** (open preorders awaiting pickup), **Sales** (completed all-time history and off-day export), and **Settings** (business name/logo, passcode change, optional gate bypass, Zelle/Venmo payment info for checkout). Sales totals and history are not on staff's Home.
+The owner-only area behind the gear icon. Unlocked by default after setup. The owner can **Lock & go to Dashboard** from any of the five root tabs; while locked, a Pass Code is required to enter. Unlocking clears the lock until the next lock-exit (no auto-lock). Five tabs: **Events** (Active Market Day dashboard, Today's Menu, past events), **Inventory** (item catalog), **Preorders** (open preorders awaiting pickup), **Sales** (completed all-time history and off-day export), and **Settings** (business name/logo, passcode change, Zelle/Venmo payment info for checkout). Sales totals and history are not on staff's Home.
 _Avoid_: Admin panel, grown-up settings, back office
 
 **Pass Code** (code: parental gate):
-A numeric code the owner enters to access owner settings when **Require Pass Code for Settings** is enabled. Set once during setup (or changed in **Settings**); required each time the gear icon is tapped unless the gate is turned off. Changing the gate toggle itself requires the current code.
+A numeric code the owner enters to open owner settings when the area is locked. Set once during setup (or changed in **Settings**). Locking is confirm-only on exit; unlocking clears protection until the owner locks again.
 _Avoid_: PIN lock, parent lock, math challenge

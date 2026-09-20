@@ -29,17 +29,25 @@ type ScreenHeaderProps = {
   /** Optional Lucide (or brand) icon shown before the title. */
   titleIcon?: ReactNode;
   onBack?: () => void;
+  /** Label next to the chevron. Defaults to "Back". */
+  backLabel?: string;
   right?: ReactNode;
 };
 
-export function ScreenHeader({ title, titleIcon, onBack, right }: ScreenHeaderProps) {
+export function ScreenHeader({
+  title,
+  titleIcon,
+  onBack,
+  backLabel = 'Back',
+  right,
+}: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
       {onBack ? (
-        <Pressable onPress={onBack} style={styles.headerSide} accessibilityLabel="Back">
+        <Pressable onPress={onBack} style={styles.headerSide} accessibilityLabel={backLabel}>
           <View style={styles.backRow}>
             <ChevronLeft size={20} color={colors.purple} strokeWidth={UI_ICON_STROKE} />
-            <Text style={styles.backLabel}>Back</Text>
+            <Text style={styles.backLabel}>{backLabel}</Text>
           </View>
         </Pressable>
       ) : (
@@ -149,7 +157,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   headerSide: {
-    minWidth: 60,
+    minWidth: 88,
   },
   headerSideEnd: {
     alignItems: 'flex-end',

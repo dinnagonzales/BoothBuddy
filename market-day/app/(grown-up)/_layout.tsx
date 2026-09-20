@@ -10,6 +10,7 @@ import { colors } from '@/constants/theme';
 import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
+import { unlockGrownUpPasscode } from '@/lib/grown-up-passcode';
 import { leaveGrownUpArea } from '@/lib/navigation';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
 import { showUiError } from '@/lib/ui-errors';
@@ -52,7 +53,11 @@ export default function GrownUpLayout() {
           visible
           onClose={() => leaveGrownUpArea(router)}
           onSubmit={(code) => deviceParentalGate.verify(code)}
-          onSuccess={unlock}
+          onSuccess={() => {
+            void unlockGrownUpPasscode(db, { unlock }).then(() => {
+              setPasscodeGateEnabled(false);
+            }).catch(showUiError);
+          }}
           onForgotCode={async () => {
             try {
               await resetAppForForgottenCode(db, deviceParentalGate);

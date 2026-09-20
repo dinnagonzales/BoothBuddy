@@ -7,9 +7,10 @@ import { Store, XCircle } from 'lucide-react-native';
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { ExpandableCard } from '@/components/ExpandableCard';
+import { GrownUpScreenHeader } from '@/components/GrownUpScreenHeader';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
 import { PastEventsList } from '@/components/PastEventsList';
-import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { SectionLabel } from '@/components/Screen';
 import { StartMarketDayForm } from '@/components/StartMarketDayForm';
 import { TodaysMenu } from '@/components/TodaysMenu';
 import { UiIcon } from '@/components/ui/UiIcon';
@@ -23,7 +24,6 @@ import {
   getMarketDayStats,
   startMarketDay,
 } from '@/lib/db/queries';
-import { leaveGrownUpArea } from '@/lib/navigation';
 import { ActiveMarketDayExistsError } from '@/lib/market-day';
 import { countActiveSales, countCancelledSales } from '@/lib/sale-cancel';
 import { showUiError } from '@/lib/ui-errors';
@@ -137,10 +137,9 @@ export default function SettingsScreen() {
   if (!activeDay) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader
+        <GrownUpScreenHeader
           title="Events"
           titleIcon={<UiIcon icon={Store} size={20} color={colors.ink} />}
-          onBack={() => leaveGrownUpArea(router)}
         />
         <ScrollView contentContainerStyle={styles.emptyScrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.emptyWrap}>
@@ -168,10 +167,9 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader
+      <GrownUpScreenHeader
         title="Events"
         titleIcon={<UiIcon icon={Store} size={20} color={colors.ink} />}
-        onBack={() => leaveGrownUpArea(router)}
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.summarySection}>

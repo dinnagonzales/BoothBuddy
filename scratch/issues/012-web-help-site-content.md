@@ -402,7 +402,7 @@ Kids see a simpler view (no profit) from the **Market Day banner** on the home s
 3. Add your first item: emoji, name, cost, price. Tap **Save Item and finish**.
 4. You're on **Home**! The kid can browse items and **Make a Sale** anytime. Start a **Market Day** in **⚙️ settings** when you're ready to track a fair day.
 
-The **⚙️ gear** always asks for the Pass Code — even after setup.
+The **⚙️ gear** opens owner settings. After setup it is unlocked; lock from the header when you leave if you want the Pass Code next time.
 
 ---
 
@@ -461,11 +461,11 @@ A grown-up can turn sold out off in **Today’s Menu** if more stock arrives.
 
 ## `/faq/pass-code` — What is the Pass Code?
 
-A **4-digit code** only grown-ups know. When **Require Pass Code for Settings** is on (default), it unlocks **Events**, **Inventory**, **Preorders**, **Sales**, and **Settings**.
+A **4-digit code** only grown-ups know. Owner settings start unlocked after setup. When locked via the header lock exit, it unlocks **Events**, **Inventory**, **Preorders**, **Sales**, and **Settings**.
 
 Kids use the shop without the Pass Code. They never see **cost** or **profit**.
 
-Grown-ups can change the code or turn the gate off in **⚙️ → Settings** (changing the gate toggle requires the current code).
+Grown-ups can change the code in **⚙️ → Settings → Passcode**. Lock protection with the header **lock** when leaving owner settings.
 
 ---
 
@@ -538,9 +538,9 @@ Grown-ups configure Zelle/Venmo under **⚙️ → Pass Code → Settings** (bot
 
 1. **⚙️** → **Pass Code** → tap **⚙️ Settings** in the bottom nav (last tab).
 2. **Business** — shop name and optional logo.
-3. **Passcode** — change the 4-digit code (current code required). **Require Pass Code for Settings** is on by default; turning it off lets ⚙️ open Events without a code (changing this toggle also requires the Pass Code).
+3. **Passcode** — change the 4-digit code (current code required). To require a code next time, use the header **lock** → **Lock & go to Dashboard** (not a Settings toggle).
 4. **Payment** — Zelle full name, email/phone, optional QR screenshot; Venmo username, optional QR upload.
-5. Tap **Save changes** at the bottom (payment/business fields). Passcode and gate toggle save on their own.
+5. Tap **Save changes** at the bottom (payment/business fields). Passcode saves on its own.
 
 ---
 

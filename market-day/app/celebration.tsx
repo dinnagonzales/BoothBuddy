@@ -15,6 +15,7 @@ import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { getSale, getSaleLineItems } from '@/lib/db/queries';
 import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
+import { unlockGrownUpPasscode } from '@/lib/grown-up-passcode';
 import { cashReceivedForEditedSale } from '@/lib/sale-edit';
 import { formatMoney } from '@/lib/money';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
@@ -160,12 +161,18 @@ export default function CelebrationScreen() {
         }}
         onSubmit={(code) => deviceParentalGate.verify(code)}
         onSuccess={() => {
-          unlock();
-          setPassCodeOpen(false);
-          if (pendingPreorderSaleNumber != null) {
-            openPreorderEdit(pendingPreorderSaleNumber);
-            setPendingPreorderSaleNumber(null);
-          }
+          void (async () => {
+            try {
+              await unlockGrownUpPasscode(db, { unlock });
+              setPassCodeOpen(false);
+              if (pendingPreorderSaleNumber != null) {
+                openPreorderEdit(pendingPreorderSaleNumber);
+                setPendingPreorderSaleNumber(null);
+              }
+            } catch (error) {
+              showUiError(error);
+            }
+          })();
         }}
         onForgotCode={async () => {
           try {

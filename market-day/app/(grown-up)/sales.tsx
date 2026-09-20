@@ -6,14 +6,14 @@ import { Receipt } from 'lucide-react-native';
 
 import { AdminSalesList } from '@/components/AdminSalesList';
 import { DatePickerField } from '@/components/DatePickerField';
+import { GrownUpScreenHeader } from '@/components/GrownUpScreenHeader';
 import { MarketDaySummaryCard } from '@/components/MarketDaySummaryCard';
-import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { SectionLabel } from '@/components/Screen';
 import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { getAllTimeSales, getAllTimeStats } from '@/lib/db/queries';
 import { shareSalesCsv } from '@/lib/market-day-export';
 import { startOfLocalDay, toExportDate } from '@/lib/market-day';
-import { leaveGrownUpArea } from '@/lib/navigation';
 import { countActiveSales, countCancelledSales } from '@/lib/sale-cancel';
 import type { AllTimeSaleSummary } from '@/lib/types';
 
@@ -81,10 +81,9 @@ export default function SalesScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader
+      <GrownUpScreenHeader
         title="Sales"
         titleIcon={<UiIcon icon={Receipt} size={20} color={colors.ink} />}
-        onBack={() => leaveGrownUpArea(router)}
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <MarketDaySummaryCard

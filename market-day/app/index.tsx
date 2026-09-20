@@ -25,6 +25,7 @@ import {
 } from 'lucide-react-native';
 
 import { BoothBuddyLogo } from '@/components/BoothBuddyLogo';
+import { HomeSetupChecklistCard } from '@/components/HomeSetupChecklistCard';
 import { PassCodeSheet } from '@/components/PassCodeSheet';
 import { Screen } from '@/components/Screen';
 import { IconTile } from '@/components/ui/IconTile';
@@ -41,8 +42,14 @@ import {
   getMarketDaySaleCount,
   getMarketDayStats,
 } from '@/lib/db/queries';
-import { getPasscodeGateEnabled } from '@/lib/db/passcode-gate-settings';
+import { getPasscodeGateEnabled, migratePasscodeGateIfNeeded } from '@/lib/db/passcode-gate-settings';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
+import { unlockGrownUpPasscode } from '@/lib/grown-up-passcode';
+import {
+  shouldShowHomeSetupChecklist,
+  type HomeSetupCompletions,
+  type HomeSetupTaskId,
+} from '@/lib/home-setup-checklist';
 import { formatMoney } from '@/lib/money';
 import { parseSqliteUtc } from '@/lib/market-day';
 import { resetAppForForgottenCode } from '@/lib/reset-app';
@@ -317,9 +324,10 @@ export default function HomeScreen() {
   const [items, setItems] = useState<HomeItem[]>([]);
   const [activeMarket, setActiveMarket] = useState<ActiveMarketSummary | null>(null);
   const [idleBusiness, setIdleBusiness] = useState<IdleBusinessSummary | null>(null);
-  const [hasPaymentMethod, setHasPaymentMethod] = useState(true);
+  const [hasPaymentMethod, setHasPaymentMethod] = useState(false);
+  const [hasLogo, setHasLogo] = useState(false);
   const [passCodeOpen, setPassCodeOpen] = useState(false);
-  const [passcodeGateEnabled, setPasscodeGateEnabled] = useState(true);
+  const [passcodeGateEnabled, setPasscodeGateEnabled] = useState(false);
   const [postUnlockPath, setPostUnlockPath] = useState<Href>('/settings');
 
   const openPreorder = () => {
@@ -349,48 +357,57 @@ export default function HomeScreen() {
     useCallback(() => {
       let cancelled = false;
 
-      isSetupComplete({
-        gate: deviceParentalGate,
-        profile: { get: () => getAdminProfile(db) },
-      })
-        .then(async (complete) => {
+      void (async () => {
+        try {
+          const complete = await isSetupComplete({
+            gate: deviceParentalGate,
+            profile: { get: () => getAdminProfile(db) },
+          });
           if (cancelled) return;
+
           setSetupReady(complete);
+          await migratePasscodeGateIfNeeded(db, { setupComplete: complete });
           setPasscodeGateEnabled(await getPasscodeGateEnabled(db));
-          if (complete) {
-            const [homeItems, marketDay, business] = await Promise.all([
-              getHomeItems(db),
-              getActiveMarketDay(db),
-              getBusinessSettings(db),
+          if (cancelled) return;
+
+          if (!complete) return;
+
+          const [homeItems, marketDay, business] = await Promise.all([
+            getHomeItems(db),
+            getActiveMarketDay(db),
+            getBusinessSettings(db),
+          ]);
+          if (cancelled) return;
+
+          setItems(homeItems);
+          setHasPaymentMethod(hasVenmoZellePaymentInfo(business));
+          setHasLogo(Boolean(business.businessLogoUri));
+          if (marketDay) {
+            const [dayStats, saleCount] = await Promise.all([
+              getMarketDayStats(db, marketDay.id),
+              getMarketDaySaleCount(db, marketDay.id),
             ]);
-            setItems(homeItems);
-            setHasPaymentMethod(hasVenmoZellePaymentInfo(business));
-            if (marketDay) {
-              const [dayStats, saleCount] = await Promise.all([
-                getMarketDayStats(db, marketDay.id),
-                getMarketDaySaleCount(db, marketDay.id),
-              ]);
-              setActiveMarket({
-                businessName: business.businessName,
-                businessLogoUri: business.businessLogoUri,
-                name: marketDay.name,
-                dateLabel: formatTicketDate(marketDay.startedAt),
-                totalCents: dayStats.totalCents,
-                saleCount,
-              });
-              setIdleBusiness(null);
-            } else {
-              setActiveMarket(null);
-              setIdleBusiness({
-                businessName: business.businessName,
-                businessLogoUri: business.businessLogoUri,
-              });
-            }
+            if (cancelled) return;
+            setActiveMarket({
+              businessName: business.businessName,
+              businessLogoUri: business.businessLogoUri,
+              name: marketDay.name,
+              dateLabel: formatTicketDate(marketDay.startedAt),
+              totalCents: dayStats.totalCents,
+              saleCount,
+            });
+            setIdleBusiness(null);
+          } else {
+            setActiveMarket(null);
+            setIdleBusiness({
+              businessName: business.businessName,
+              businessLogoUri: business.businessLogoUri,
+            });
           }
-        })
-        .catch(() => {
+        } catch {
           if (!cancelled) setSetupReady(false);
-        });
+        }
+      })();
 
       return () => {
         cancelled = true;
@@ -412,11 +429,31 @@ export default function HomeScreen() {
 
   const menuRows = chunkMenuRows(items);
   const hasInventory = items.length > 0;
+  const setupCompletions: HomeSetupCompletions = {
+    hasInventory,
+    hasPaymentMethod,
+    hasLogo,
+  };
+  const showSetupChecklist = shouldShowHomeSetupChecklist(setupCompletions);
   const idleActions = buildIdleHomeActions({
     hasInventory,
     hasPaymentMethod,
-    hasLogo: Boolean(idleBusiness?.businessLogoUri),
+    hasLogo,
   });
+
+  const openSetupTask = (taskId: HomeSetupTaskId) => {
+    switch (taskId) {
+      case 'inventory':
+        openGrownUpRoute('/inventory?add=1');
+        return;
+      case 'payment':
+        openGrownUpRoute('/business?payment=1');
+        return;
+      case 'logo':
+        openGrownUpRoute('/business');
+        return;
+    }
+  };
 
   if (setupReady === null) {
     return (
@@ -468,7 +505,16 @@ export default function HomeScreen() {
               style={({ pressed }) => [styles.ticketWrap, pressed && styles.ticketPressed]}>
               <TicketMarketBanner {...activeMarket} />
             </Pressable>
-          ) : idleBusiness ? (
+          ) : null}
+
+          {showSetupChecklist ? (
+            <View style={styles.checklistWrap}>
+              <HomeSetupChecklistCard
+                completions={setupCompletions}
+                onTaskPress={openSetupTask}
+              />
+            </View>
+          ) : idleBusiness && !activeMarket ? (
             <View style={styles.ticketWrap}>
               <IdleHomeBanner
                 {...idleBusiness}
@@ -577,9 +623,16 @@ export default function HomeScreen() {
         onClose={() => setPassCodeOpen(false)}
         onSubmit={(code) => deviceParentalGate.verify(code)}
         onSuccess={() => {
-          unlock();
-          setPassCodeOpen(false);
-          router.push(postUnlockPath);
+          void (async () => {
+            try {
+              await unlockGrownUpPasscode(db, { unlock });
+              setPasscodeGateEnabled(false);
+              setPassCodeOpen(false);
+              router.push(postUnlockPath);
+            } catch (error) {
+              showUiError(error);
+            }
+          })();
         }}
         onForgotCode={async () => {
           try {
@@ -652,6 +705,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading.semiBold,
     fontSize: 13,
     color: colors.green,
+  },
+  checklistWrap: {
+    marginBottom: 18,
   },
   ticketWrap: {
     marginBottom: 18,

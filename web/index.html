@@ -414,7 +414,7 @@ var GLOSSARY = [
   {term:'Sale name', def:'Optional label for a sale (for example, a customer name).'},
   {term:'Sale notes', def:'Optional note on a sale — not shown on staff screens.'},
   {term:'Complete date', def:'When a preorder should be ready for pickup.'},
-  {term:'Pass Code', def:'4-digit owner password that unlocks Events, Inventory, Preorders, Sales, and Settings.'},
+  {term:'Pass Code', def:'4-digit owner code. Owner settings start unlocked after setup; lock from the header when you leave. While locked, the code unlocks Events, Inventory, Preorders, Sales, and Settings.'},
   {term:'Sold out', def:'Still on the menu, but you cannot add it to a sale today.'},
   {term:'Preorder', def:'A sale for later pickup. Defaults to Pay on pickup; Cash or Venmo/Zelle can be recorded at creation or when marked complete / delivered.'},
   {term:'+ Pre-order', def:'Button on Home to start a preorder (uses the full catalog, not only today’s Menu). Hidden when inventory is empty.'},
@@ -450,8 +450,8 @@ PAGES['home'] = {
     info('If the shop has no items yet, <b>Make a Sale</b> and <b>+ Pre-order</b> stay hidden until an owner adds inventory.') +
     '</div>' +
     '<div class="card">' + sectionHead('settings','For owners') +
-    '<p>You set up items, start and end Market Days, and check sales behind a <b>4-digit Pass Code</b>. Tap ' + icon('settings', 18) + ' on the home screen and enter the code.</p>' +
-    '<p>When no Market Day is open, Home shows owner shortcuts (after the Pass Code): <b>Start Market Day</b>, inventory, optional payment/logo setup, and <b>Go to Sales</b>.</p>' +
+    '<p>You set up items, start and end Market Days, and check sales in owner settings. Tap ' + icon('settings', 18) + ' on the home screen. After setup the area is <b>unlocked</b> — use the header <b>lock</b> when you leave if you want the Pass Code next time.</p>' +
+    '<p>When no Market Day is open, Home can show owner shortcuts: <b>Start Market Day</b>, inventory, optional payment/logo setup, and <b>Go to Sales</b> (Pass Code only if you locked).</p>' +
     '<p>Starting a Market Day is optional for porch or one-off sales, but it helps organize fair-day totals.</p></div>' +
     '<div class="who-grid">' +
       '<div class="who-card staff"><h3>' + icon('shopping-cart', 20, 'on-dark') + ' Staff</h3><p>Ring up sales, take payment, and fix a sale.</p><a href="#/sell">Start selling →</a></div>' +
@@ -740,7 +740,7 @@ PAGES['first-time-setup'] = {
       'Add your first item: emoji or photo, name, cost, price. Tap <b>Save Item and finish</b>.',
       'You’re on <b>Home</b>! Staff can browse items and <b>Make a Sale</b> anytime. Start a <b>Market Day</b> from Events when you’re ready to track a fair day.'
     ]) +
-    info('The ' + icon('settings', 18) + ' gear asks for the Pass Code by default — even after setup (you can turn that off later in Settings).') +
+    info('After setup, ' + icon('settings', 18) + ' opens owner settings without a code. Tap the header <b>lock</b> and choose <b>Lock & go to Dashboard</b> when you want the Pass Code next time.') +
     '</div>'
 };
 
@@ -797,9 +797,9 @@ PAGES['faq/pass-code'] = {
   title:'What is the Pass Code?', icon:'key-round', section:'faq', audience:'everyone', crumb:'What is the Pass Code?',
   body:
     '<div class="card">' +
-    '<p>A <b>4-digit code</b> only owners know. When <b>Require Pass Code for Settings</b> is on (default), it unlocks Events, Inventory, Preorders, Sales, and Settings.</p>' +
-    '<p>Staff use the shop without the Pass Code. They never see <b>cost</b> or <b>profit</b>.</p>' +
-    '<p>Owners can change the code or turn the gate off in ' + icon('settings', 18) + ' → <b>Settings</b>. Changing <b>Require Pass Code for Settings</b> also requires the current code.</p>' +
+    '<p>A <b>4-digit code</b> only owners know. Owner settings start <b>unlocked</b> after setup. When an owner taps the header <b>lock</b> and chooses <b>Lock & go to Dashboard</b>, the code is required next time to open Events, Inventory, Preorders, Sales, or Settings.</p>' +
+    '<p>Unlocking clears the lock until they lock on the way out again (no auto-lock). Staff use the shop without the Pass Code and never see <b>cost</b> or <b>profit</b>.</p>' +
+    '<p>Change the code anytime in ' + icon('settings', 18) + ' → <b>Settings</b> → <b>Passcode</b>.</p>' +
     '</div>'
 };
 
@@ -818,7 +818,7 @@ PAGES['faq/gear-icon'] = {
   body:
     '<div class="card">' +
     '<p>The ' + icon('settings', 20) + ' on the home screen is for <b>owners</b>.</p>' +
-    '<p>Tap it → enter the <b>Pass Code</b> → open <b>Events</b>, Inventory, Preorders, Sales, and Settings (including profit).</p>' +
+    '<p>Tap it → open <b>Events</b>, Inventory, Preorders, Sales, and Settings (including profit). If the owner locked on the way out last time, enter the <b>Pass Code</b> first.</p>' +
     info('If you’re ringing up sales, you usually don’t need the gear — use Make a Sale instead.') +
     '</div>'
 };
@@ -874,13 +874,14 @@ PAGES['faq/owner-settings'] = {
   body:
     '<div class="card">' +
     steps([
-      icon('settings', 18) + ' → <b>Pass Code</b> → tap <b>Settings</b> in the bottom nav (last tab).',
+      icon('settings', 18) + ' → tap <b>Settings</b> in the bottom nav (last tab). Enter the Pass Code only if you locked last time.',
       '<b>Business</b> — shop name and optional logo (shows on the Market Day banner and idle Home).',
-      '<b>Passcode</b> — change the 4-digit code. <b>Require Pass Code for Settings</b> is on by default.',
+      '<b>Passcode</b> — change the 4-digit code (current code required).',
       '<b>Payment</b> — tap to expand (collapsed by default). Zelle full name, email/phone, optional QR; Venmo username, optional QR.',
-      'Tap <b>Save changes</b> at the bottom for payment/business fields. Passcode and gate toggle save on their own.'
+      'Tap <b>Save changes</b> at the bottom for payment/business fields. Passcode saves on its own.',
+      'To protect owner settings: tap the header <b>lock</b> → <b>Lock & go to Dashboard</b>. <b>← Dashboard</b> leaves without locking.'
     ]) +
-    tip('From idle Home (no Market Day), shortcuts can jump straight to <b>Add Mobile Payment Methods</b> or <b>Add Logo</b> after the Pass Code.') +
+    tip('From idle Home (no Market Day), shortcuts can jump straight to payment or logo setup (Pass Code only if locked).') +
     '</div>'
 };
 

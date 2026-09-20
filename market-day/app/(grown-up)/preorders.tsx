@@ -4,14 +4,14 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ClipboardList } from 'lucide-react-native';
 
+import { GrownUpScreenHeader } from '@/components/GrownUpScreenHeader';
 import { PreorderSalesList } from '@/components/PreorderSalesList';
-import { ScreenHeader, SectionLabel } from '@/components/Screen';
+import { SectionLabel } from '@/components/Screen';
 import { UiIcon } from '@/components/ui/UiIcon';
 import { colors } from '@/constants/theme';
 import { getPreorderPrepSummary, getPreorderSales, completePreorder, getSaleByNumber, type PreorderPrepItem } from '@/lib/db/queries';
 import { isCompleteDateOverdue, startOfLocalDay } from '@/lib/market-day';
 import { sharePreorderPrintout } from '@/lib/market-day-export';
-import { leaveGrownUpArea } from '@/lib/navigation';
 import { formatMoney } from '@/lib/money';
 import type { SaleSummary } from '@/lib/types';
 
@@ -111,10 +111,9 @@ export default function PreordersScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader
+      <GrownUpScreenHeader
         title="Preorders"
         titleIcon={<UiIcon icon={ClipboardList} size={20} color={colors.ink} />}
-        onBack={() => leaveGrownUpArea(router)}
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.lead}>

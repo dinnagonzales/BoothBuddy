@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useRouter } from 'expo-router';
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -17,7 +17,6 @@ import {
 import { Check, Smartphone } from 'lucide-react-native';
 
 import { ChangePasscodeCard } from '@/components/ChangePasscodeCard';
-import { PasscodeGateSettings } from '@/components/PasscodeGateSettings';
 import { ExpandableCard } from '@/components/ExpandableCard';
 import { SectionLabel } from '@/components/Screen';
 import { UiIcon } from '@/components/ui/UiIcon';
@@ -58,13 +57,19 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
   const [paymentOpen, setPaymentOpen] = useState(expandPayment);
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const loadIdRef = useRef(0);
+  const savedRef = useRef<BusinessSettings | null>(null);
 
   const loadSettings = useCallback(async () => {
+    const loadId = ++loadIdRef.current;
     const [settings, profile] = await Promise.all([getBusinessSettings(db), getAdminProfile(db)]);
+    if (loadId !== loadIdRef.current) return;
+
     const displaySettings = {
       ...settings,
       zelleContact: formatZelleContactForInput(settings.zelleContact),
     };
+    savedRef.current = settings;
     setSaved(settings);
     setDraft(displaySettings);
     setSavedProfile(profile);
@@ -91,6 +96,8 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
   const canSave = dirty && !saving;
 
   const updateDraft = (patch: Partial<BusinessSettings>) => {
+    // Local edits win over any in-flight reload from leaving the image picker.
+    loadIdRef.current += 1;
     setDraft((current) => {
       if (!current) return current;
       const next = { ...current, ...patch };
@@ -102,6 +109,7 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
   };
 
   const updateProfileDraft = (patch: Partial<AdminProfile>) => {
+    loadIdRef.current += 1;
     setProfileDraft((current) => (current ? { ...current, ...patch } : current));
   };
 
@@ -110,11 +118,18 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
       const uri = await pickBusinessImage(kind);
       if (!uri) return;
 
-      const previous = draft[field];
-      if (previous && previous !== uri) {
-        await deleteBusinessImage(previous);
-      }
-      updateDraft({ [field]: uri });
+      const currentSaved = savedRef.current;
+      setDraft((current) => {
+        if (!current) return current;
+        const previous = current[field];
+        // Only delete an unsaved draft image — keep the saved file until Save replaces it.
+        if (previous && previous !== uri && previous !== currentSaved?.[field]) {
+          void deleteBusinessImage(previous);
+        }
+        return { ...current, [field]: uri };
+      });
+      // Invalidate reloads that may complete after returning from the picker.
+      loadIdRef.current += 1;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Could not pick that image.';
       Alert.alert('Photo error', message);
@@ -122,11 +137,16 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
   };
 
   const removeImage = async (field: 'businessLogoUri' | 'zelleQrUri' | 'venmoQrUri') => {
-    const previous = draft[field];
-    if (previous) {
-      await deleteBusinessImage(previous);
-    }
-    updateDraft({ [field]: null });
+    const currentSaved = savedRef.current;
+    setDraft((current) => {
+      if (!current) return current;
+      const previous = current[field];
+      if (previous && previous !== currentSaved?.[field]) {
+        void deleteBusinessImage(previous);
+      }
+      return { ...current, [field]: null };
+    });
+    loadIdRef.current += 1;
   };
 
   const saveChanges = async () => {
@@ -152,6 +172,7 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
 
       await saveBusinessSettings(db, normalized);
       await saveAdminProfile(db, normalizedProfile);
+      savedRef.current = normalized;
       setSaved(normalized);
       setSavedProfile(normalizedProfile);
       setDraft({
@@ -238,7 +259,6 @@ export function BusinessSettingsForm({ db, expandPayment = false }: BusinessSett
       </View>
 
       <ChangePasscodeCard />
-      <PasscodeGateSettings db={db} />
 
       <SectionLabel>Payment</SectionLabel>
       <ExpandableCard

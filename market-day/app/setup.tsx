@@ -153,7 +153,7 @@ export default function SetupScreen() {
     async (code: string) => {
       try {
         await deviceParentalGate.setCode(code);
-        await setPasscodeGateEnabled(db, true);
+        await setPasscodeGateEnabled(db, false);
         goTo('success', 'forward');
       } catch (error) {
         showUiError(error);

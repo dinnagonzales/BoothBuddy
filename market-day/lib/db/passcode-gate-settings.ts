@@ -16,10 +16,21 @@ async function setAppStateValue(db: SQLiteDatabase, key: string, value: string):
 
 export async function getPasscodeGateEnabled(db: SQLiteDatabase): Promise<boolean> {
   const value = await getAppStateValue(db, PASSCODE_GATE_ENABLED_KEY);
-  if (value == null) return true;
+  if (value == null) return false;
   return value === '1' || value === 'true';
 }
 
 export async function setPasscodeGateEnabled(db: SQLiteDatabase, enabled: boolean): Promise<void> {
   await setAppStateValue(db, PASSCODE_GATE_ENABLED_KEY, enabled ? '1' : '0');
+}
+
+/** Preserve old default (locked) for upgrades that completed setup before this key existed. */
+export async function migratePasscodeGateIfNeeded(
+  db: SQLiteDatabase,
+  options: { setupComplete: boolean },
+): Promise<void> {
+  if (!options.setupComplete) return;
+  const value = await getAppStateValue(db, PASSCODE_GATE_ENABLED_KEY);
+  if (value != null) return;
+  await setPasscodeGateEnabled(db, true);
 }

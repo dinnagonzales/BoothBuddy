@@ -5,7 +5,6 @@ import { PinInput, type PinInputHandle } from '@/components/PinInput';
 import { ExpandableCard } from '@/components/ExpandableCard';
 import { colors } from '@/constants/theme';
 import { fonts, radii } from '@/constants/visual';
-import { useGrownUpSession } from '@/context/GrownUpSessionContext';
 import { deviceParentalGate } from '@/lib/device-parental-gate';
 import {
   getParentalCodeLengthError,
@@ -13,7 +12,6 @@ import {
 } from '@/lib/parental-gate';
 
 export function ChangePasscodeCard() {
-  const { lock } = useGrownUpSession();
   const [expanded, setExpanded] = useState(false);
   const [currentCode, setCurrentCode] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -77,8 +75,7 @@ export function ChangePasscodeCard() {
       await deviceParentalGate.setCode(newCode);
       resetForm();
       setExpanded(false);
-      lock();
-      Alert.alert('Pass Code updated', 'Use your new code next time you open Events.');
+      Alert.alert('Pass Code updated', 'Use your new code whenever Settings is locked.');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Could not update your Pass Code.';
@@ -108,7 +105,7 @@ export function ChangePasscodeCard() {
       }>
       <View style={styles.body}>
         <Text style={styles.hint}>
-          Change the 4-digit code used to open Events, Inventory, and Settings.
+          Change the 4-digit code used when Settings is locked.
         </Text>
 
         <PinInput
