@@ -17,8 +17,12 @@ Preorder checkout launched from the **+ Pre-order** button next to the gear on H
 _Avoid_: Quick Sale, log a sale, porch mode
 
 **Home**:
-Staff's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog) under **Available Items** — tap an item to start a sale. **Make a Sale** and **+ Pre-order** are available when inventory is non-empty. When a day is active, a **Market Day** ticket banner appears at the top (optional business logo/name, market name, order total without tips, sale count). When no day is active, an idle banner can show business branding plus owner shortcuts (**Start Market Day**, inventory, payment/logo setup, **Go to Sales**) — Pass Code only if the owner locked. The top bar has a gear icon (owner settings) and **+ Pre-order** (when inventory exists). Does not show profit — those are owner-only.
+Staff's landing screen and return point after every Sale. Shows the **Items** list (from today's **Menu** when an **Active Market Day** is open; otherwise the full non-archived catalog) under **Available Items** — tap an item to start a sale. **Make a Sale** and **+ Pre-order** are available when inventory is non-empty. When a day is active, a **Market Day** ticket banner appears at the top (optional business logo/name, market name, order total without tips, sale count). When no day is active and the shop-ready checklist is gone, an idle banner shows business branding plus three fixed owner shortcuts (**Start Market Day**, **Update Inventory**, **Go to Sales**) — Pass Code only if the owner locked. Until then (or until the owner taps **Hide**), Home can show a **Get your shop ready** checklist: **Add your first item** is required (drives progress and unlocks selling); **Add a mobile payment method** and **Add your logo** are optional. After the required step is done, **Hide** dismisses the checklist permanently. The top bar has a gear icon (owner settings) and **+ Pre-order** (when inventory exists). Does not show profit — those are owner-only.
 _Avoid_: Dashboard, today view
+
+**Get your shop ready**:
+The post-setup Home checklist for owners. One required row (**Add your first item**) and two optional rows (payment method, logo). Progress and header copy follow the required row only. **Hide** (available once the first item exists) removes the card forever until shop data is reset.
+_Avoid_: Onboarding wizard, tutorial overlay
 
 **Item**:
 A sellable product the vendor offers. Has name, price, cost (owner-only), and icon — emoji by default, optional photo. An Item with past Sales can be **archived** (hidden from Home and checkout) but remains in history and exports. The owner can **UnArchive** an Item to restore it for staff.
@@ -135,7 +139,7 @@ The person operating the app at the booth during a Market Day — rings up sales
 _Avoid_: User, cashier, vendor, kid
 
 **Owner** (code: Admin):
-The shop owner who sets up items and prices before a Market Day and exports sales data afterward. On first launch, completes a setup wizard (Pass Code, at least one Item). Owner settings shows sales totals (item count, total revenue, Cash vs Venmo/Zelle breakdown), Market Day management, item setup, and export — none of which is visible on staff's Home.
+The shop owner who sets up items and prices before a Market Day and exports sales data afterward. On first launch, completes a setup wizard (**Welcome to Booth Buddy!** with shop/profile info, then Pass Code). Adding the first Item happens on Home via **Get your shop ready**. Owner settings shows sales totals (item count, total revenue, Cash vs Venmo/Zelle breakdown), Market Day management, item setup, and export — none of which is visible on staff's Home.
 _Avoid_: Parent, grown-up, admin (UI label only)
 
 **Owner settings** (code: grown-up settings):

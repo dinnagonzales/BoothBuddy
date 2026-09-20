@@ -4,7 +4,7 @@
 **Status:** shipped (content lives in `web/index.html`; deploy via GitHub Pages)  
 **Audience:** Web page agent building **Booth Buddy** help / FAQ pages  
 **Tone:** Simple words a kid can read. Owner steps clearly labeled.  
-**Sync note (Sep 19 2026):** Help site aligned with latest app — Owner / Staff labels; idle Home shortcuts; Available Items / empty inventory; tips vs order totals on banner, dashboards, and CSV summary rows; Payment section collapsed by default; Mark Delivered for paid preorders; **Today’s Menu drag-to-reorder** (Home / Make a Sale follow; new day A–Z; mid-day joiners append). Prefer Owner / Staff over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
+**Sync note (Sep 20 2026):** Help site aligned with latest app — **Welcome to Booth Buddy!** onboarding (long wordmark, no circle badge; buddy peeks on success); Home **Get your shop ready** checklist (first item required; payment/logo optional; **Hide** forever); idle Home always **Start Market Day** / **Update Inventory** / **Go to Sales**; Pass Code opt-in via lock-on-exit; Owner / Staff labels; tips vs order totals; Payment collapsed by default; Today’s Menu drag-to-reorder. Prefer Owner / Staff over Seller / Grown-up / Admin in new pages. Domain event name **Market Day** stays.
 
 ---
 
@@ -395,14 +395,17 @@ Kids see a simpler view (no profit) from the **Market Day banner** on the home s
 
 ## `/first-time-setup` — First-time setup
 
-**For grown-ups (first launch only)**
+**For owners (first launch only)**
 
-1. Open the app. You’ll see **Grown-up setup**.
-2. Pick a **4-digit Pass Code**. Type it again. Tap **Save Pass Code**.
-3. Add your first item: emoji, name, cost, price. Tap **Save Item and finish**.
-4. You're on **Home**! The kid can browse items and **Make a Sale** anytime. Start a **Market Day** in **⚙️ settings** when you're ready to track a fair day.
+1. Open the app. You’ll see **Welcome to Booth Buddy!** with the Booth Buddy wordmark (same as Home).
+2. Enter **business name** and **first name** (last name optional). Tap **Continue**.
+3. Set a **4-digit Pass Code**, then confirm it.
+4. On the success screen, tap **Go to my shop**.
+5. On **Home**, use **Get your shop ready**: add your **first item** (required). Payment method and logo are optional. Tap **Hide** after the first item to dismiss the checklist forever.
 
 The **⚙️ gear** opens owner settings. After setup it is unlocked; lock from the header when you leave if you want the Pass Code next time.
+
+When the checklist is gone and no Market Day is open, Home shows **Start Market Day**, **Update Inventory**, and **Go to Sales**.
 
 ---
 
@@ -625,4 +628,4 @@ Friendly, colorful, kid-safe — match **Booth Buddy** logo palette (peach/coral
 - Biometric / Face ID Pass Code recovery (v2)
 - Edit item quantities on a saved sale (deferred — remove + re-log)
 
-**Now in app (documented in `web/index.html`):** change Pass Code in Settings; optional Item photos; **Mark Delivered** on paid preorders; idle Home setup shortcuts; tips vs order totals on banner / dashboards / CSV; **Today’s Menu drag-to-reorder**.
+**Now in app (documented in `web/index.html`):** change Pass Code in Settings; optional Item photos; **Mark Delivered** on paid preorders; **Get your shop ready** + fixed idle Home shortcuts; tips vs order totals on banner / dashboards / CSV; **Today’s Menu drag-to-reorder**.

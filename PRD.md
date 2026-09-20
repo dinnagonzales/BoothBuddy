@@ -36,8 +36,9 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 
 ### First launch (admin setup wizard)
 
-1. Owner opens app → guided setup: set Pass Code → add at least one Item.
-2. Staff can browse Home (Items menu). **Make a Sale** is always available.
+1. Owner opens app → **Welcome to Booth Buddy!** → shop/profile → set Pass Code → success.
+2. On **Home**, **Get your shop ready** asks for the first Item (required) plus optional payment/logo; **Hide** dismisses the checklist forever after the first item.
+3. Staff can browse Home (Items menu). **Make a Sale** is available once inventory exists. Idle Home (no Market Day) always shows **Start Market Day**, **Update Inventory**, and **Go to Sales**.
 
 ### Start a Market Day (admin)
 
@@ -47,7 +48,7 @@ The current Excel workbook works for after-the-fact bookkeeping but is too slow 
 
 ### Log a sale (staff — primary flow)
 
-1. **Home** — **Items** list (icon, name, price) + **Make a Sale** (always enabled). Optional **Market Day** banner when a day is active.
+1. **Home** — **Available Items** list (icon, name, price) + **Make a Sale** / **+ Pre-order** when inventory exists. Market Day ticket banner when a day is active; otherwise idle shortcuts (**Start Market Day**, **Update Inventory**, **Go to Sales**) once the shop-ready checklist is gone.
 2. **Pick Items** — scrollable menu with **− / qty / +** steppers per row (**0** when not in cart); cart pinned at bottom shows **Name(qty)** and line subtotal, **N items** + total, **Checkout**.
    - **Active Market Day:** checkout uses today's **Menu**; no name/notes fields; sale attaches to that **Market Day**.
    - **No active Market Day:** checkout uses the full non-archived catalog; optional **Sale name** and **Sale notes** above the cart; sale saves to **Running Tab** (`marketDayId` null).

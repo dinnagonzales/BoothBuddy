@@ -415,6 +415,7 @@ var GLOSSARY = [
   {term:'Sale notes', def:'Optional note on a sale — not shown on staff screens.'},
   {term:'Complete date', def:'When a preorder should be ready for pickup.'},
   {term:'Pass Code', def:'4-digit owner code. Owner settings start unlocked after setup; lock from the header when you leave. While locked, the code unlocks Events, Inventory, Preorders, Sales, and Settings.'},
+  {term:'Get your shop ready', def:'Home checklist after setup. First item is required; payment method and logo are optional. Hide dismisses it forever once the first item is added.'},
   {term:'Sold out', def:'Still on the menu, but you cannot add it to a sale today.'},
   {term:'Preorder', def:'A sale for later pickup. Defaults to Pay on pickup; Cash or Venmo/Zelle can be recorded at creation or when marked complete / delivered.'},
   {term:'+ Pre-order', def:'Button on Home to start a preorder (uses the full catalog, not only today’s Menu). Hidden when inventory is empty.'},
@@ -451,7 +452,8 @@ PAGES['home'] = {
     '</div>' +
     '<div class="card">' + sectionHead('settings','For owners') +
     '<p>You set up items, start and end Market Days, and check sales in owner settings. Tap ' + icon('settings', 18) + ' on the home screen. After setup the area is <b>unlocked</b> — use the header <b>lock</b> when you leave if you want the Pass Code next time.</p>' +
-    '<p>When no Market Day is open, Home can show owner shortcuts: <b>Start Market Day</b>, inventory, optional payment/logo setup, and <b>Go to Sales</b> (Pass Code only if you locked).</p>' +
+    '<p>When no Market Day is open and the shop-ready checklist is hidden or finished, Home shows owner shortcuts: <b>Start Market Day</b>, <b>Update Inventory</b>, and <b>Go to Sales</b> (Pass Code only if you locked).</p>' +
+    '<p>Right after setup, Home can show <b>Get your shop ready</b> — add your first item (required), then optional payment method and logo. Tap <b>Hide</b> after the first item to dismiss it forever.</p>' +
     '<p>Starting a Market Day is optional for porch or one-off sales, but it helps organize fair-day totals.</p></div>' +
     '<div class="who-grid">' +
       '<div class="who-card staff"><h3>' + icon('shopping-cart', 20, 'on-dark') + ' Staff</h3><p>Ring up sales, take payment, and fix a sale.</p><a href="#/sell">Start selling →</a></div>' +
@@ -594,8 +596,7 @@ PAGES['start-market-day'] = {
     '<div class="card">' +
     '<p>This opens the shop so staff can sell against today’s menu and totals.</p>' +
     steps([
-      'On the home screen, tap ' + icon('settings', 18) + '.',
-      'Enter your <b>4-digit Pass Code</b> (it unlocks when all four digits are in).',
+      'On Home (no Market Day open), tap <b>Start Market Day</b> — or tap ' + icon('settings', 18) + ' and open <b>Events</b> (enter the Pass Code only if you locked last time).',
       'You’ll land on the <b>Events</b> tab. If it says <b>No market day yet</b>, fill in <b>Market Name</b> (required) and <b>Date</b> (defaults to today).',
       'Tap ' + pill('pill-purple', icon('play', 16, 'on-dark') + ' Start Market Day'),
       'The shop is open! All your items are on <b>Today’s Menu</b> automatically.',
@@ -735,12 +736,14 @@ PAGES['first-time-setup'] = {
   body:
     '<div class="card">' + sectionHead('party-popper','First launch only') +
     steps([
-      'Open the app. You’ll see <b>Booth Buddy</b> — tap <b>Get started</b>.',
-      'On <b>Owner setup</b>, pick a <b>4-digit Pass Code</b>. Type it again. Tap <b>Save Pass Code</b>.',
-      'Add your first item: emoji or photo, name, cost, price. Tap <b>Save Item and finish</b>.',
-      'You’re on <b>Home</b>! Staff can browse items and <b>Make a Sale</b> anytime. Start a <b>Market Day</b> from Events when you’re ready to track a fair day.'
+      'Open the app. You’ll see <b>Welcome to Booth Buddy!</b> with the Booth Buddy wordmark (same as Home).',
+      'Enter your <b>business name</b> and <b>first name</b> (last name optional). Tap <b>Continue</b>.',
+      'Set a <b>4-digit Pass Code</b>, then confirm it. You can turn Pass Code protection off later in Settings.',
+      'On the success screen, tap <b>Go to my shop</b>.',
+      'On <b>Home</b>, use <b>Get your shop ready</b>: add your <b>first item</b> (required to sell). Payment method and logo are optional. Tap <b>Hide</b> after the first item if you want the checklist gone for good.'
     ]) +
     info('After setup, ' + icon('settings', 18) + ' opens owner settings without a code. Tap the header <b>lock</b> and choose <b>Lock & go to Dashboard</b> when you want the Pass Code next time.') +
+    tip('When the checklist is gone and no Market Day is open, Home shows <b>Start Market Day</b>, <b>Update Inventory</b>, and <b>Go to Sales</b>.') +
     '</div>'
 };
 
@@ -881,7 +884,7 @@ PAGES['faq/owner-settings'] = {
       'Tap <b>Save changes</b> at the bottom for payment/business fields. Passcode saves on its own.',
       'To protect owner settings: tap the header <b>lock</b> → <b>Lock & go to Dashboard</b>. <b>← Dashboard</b> leaves without locking.'
     ]) +
-    tip('From idle Home (no Market Day), shortcuts can jump straight to payment or logo setup (Pass Code only if locked).') +
+    tip('From idle Home (no Market Day), shortcuts are always <b>Start Market Day</b>, <b>Update Inventory</b>, and <b>Go to Sales</b> (Pass Code only if locked). Payment and logo live under <b>Settings</b>, or in the shop-ready checklist before you Hide it.') +
     '</div>'
 };
 
@@ -1054,7 +1057,7 @@ function crumbTrail(page, slug){
 
 function renderChecklist(){
   var data = {
-    chkA: ['Home shortcut or ' + icon('settings', 16) + ' → Pass Code → Events → enter Market Day name + Date → Start Market Day', 'Check Today’s Menu (drag to reorder / sold out / remove items)', 'Hand device to staff'],
+    chkA: ['Home shortcut <b>Start Market Day</b> (or ' + icon('settings', 16) + ' → Pass Code → Events) → enter Market Day name + Date → Start', 'Check Today’s Menu (drag to reorder / sold out / remove items)', 'Hand device to staff'],
     chkB: ['Tap an Available Item or ' + icon('shopping-cart', 16) + ' Make a Sale → cart → Checkout → pay → Sold!'],
     chkC: [icon('settings', 16) + ' → Events → review profit / Total with Tips', 'End Market Day', '(Optional) Past Events → export CSV for Excel']
   };

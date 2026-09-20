@@ -16,15 +16,16 @@ Kid-friendly POS for iPad testing via **Expo Go** — no Apple Developer account
 
 ## What's working
 
-- **Home** — Items menu (no sales totals); optional Market Day banner; **Make a Sale** (always) + **+ Pre-order**
-- **Make a Sale** — always available; attaches to active Market Day when one is open; off-day sales save to Running Tab with optional name/notes
+- **Home** — Available Items (no sales totals); Market Day ticket banner when open; idle shortcuts (**Start Market Day**, **Update Inventory**, **Go to Sales**) when closed; **Get your shop ready** checklist until first item + Hide (or all optional steps done); **Make a Sale** / **+ Pre-order** when inventory exists
+- **First-run setup** — Welcome splash/profile → Pass Code → success (buddy) → Home checklist for first item / optional payment & logo
+- **Make a Sale** — always available when inventory exists; attaches to active Market Day when one is open; off-day sales save to Running Tab with optional name/notes
 - **+ Pre-order** — required name/notes/complete date, Pay on pickup, global catalog, always Running Tab (even during a fair)
 - **Sell flow** — menu **− / qty / +** steppers (**0** when not in cart), read-only cart (**Name(qty)** + **N items** total), payment (**Order Total**; Venmo/Zelle pay-to card when configured; amount-entry for Cash and Venmo/Zelle: **Amount Paid** → chips → change → **Keep change?**; payment-method selectors below; pay on pickup for preorders)
 - **Celebration** — Edit this sale / Go to Dashboard; tap ✕ → Home
 - **Events tab** — Active Market Day dashboard (sales, profit, Cash with tips breakdown, Venmo/Zelle; Today's Menu, sales list)
 - **Settings tab** — business name/logo, change Pass Code, Zelle/Venmo payment info + optional QR uploads
 - **Past Events** — closed days on Events empty state; detail view with export + Reopen
-- **Start Market Day** — name + date form on Events (date defaults to today)
+- **Start Market Day** — name + date form on Events (date defaults to today); also reachable from idle Home shortcut
 - **Sales tab** — all-time sales across Market Days + Running Tab export
 - **Preorders tab** — prep summary (what to make), overdue/upcoming sections sorted by complete date, printable export, open preorders; mark complete from admin edit
 - **Inventory** — item CRUD, archive, delete (when no past sales)
